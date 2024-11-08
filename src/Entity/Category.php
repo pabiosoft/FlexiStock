@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 #[ORM\Entity]
 class Category
 {
+    
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: "integer")]

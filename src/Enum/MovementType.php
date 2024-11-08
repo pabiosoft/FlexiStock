@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum MouvementType: string
+enum MovementType: string
 {
     case IN = 'in';
     case OUT = 'out';

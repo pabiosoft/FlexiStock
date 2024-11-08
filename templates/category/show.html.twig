@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Category{% endblock %}
+
+{% block body %}
+    <h1>Category</h1>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <td>{{ category.id }}</td>
+        </tr>
+        <tr>
+            <th>Name</th>
+            <td>{{ category.name }}</td>
+        </tr>
+        <tr>
+            <th>Description</th>
+            <td>{{ category.description }}</td>
+        </tr>
+    </table>
+
+    <a href="{{ path('category_index') }}">Back to list</a>
+    <a href="{{ path('category_edit', {'id': category.id}) }}">Edit</a>
+    <form method="post" action="{{ path('category_delete', {'id': category.id}) }}" style="display:inline-block;">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
+        <button type="submit">Delete</button>
+    </form>
+{% endblock %}

@@ -4,10 +4,12 @@ namespace App\Entity;
 
 use App\Enum\MouvementType;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\MovementRepository;
 
-#[ORM\Entity(repositoryClass: MouvementRepository::class)]
+#[ORM\Entity(repositoryClass: MovementRepository::class)]
 class Mouvement
 {
+    
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]

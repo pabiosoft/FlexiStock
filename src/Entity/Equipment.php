@@ -5,6 +5,7 @@
 namespace App\Entity;
 
 use App\Enum\EquipmentStatus;
+use App\Entity\Trait\SlugTrait;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\EquipmentRepository;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -12,7 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: EquipmentRepository::class)]
 class Equipment
 {
-    
+    use SlugTrait;
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -173,5 +174,11 @@ class Equipment
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+    #[ORM\PrePersist] 
+    #[ORM\PreUpdate]
+    public function updateSlug(): void
+    {
+        $this->initializeSlug($this->getName());
     }
 }

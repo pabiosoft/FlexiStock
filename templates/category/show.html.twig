@@ -21,8 +21,8 @@
     </table>
 
     <a href="{{ path('category_index') }}">Back to list</a>
-    <a href="{{ path('category_edit', {'id': category.id}) }}">Edit</a>
-    <form method="post" action="{{ path('category_delete', {'id': category.id}) }}" style="display:inline-block;">
+    <a href="{{ path('category_edit', {'slug': category.slug}) }}">Edit</a>
+    <form method="post" action="{{ path('category_delete', {'slug': category.slug}) }}" style="display:inline-block;">
         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
         <button type="submit">Delete</button>
     </form>

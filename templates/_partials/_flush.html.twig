@@ -1,0 +1,30 @@
+{% block notifications %}
+    {% for label, messages in app.flashes() %}
+        {% for message in messages %}
+            <div class="fixed top-5 right-5 w-full max-w-xs bg-white border-l-4 border-{{ label }}-500 text-{{ label }}-700 shadow-lg rounded-lg p-4 mb-4 notification" role="alert">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 1a9 9 0 100 18 9 9 0 000-18zm1 14.5H9v-1h2v1zm0-3H9v-6h2v6z"/>
+                        </svg>
+                        <span class="font-medium">{{ message|raw }}</span>
+                    </div>
+                    <button class="ml-2 text-gray-500 hover:text-gray-700 close-notification" aria-label="Close">&times;</button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const closeButtons = document.querySelectorAll('.close-notification');
+    
+    closeButtons.forEach(button => {
+      button.addEventListener('click', function () {
+        const notification = this.closest('.notification');
+        notification.classList.add('hidden');
+      });
+    });
+  });
+</script>
+
+{% endblock %}

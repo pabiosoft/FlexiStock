@@ -3,7 +3,8 @@
 {% block title %}Category Index{% endblock %}
 
 {% block body %}
-    <h1>Category Index</h1>
+{# {% include 'partials/_flashBag.html.twig' %} #}
+    <h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">Category Index</h1>
     <table>
         <thead>
             <tr>
@@ -20,9 +21,9 @@
                     <td>{{ category.name }}</td>
                     <td>{{ category.description }}</td>
                     <td>
-                        <a href="{{ path('category_show', {'id': category.id}) }}">show</a>
-                        <a href="{{ path('category_edit', {'id': category.id}) }}">edit</a>
-                        <form method="post" action="{{ path('category_delete', {'id': category.id}) }}" style="display:inline-block;">
+                        <a href="{{ path('category_show', {'slug': category.slug}) }}">show</a>
+                        <a href="{{ path('category_edit', {'slug': category.slug}) }}">edit</a>
+                        <form method="post" action="{{ path('category_delete', {'slug': category.slug}) }}" style="display:inline-block;">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
                             <button type="submit">delete</button>
                         </form>

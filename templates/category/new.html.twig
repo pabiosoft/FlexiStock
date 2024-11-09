@@ -1,14 +1,15 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Create New Category{% endblock %}
+{% block title %}Create New Category
+{% endblock %}
 
 {% block body %}
-    <h1>Create New Category</h1>
+<div class="max-w-sm mx-auto">
+	<h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">Create New Category</h1>
+	{% include "_partials/_flush.html.twig" %}
 
-    {{ form_start(form) }}
-        {{ form_widget(form) }}
-        <button class="btn">{{ button_label|default('Save') }}</button>
-    {{ form_end(form) }}
+	{% include 'category/_form.html.twig' with {'form': form} %}
 
-    <a href="{{ path('category_index') }}">Back to list</a>
+	<a href="{{ path('category_index') }}">Back to list</a>
+</div>
 {% endblock %}

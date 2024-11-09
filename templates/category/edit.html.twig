@@ -1,14 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Category{% endblock %}
+{% block title %}Edit Category
+{% endblock %}
 
 {% block body %}
-    <h1>Edit Category</h1>
-
-    {{ form_start(form) }}
-        {{ form_widget(form) }}
-        <button class="btn">{{ button_label|default('Save') }}</button>
-    {{ form_end(form) }}
-
-    <a href="{{ path('category_index') }}">Back to list</a>
+	<div class="max-w-sm mx-auto">
+		<h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">Modifier un Category</h1>
+		<a href="{{ path('category_index') }}">Back to list</a>
+		{% include 'category/_form.html.twig' with {'form': form} %}
+	</div>
 {% endblock %}

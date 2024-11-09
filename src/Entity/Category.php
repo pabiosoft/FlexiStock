@@ -2,26 +2,29 @@
 
 namespace App\Entity;
 
+use App\Entity\Trait\SlugTrait;
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 #[ORM\Entity]
+#[ORM\HasLifecycleCallbacks]
 class Category
 {
-    
+    use SlugTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(type: "string", length: 100)]
+    #[ORM\Column(type: 'string', length: 100)]
     private ?string $name = null;
 
-    #[ORM\Column(type: "text", nullable: true)]
+    #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
-    #[ORM\OneToMany(mappedBy: "category", targetEntity: Equipment::class)]
+    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Equipment::class)]
     private Collection $equipmentItems;
 
     public function __construct()
@@ -61,5 +64,14 @@ class Category
     public function getEquipmentItems(): Collection
     {
         return $this->equipmentItems;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateSlug(): void
+    {
+        if (!$this->slug) {
+            $this->initializeSlug($this->getName());
+        }
     }
 }

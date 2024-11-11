@@ -18,7 +18,7 @@ class Images
 
     #[ORM\ManyToOne(inversedBy: 'images', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Equipment $Equipment = null;
+    private ?Equipment $equipment = null; // Changement ici de $Equipment à $equipment
 
     public function getId(): ?int
     {
@@ -38,13 +38,12 @@ class Images
 
     public function getEquipment(): ?Equipment
     {
-        return $this->Equipment;
+        return $this->equipment; // Changement ici de $Equipment à $equipment
     }
 
-    public function setEquipment(?Equipment $Equipment): static
+    public function setEquipment(?Equipment $equipment): static
     {
-        $this->Equipment = $Equipment;
+        $this->equipment = $equipment; // Changement ici de $Equipment à $equipment
         return $this;
     }
-    
 }

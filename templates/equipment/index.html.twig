@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}equipment Index
+{% endblock %}
+
+{% block body %}
+	{# {% include 'partials/_flashBag.html.twig' %} #}
+	<h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">equipment Index</h1>
+	<table>
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Name</th>
+				<th>brand</th>
+				<th>price</th>
+				<th>sale Price</th>
+				<th>quantity</th>
+				<th>category</th>
+				<th>status</th>
+
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for equipment in equipments %}
+				<tr>
+					<td>{{ equipment.id }}</td>
+					<td>{{ equipment.name }}</td>
+					<td>{{ equipment.brand }}</td>
+					<td>{{ equipment.price }}</td>
+					<td>{{ equipment.salePrice }}</td>
+					<td>{{ equipment.quantity }}</td>
+					<td>{{ equipment.category }}</td>
+					<td>{{ equipment.status }}</td>
+					{# <td>{{ equipment.location }}</td> #}
+					{# <td>{{ equipment.created_at|date('Y-m-d') }}</td> #}
+					{# <td>{{ equipment.updated_at|date('Y-m-d') }}</td> #}
+
+
+						<td>
+						<a href="{{ path('equipment_show', {'id': equipment.id}) }}">show</a>
+							<a href="{{ path('equipment_edit', {'id': equipment.id}) }}"> edit</a>
+						<form method="post" action="{{ path('equipment_delete', {'id': equipment.id}) }}" style="display:inline-block;">
+							<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipment.id) }}">
+							<button type="submit">delete</button>
+						</form>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<a href="{{ path('equipment_new') }}">Create new</a>
+{% endblock %}

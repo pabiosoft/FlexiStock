@@ -1,19 +1,23 @@
 <?php
 
-// src/Entity/Equipment.php
-
 namespace App\Entity;
 
-use App\Enum\EquipmentStatus;
+use App\Entity\User;
+use App\Entity\Images;
+use App\Entity\Category;
 use App\Entity\Trait\SlugTrait;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\EquipmentRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: EquipmentRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Equipment
 {
     use SlugTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -46,8 +50,29 @@ class Equipment
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
     private int $minThreshold;
 
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?float $price;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?float $salePrice;
+
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
+
+    #[ORM\ManyToOne(targetEntity: Category::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private Category $category;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    private ?User $assignedUser;
+
+    #[ORM\OneToMany(mappedBy: 'equipment', targetEntity: Images::class, cascade: ['persist'], orphanRemoval: true)]
+    private Collection $images;
+
+    public function __construct()
+    {
+        $this->images = new ArrayCollection();
+    }
 
     // Getters and Setters
 
@@ -64,7 +89,6 @@ class Equipment
     public function setName(string $name): self
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -76,7 +100,6 @@ class Equipment
     public function setBrand(?string $brand): self
     {
         $this->brand = $brand;
-
         return $this;
     }
 
@@ -88,7 +111,6 @@ class Equipment
     public function setModel(?string $model): self
     {
         $this->model = $model;
-
         return $this;
     }
 
@@ -100,7 +122,6 @@ class Equipment
     public function setSerialNumber(string $serialNumber): self
     {
         $this->serialNumber = $serialNumber;
-
         return $this;
     }
 
@@ -112,7 +133,6 @@ class Equipment
     public function setPurchaseDate(?\DateTimeInterface $purchaseDate): self
     {
         $this->purchaseDate = $purchaseDate;
-
         return $this;
     }
 
@@ -124,7 +144,6 @@ class Equipment
     public function setWarrantyDate(?\DateTimeInterface $warrantyDate): self
     {
         $this->warrantyDate = $warrantyDate;
-
         return $this;
     }
 
@@ -136,7 +155,6 @@ class Equipment
     public function setStatus(string $status): self
     {
         $this->status = $status;
-
         return $this;
     }
 
@@ -148,7 +166,6 @@ class Equipment
     public function setQuantity(int $quantity): self
     {
         $this->quantity = $quantity;
-
         return $this;
     }
 
@@ -160,7 +177,28 @@ class Equipment
     public function setMinThreshold(int $minThreshold): self
     {
         $this->minThreshold = $minThreshold;
+        return $this;
+    }
 
+    public function getPrice(): ?float
+    {
+        return $this->price;
+    }
+
+    public function setPrice(?float $price): self
+    {
+        $this->price = $price;
+        return $this;
+    }
+
+    public function getSalePrice(): ?float
+    {
+        return $this->salePrice;
+    }
+
+    public function setSalePrice(?float $salePrice): self
+    {
+        $this->salePrice = $salePrice;
         return $this;
     }
 
@@ -172,10 +210,61 @@ class Equipment
     public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function getCategory(): Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(Category $category): self
+    {
+        $this->category = $category;
+        return $this;
+    }
+
+    public function getAssignedUser(): ?User
+    {
+        return $this->assignedUser;
+    }
+
+    public function setAssignedUser(?User $assignedUser): self
+    {
+        $this->assignedUser = $assignedUser;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Images>
+     */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(Images $image): self
+    {
+        if (!$this->images->contains($image)) {
+            $this->images[] = $image;
+            $image->setEquipment($this);
+        }
 
         return $this;
     }
-    #[ORM\PrePersist] 
+
+    public function removeImage(Images $image): self
+    {
+        if ($this->images->removeElement($image)) {
+            if ($image->getEquipment() === $this) {
+                $image->setEquipment(null);
+            }
+        }
+
+        return $this;
+    }
+
+    #[ORM\PrePersist]
     #[ORM\PreUpdate]
     public function updateSlug(): void
     {

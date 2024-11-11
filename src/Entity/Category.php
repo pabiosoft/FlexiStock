@@ -6,6 +6,7 @@ use App\Entity\Trait\SlugTrait;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\HasLifecycleCallbacks]
@@ -19,6 +20,7 @@ class Category
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 100)]
+    #[Assert\NotBlank(message: 'Le nom du produit ne peut pas être vide')]
     private ?string $name = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
@@ -31,8 +33,6 @@ class Category
     {
         $this->equipmentItems = new ArrayCollection();
     }
-
-    // Getters and Setters
 
     public function getId(): ?int
     {
@@ -73,5 +73,10 @@ class Category
         if (!$this->slug) {
             $this->initializeSlug($this->getName());
         }
+    }
+
+    public function __toString()
+    {
+        return $this->name;
     }
 }

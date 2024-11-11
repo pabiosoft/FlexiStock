@@ -5,9 +5,13 @@ namespace App\Entity;
 use App\Enum\UserRole;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -15,7 +19,7 @@ class User
     private int $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private UserRole $role;  // Directly use PHP 8.1 enum
+    private string $role;
 
     #[ORM\Column(type: 'string', length: 100)]
     private string $name;
@@ -29,6 +33,12 @@ class User
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+    public function __construct()
+    {
+        $this->role = UserRole::USER->value; // Définit le rôle par défaut en tant que chaîne de caractères
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
     // Getters and Setters
 
     public function getId(): int
@@ -38,13 +48,13 @@ class User
 
     public function getRole(): UserRole
     {
-        return $this->role;
+        return UserRole::from($this->role); 
+        // Convertit la chaîne en énumération UserRole
     }
 
     public function setRole(UserRole $role): self
     {
-        $this->role = $role;
-
+        $this->role = $role->value; // Enregistre la valeur de l'énumération en tant que chaîne
         return $this;
     }
 
@@ -56,7 +66,6 @@ class User
     public function setName(string $name): self
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -68,11 +77,10 @@ class User
     public function setEmail(string $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
@@ -80,7 +88,6 @@ class User
     public function setPassword(string $password): self
     {
         $this->password = $password;
-
         return $this;
     }
 
@@ -92,7 +99,27 @@ class User
     public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
-
         return $this;
+    }
+
+    // Implementing methods from UserInterface
+
+    public function getRoles(): array
+    {
+        return [$this->role]; // Retourne directement la chaîne de caractères
+    }
+
+    public function getSalt(): ?string
+    {
+        return null;
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
     }
 }

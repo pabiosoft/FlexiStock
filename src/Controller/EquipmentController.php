@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Images;
+use App\Entity\Category;
 use App\Entity\Equipment;
 use App\Form\EquipmentType;
 use App\Service\PictureService;
@@ -18,15 +19,20 @@ class EquipmentController extends AbstractController
     #[Route('/', name: 'equipment_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $equipments = $entityManager->getRepository(Equipment::class)->findAll();
+        $categories = $entityManager->getRepository(Category::class)->findAll();
+
         return $this->render('equipment/index.html.twig', [
             'equipments' => $equipments,
+            'categories' => $categories,
         ]);
     }
 
     #[Route('/new', name: 'equipment_new', methods: ['GET', 'POST'])]
     public function add(Request $request, EntityManagerInterface $entityManager, PictureService $pictureService): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $equipment = new Equipment();
         $form = $this->createForm(EquipmentType::class, $equipment);
         $form->handleRequest($request);
@@ -48,7 +54,6 @@ class EquipmentController extends AbstractController
                 return $this->redirectToRoute('equipment_index');
             } else {
                 $this->addFlash('error', 'Cet équipement existe déjà.');
-                return $this->redirectToRoute('equipment_index');
             }
         }
 
@@ -60,12 +65,13 @@ class EquipmentController extends AbstractController
     #[Route('/edit/{id}', name: 'equipment_edit', methods: ['GET', 'POST'])]
     public function edit(Equipment $equipment, Request $request, EntityManagerInterface $entityManager, PictureService $pictureService): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $form = $this->createForm(EquipmentType::class, $equipment);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $token = $request->request->get('_token');
-            if (!$this->isCsrfTokenValid('edit_equipment_' . $equipment->getId(), $token)) {
+            $token = $request->request->get('_token', '');
+            if (!$this->isCsrfTokenValid('equipment_edit_' . $equipment->getId(), $token)) {
                 throw $this->createAccessDeniedException('CSRF token is invalid.');
             }
 
@@ -80,7 +86,6 @@ class EquipmentController extends AbstractController
                 return $this->redirectToRoute('equipment_index');
             } else {
                 $this->addFlash('error', 'Cet équipement existe déjà.');
-                return $this->redirectToRoute('equipment_index');
             }
         }
 
@@ -89,20 +94,13 @@ class EquipmentController extends AbstractController
             'equipment' => $equipment,
         ]);
     }
-    //show equipment
-    #[Route('/show/{id}', name: 'equipment_show', methods: ['GET'])]
-    public function show(Equipment $equipment): Response
-    {
-        
-        return $this->render('equipment/show.html.twig', [
-            'equipment' => $equipment,
-        ]);
-    }
+
     #[Route('/delete/{id}', name: 'equipment_delete', methods: ['POST'])]
     public function delete(Request $request, Equipment $equipment, EntityManagerInterface $entityManager, PictureService $pictureService): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $token = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('delete_equipment_' . $equipment->getId(), $token)) {
+        if (!$this->isCsrfTokenValid('equipment_delete_' . $equipment->getId(), $token)) {
             throw $this->createAccessDeniedException('CSRF token is invalid.');
         }
 
@@ -118,24 +116,52 @@ class EquipmentController extends AbstractController
         return $this->redirectToRoute('equipment_index');
     }
 
+    #[Route('/show/{id}', name: 'equipment_show', methods: ['GET'])]
+    public function show(Equipment $equipment): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        return $this->render('equipment/show.html.twig', [
+            'equipment' => $equipment,
+        ]);
+    }
+    // filtrage AND SEARCH
+
+    #[Route('/search', name: 'equipment_search', methods: ['GET'])]
+    public function search(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $categories = $entityManager->getRepository(Category::class)->findAll();
+
+        $criteria = [
+            'name' => $request->query->get('name'),
+            'brand' => $request->query->get('brand'),
+            'status' => $request->query->get('status'),
+            'category' => $request->query->get('category'),
+        ];
+
+        $equipments = $entityManager->getRepository(Equipment::class)->searchEquipments($criteria);
+
+        return $this->render('equipment/index.html.twig', [
+            'equipments' => $equipments,
+            'categories' => $categories,
+        ]);
+    }
+
+    // GESTION DES IMAGES
     private function handleImages(?array $images, Equipment $equipment, EntityManagerInterface $entityManager, PictureService $pictureService): void
     {
-        if ($images) {
-            foreach ($images as $image) {
-                try {
-                    $fileName = $pictureService->add($image, 'equipments', 300, 300);
-                    if ($fileName) {
-                        $img = new Images();
-                        $img->setName($fileName);
-                        $equipment->addImage($img);
-                        $entityManager->persist($img);
-                    }
-                } catch (\Exception $e) {
-                    $this->addFlash('error', 'Erreur lors de l\'ajout de l\'image : ' . $e->getMessage());
+        foreach ($images as $image) {
+            try {
+                $fileName = $pictureService->add($image, 'equipments', 300, 300);
+                if ($fileName) {
+                    $img = new Images();
+                    $img->setName($fileName);
+                    $equipment->addImage($img);
+                    $entityManager->persist($img);
                 }
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur lors de l\'ajout de l\'image : ' . $e->getMessage());
             }
-        } else {
-            $this->addFlash('info', 'Aucune image ajoutée.');
         }
     }
 

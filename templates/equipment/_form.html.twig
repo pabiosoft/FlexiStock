@@ -1,13 +1,13 @@
 {{ form_start(equipmentForm) }}
-    {{ form_widget(equipmentForm) }}
+{{ form_widget(equipmentForm) }}
 
-    {# Génère un token CSRF spécifique à l'action #}
-    {% if equipment is defined and equipment.id is not null %}
-        <input type="hidden" name="_token" value="{{ csrf_token('edit_equipment_' ~ equipment.id) }}">
-        <button type="submit" class="p-4 text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">MODIFIER</button>
-    {% else %}
-        <input type="hidden" name="_token" value="{{ csrf_token('new_equipment') }}">
-        <button type="submit" class="p-4text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Ajouter</button>
-    {% endif %}
+{# Génère un token CSRF spécifique à l'action #}
+{% if equipment is defined and equipment.id is not null %}
+	<input type="hidden" name="_token" value="{{ csrf_token('edit_equipment_' ~ equipment.id) }}">
+	<button type="submit" class="p-4 text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">MODIFIER</button>
+{% else %}
+	<input type="hidden" name="_token" value="{{ csrf_token('new_equipment') }}">
+	<button type="submit" class="p-4text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Ajouter</button>
+{% endif %}
 
 {{ form_end(equipmentForm) }}

@@ -59,7 +59,7 @@ class Equipment
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
-    #[ORM\ManyToOne(targetEntity: Category::class)]
+    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'equipmentItems')]
     #[ORM\JoinColumn(nullable: false)]
     private Category $category;
 

@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create New Category
+{% endblock %}
+
+{% block body %}
+<div class="max-w-sm mx-auto">
+	<h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">Create New Category</h1>
+	{# {% include "_partials/_flush.html.twig" %} #}
+
+	{% include 'equipment/_form.html.twig'%}
+
+	<a href="{{ path('equipment_index') }}">Back to list</a>
+</div>
+{% endblock %}

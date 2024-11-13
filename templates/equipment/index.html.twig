@@ -1,93 +1,144 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Equipment Index
+{% block title %}Equipment List
 {% endblock %}
 
 {% block body %}
-	{# <h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">Equipment Index</h1>
-	<table>
-		<thead>
-			<tr>
-				<th>image</th>
-				<th>ID</th>
-				<th>Name</th>
-				<th>Brand</th>
-				<th>Price</th>
-				<th>Sale Price</th>
-				<th>Quantity</th>
-				<th>Category</th>
-				<th>Status</th>
+	{% include '_partials/_adminav.html.twig' %}
+	<main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5">
+		<div class="px-4 sm:px-6 lg:px-8">
+			<div class="sm:flex sm:items-center">
+				<div class="sm:flex-auto my-6">
+					<h1 class="text-3xl font-semibold text-gray-900 ">Equipment list</h1>
+					{# <p class="mt-2 text-sm text-gray-700">A list of all the equipment  including their name, title, email and role.</p> #}
+				</div>
+				<div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+					<button type="button" onclick="window.location.href = '{{ path('equipment_new') }}'" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">Add Equipment</button>
+				</div>
+			</div>
+
+			<form method="get" action="{{ path('equipment_search') }}">
+
+				<div class="flex w-full ">
+					<input type="text" name="name" placeholder="Nom de l'équipement" value="{{ app.request.query.get('name') }}" class="mt-1  block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+					<input type="text" name="brand" placeholder="Marque" value="{{ app.request.query.get('brand') }}" class="mt-1 mx-3 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
 
 
-				<th>Actions</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for equipment in equipments %}
-				<tr>
-					<td>
-						{% if equipment.images|length > 0 %}
-							<img src="{{ asset('uploads/equipments/mini/300x300-' ~ equipment.images[0].name) }}" alt="{{ equipment.name }} - {{ equipment.images[0].name }}" style="max-width: 50px; max-height: 50px">
-						{% else %}
-							<img src="{{ asset('uploads/equipments/mini/default-image.jpg') }}" alt="Image par défaut pour " style="max-width: 100px; max-height: 100px">
-						{% endif %}
-					</td>
-					<td>{{ equipment.id }}</td>
-					<td>{{ equipment.name }}</td>
-					<td>{{ equipment.brand }}</td>
-					<td>{{ equipment.price }}</td>
-					<td>{{ equipment.salePrice }}</td>
-					<td>{{ equipment.quantity }}</td>
-					<td>{{ equipment.category }}</td>
-					<td>{{ equipment.status }}</td>
-					<td>{{ equipment.status }}</td>
+					<select name="status" type="select" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+						<option value="">Tous les statuts</option>
+						<option value="active" {% if app.request.query.get('status') == 'active' %} selected {% endif %}>Actif</option>
+						<option value="expired" {% if app.request.query.get('status') == 'expired' %} selected {% endif %}>Expiré</option>
+						<option value="obsolete" {% if app.request.query.get('status') == 'obsolete' %} selected {% endif %}>Obsolète</option>
+					</select>
+				</div>
+				<div class="flex w-full ">
+					<select name="category" class="mt-1 mr-6 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+						<option value="">Toutes les catégories</option>
+						{% for category in categories %}
+							<option value="{{ category.id }}" {% if app.request.query.get('category') == category.id %} selected {% endif %}>
+								{{ category.name }}
+							</option>
+						{% endfor %}
+					</select>
 
-					<td>
-						<a href="{{ path('equipment_show', {'id': equipment.id}) }}">Show</a>
-						<a href="{{ path('equipment_edit', {'id': equipment.id}) }}">Edit</a>
-						<form method="post" action="{{ path('equipment_delete', {'id': equipment.id}) }}" style="display:inline-block;">
-							<input type="hidden" name="_token" value="{{ csrf_token('equipment_delete_' ~ equipment.id) }}">
-							<button type="submit">Delete</button>
-						</form>
-					</td>
-				</tr>
+					<button type="submit" class="mt-1 bg-blue-600 text-white px-4 py-2 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none">Rechercher</button>
 
+				</div>
+			</form>
 
-			{% endfor %}
-		</tbody>
-	</table>
-	<a href="{{ path('equipment_new') }}">Create New</a>
+			<div class="mt-8 flex flex-col">
+				<div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+					<div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+						<div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+							<table class="min-w-full divide-y divide-gray-300" aria-label="List of Equipment">
+								<thead class="bg-gray-50">
+									<tr>
+										<th scope="row" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Image</th>
+										<th scope="row" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">ID</th>
+										<th scope="row" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">status</th>
+										<th scope="row" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
+										<th scope="row" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
+										<th scope="row" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Quantity</th>
+										<th scope="row" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+											<span class="sr-only">Edit</span>
+										</th>
+									</tr>
+								</thead>
+								<tbody class="divide-y divide-gray-200 bg-white">
+									{% for equipment in equipments %}
+										<tr>
+											<td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+												<div class="flex items-center">
+													<div class="h-10 w-10 flex-shrink-0">
+														{% if equipment.images|length > 0 %}
+															<img src="{{ asset('uploads/equipments/mini/300x300-' ~ equipment.images[0].name) }}" alt="{{ equipment.name }} - {{ equipment.images[0].name }}" class="h-10 w-10 rounded-full" loading="lazy">
+														{% else %}
+															<img src="{{ asset('uploads/equipments/mini/default-image.jpg') }}" alt="Image par défaut pour " style="max-width: 100px; max-height: 100px">
+														{% endif %}
 
-	<form method="get" action="{{ path('equipment_search') }}">
-		<input type="text" name="name" placeholder="Nom de l'équipement" value="{{ app.request.query.get('name') }}">
-		<input type="text" name="brand" placeholder="Marque" value="{{ app.request.query.get('brand') }}">
+													</div>
+													<div class="ml-4">
+														<div class="font-medium text-gray-900">{{ equipment.name }}</div>
+														<div class="text-gray-500">{{ equipment.brand }}</div>
+													</div>
 
-		<select name="status">
-			<option value="">Tous les statuts</option>
-			<option value="active" {% if app.request.query.get('status') == 'active' %} selected {% endif %}>Actif</option>
-			<option value="expired" {% if app.request.query.get('status') == 'expired' %} selected {% endif %}>Expiré</option>
-			<option value="obsolete" {% if app.request.query.get('status') == 'obsolete' %} selected {% endif %}>Obsolète</option>
-		</select>
+												</div>
+											</td>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+												<div class="text-gray-900">{{ equipment.id }}</div>
+												{# <div class="text-gray-500">{{ equipment.price }} GNF</div> #}
+											</td>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+												<div class="text-gray-900">Model
+													{{ equipment.model }}</div>
+												<div class="text-gray-500">SN:
+													{{ equipment.serialNumber }}</div>
+											</td>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+												<div class="text-gray-900">
+													Buy:
+													{{ equipment.purchaseDate|date('d-m-Y') }}</div>
 
-		<select name="category">
-			<option value="">Toutes les catégories</option>
-			{% for category in categories %}
-				<option value="{{ category.id }}" {% if app.request.query.get('category') == category.id %} selected {% endif %}>
-					{{ category.name }}
-				</option>
-			{% endfor %}
-		</select>
+												<div class="text-gray-500">warrenty:
+													{{ equipment.warrantyDate|date('d-m-Y') }}</div>
+											</td>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+												<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5
+																																																								        {% if equipment.status == 'active' %}
+																																																								            bg-green-100 text-green-800
+																																																								        {% elseif equipment.status == 'expired' %}
+																																																								            bg-yellow-100 text-yellow-800
+																																																								        {% else %}
+																																																								            bg-red-100 text-red-800
+																																																								        {% endif %}">
+													{{ equipment.status }}
+												</span>
+											</td>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{equipment.quantity}}</td>
+											<td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 flex space-x-2">
+												<a href="{{ path('equipment_show', {'id': equipment.id}) }}">
+													<i class="fa-solid fa-eye text-blue-900 text-3xl"></i>
+												</a>
+												<a href="{{ path('equipment_edit', {'id': equipment.id}) }}">
+													<i class="fa-solid fa-pen-to-square text-blue-900 text-3xl"></i>
+												</a>
+												<form method="post" action="{{ path('equipment_delete', {'id': equipment.id}) }}" style="display:inline;">
+													<input type="hidden" name="_token" value="{{ csrf_token('equipment_delete_' ~ equipment.id) }}">
+													<button type="submit">
+														<i class="fa-solid fa-trash text-red-600 text-3xl"></i>
+													</button>
+												</form>
+											</td>
+										</tr>
 
-		<button type="submit">Rechercher</button>
-	</form> #}
-
-            {% include "_partials/_adminav.html.twig" %}
-
-
-
-
-
-
-
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
 
 {% endblock %}

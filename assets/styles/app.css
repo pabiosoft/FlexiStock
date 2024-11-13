@@ -2,16 +2,3 @@
 @tailwind components;
 @tailwind utilities;
 
-input, textarea, select {
-    @apply border border-form-border bg-form-background text-gray-900 
-           rounded-form p-2 w-full focus:outline-none 
-           focus:ring-2 focus:ring-form-focus focus:border-transparent;
-  }
-
-body {
-    @apply bg-gray-200;
-}
-
-input[type="checkbox"] {
-    @apply w-4 h-4;
-}

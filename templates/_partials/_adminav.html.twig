@@ -1,527 +1,458 @@
 
-{% extends 'base.html.twig' %}
+	<body class="w-full h-auto lg:h-screen bg-sitebg">
+		<div
+			class="antialiased">
+			<!-- Navbar -->
+			<nav class="bg-white shadow-sm px-4 py-3 fixed left-0 right-0 top-0 z-50">
+				<div class="flex flex-wrap justify-between items-center">
+					<div class="flex justify-start items-center">
+						<button data-drawer-target="drawer-navigation" data-drawer-toggle="drawer-navigation" aria-controls="drawer-navigation" class="p-2 mr-2 text-acent1 rounded-lg cursor-pointer lg:hidden hover:bg-bgLight focus:bg-bgLight focus:ring-2 focus:ring-acent1">
+							<svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+								<path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+							</svg>
+							<span class="sr-only">Toggle sidebar</span>
+						</button>
 
-{% block title %}Admin Add Article
-{% endblock %}
+						<!-- Logo -->
+						<a
+							href="/" class="flex items-center justify-between mr-4">
+							{# <img src="../assets/images/logo.png" class="mr-3 h-8 hidden md:inline" alt="Logo" /> #}
+							<span class="self-center text-2xl font-semibold whitespace-nowrap">SOFIXPLUS</span>
+							<!-- Institute Short Name-->
+						</a>
 
-{% block body %}
-  
-  <container>
-    <div
-      class="flex h-screen bg-gray-50 dark:bg-gray-900"
-      :class="{ 'overflow-hidden': isSideMenuOpen }"
-    >
-      <!-- Desktop sidebar -->
-      <aside
-        class="z-20 hidden w-64 overflow-y-auto bg-white dark:bg-gray-800 md:block flex-shrink-0"
-      >
-        <div class="py-4 text-gray-500 dark:text-gray-400">
-          <a
-            class="ml-6 text-lg font-bold text-gray-800 dark:text-gray-200"
-            href="#"
-          >
-            Windmill
-          </a>
-          <ul class="mt-6">
-            <li class="relative px-6 py-3">
-              <span
-                class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg"
-                aria-hidden="true"
-              ></span>
-              <a
-                class="inline-flex items-center w-full text-sm font-semibold text-gray-800 transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-100"
-                href="index.html"
-              >
-                <svg
-                  class="w-5 h-5"
-                  aria-hidden="true"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                  ></path>
-                </svg>
-                <span class="ml-4">Dashboard</span>
-              </a>
-            </li>
-          </ul>
-          <ul>
-            <li class="relative px-6 py-3">
-              <a
-                class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
-                href="forms.html"
-              >
-                <svg
-                  class="w-5 h-5"
-                  aria-hidden="true"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                  ></path>
-                </svg>
-                <span class="ml-4">Forms</span>
-              </a>
-            </li>
-            <li class="relative px-6 py-3">
-              <a
-                class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
-                href="cards.html"
-              >
-                <svg
-                  class="w-5 h-5"
-                  aria-hidden="true"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  ></path>
-                </svg>
-                <span class="ml-4">Cards</span>
-              </a>
-            </li>
-            <li class="relative px-6 py-3">
-              <a
-                class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
-                href="charts.html"
-              >
-                <svg
-                  class="w-5 h-5"
-                  aria-hidden="true"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
-                  ></path>
-                  <path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
-                </svg>
-                <span class="ml-4">Charts</span>
-              </a>
-            </li>
-        </div>
-      </aside>
-      <!-- Mobile sidebar -->
-      <!-- Backdrop -->
-      <div
-        x-show="isSideMenuOpen"
-        x-transition:enter="transition ease-in-out duration-150"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in-out duration-150"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-        class="fixed inset-0 z-10 flex items-end bg-black bg-opacity-50 sm:items-center sm:justify-center"
-      ></div>
-      <aside
-        class="fixed inset-y-0 z-20 flex-shrink-0 w-64 mt-16 overflow-y-auto bg-white dark:bg-gray-800 md:hidden"
-        x-show="isSideMenuOpen"
-        x-transition:enter="transition ease-in-out duration-150"
-        x-transition:enter-start="opacity-0 transform -translate-x-20"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in-out duration-150"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0 transform -translate-x-20"
-        @click.away="closeSideMenu"
-        @keydown.escape="closeSideMenu"
-      >
-        <div class="py-4 text-gray-500 dark:text-gray-400">
-          <a
-            class="ml-6 text-lg font-bold text-gray-800 dark:text-gray-200"
-            href="#"
-          >
-            Windmill
-          </a>
-          <ul class="mt-6">
-            <li class="relative px-6 py-3">
-              <span
-                class="absolute inset-y-0 left-0 w-1 bg-purple-600 rounded-tr-lg rounded-br-lg"
-                aria-hidden="true"
-              ></span>
-              <a
-                class="inline-flex items-center w-full text-sm font-semibold text-gray-800 transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-100"
-                href="index.html"
-              >
-                <svg
-                  class="w-5 h-5"
-                  aria-hidden="true"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                  ></path>
-                </svg>
-                <span class="ml-4">Dashboard</span>
-              </a>
-            </li>
-          </ul>
-          <ul>
-            <li class="relative px-6 py-3">
-              <a
-                class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
-                href="forms.html"
-              >
-                <svg
-                  class="w-5 h-5"
-                  aria-hidden="true"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                  ></path>
-                </svg>
-                <span class="ml-4">Forms</span>
-              </a>
-            </li>
-            <li class="relative px-6 py-3">
-              <a
-                class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
-                href="cards.html"
-              >
-                <svg
-                  class="w-5 h-5"
-                  aria-hidden="true"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  ></path>
-                </svg>
-                <span class="ml-4">Cards</span>
-              </a>
-            </li>
-            <li class="relative px-6 py-3">
-              <a
-                class="inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-gray-800 dark:hover:text-gray-200"
-                href="charts.html"
-              >
-                <svg
-                  class="w-5 h-5"
-                  aria-hidden="true"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
-                  ></path>
-                  <path d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
-                </svg>
-                <span class="ml-4">Charts</span>
-              </a>
-            </li>
- 
+						<!-- Tab Name -->
+						<h4 class="hidden lg:block text-base lg:text-2xl font-medium text-primary ml-5">Dashboard</h4>
+					</div>
 
-          </ul>
-          <div class="px-6 my-6">
-            <button
-              class="flex items-center justify-between px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
-            >
-              Create account
-              <span class="ml-2" aria-hidden="true">+</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-      <div class="flex flex-col flex-1 w-full">
-        <header class="z-10 py-4 bg-white shadow-md dark:bg-gray-800">
-          <div
-            class="container flex items-center justify-between h-full px-6 mx-auto text-purple-600 dark:text-purple-300"
-          >
-            <!-- Mobile hamburger -->
-            <button
-              class="p-1 mr-5 -ml-1 rounded-md md:hidden focus:outline-none focus:shadow-outline-purple"
-              @click="toggleSideMenu"
-              aria-label="Menu"
-            >
-              <svg
-                class="w-6 h-6"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </button>
-            <!-- Search input -->
-            <div class="flex justify-center flex-1 lg:mr-32">
-              <div
-                class="relative w-full max-w-xl mr-6 focus-within:text-purple-500"
-              >
-                <div class="absolute inset-y-0 flex items-center pl-2">
-                  <svg
-                    class="w-4 h-4"
-                    aria-hidden="true"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                </div>
-                <input
-                  class="w-full pl-8 pr-2 text-sm text-gray-700 placeholder-gray-600 bg-gray-100 border-0 rounded-md dark:placeholder-gray-500 dark:focus:shadow-outline-gray dark:focus:placeholder-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:placeholder-gray-500 focus:bg-white focus:border-purple-300 focus:outline-none focus:shadow-outline-purple form-input"
-                  type="text"
-                  placeholder="Search for projects"
-                  aria-label="Search"
-                />
-              </div>
-            </div>
-            <ul class="flex items-center flex-shrink-0 space-x-6">
-              <!-- Theme toggler -->
-              <li class="flex">
-                <button
-                  class="rounded-md focus:outline-none focus:shadow-outline-purple"
-                  @click="toggleTheme"
-                  aria-label="Toggle color mode"
-                >
-                  <template x-if="!dark">
-                    <svg
-                      class="w-5 h-5"
-                      aria-hidden="true"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"
-                      ></path>
-                    </svg>
-                  </template>
-                  <template x-if="dark">
-                    <svg
-                      class="w-5 h-5"
-                      aria-hidden="true"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                        clip-rule="evenodd"
-                      ></path>
-                    </svg>
-                  </template>
-                </button>
-              </li>
-              <!-- Notifications menu -->
-              <li class="relative">
-                <button
-                  class="relative align-middle rounded-md focus:outline-none focus:shadow-outline-purple"
-                  @click="toggleNotificationsMenu"
-                  @keydown.escape="closeNotificationsMenu"
-                  aria-label="Notifications"
-                  aria-haspopup="true"
-                >
-                  <svg
-                    class="w-5 h-5"
-                    aria-hidden="true"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"
-                    ></path>
-                  </svg>
-                  <!-- Notification badge -->
-                  <span
-                    aria-hidden="true"
-                    class="absolute top-0 right-0 inline-block w-3 h-3 transform translate-x-1 -translate-y-1 bg-red-600 border-2 border-white rounded-full dark:border-gray-800"
-                  ></span>
-                </button>
-                <template x-if="isNotificationsMenuOpen">
-                  <ul
-                    x-transition:leave="transition ease-in duration-150"
-                    x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-0"
-                    @click.away="closeNotificationsMenu"
-                    @keydown.escape="closeNotificationsMenu"
-                    class="absolute right-0 w-56 p-2 mt-2 space-y-2 text-gray-600 bg-white border border-gray-100 rounded-md shadow-md dark:text-gray-300 dark:border-gray-700 dark:bg-gray-700"
-                  >
-                    <li class="flex">
-                      <a
-                        class="inline-flex items-center justify-between w-full px-2 py-1 text-sm font-semibold transition-colors duration-150 rounded-md hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                        href="#"
-                      >
-                        <span>Messages</span>
-                        <span
-                          class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-600 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-600"
-                        >
-                          13
-                        </span>
-                      </a>
-                    </li>
-                    <li class="flex">
-                      <a
-                        class="inline-flex items-center justify-between w-full px-2 py-1 text-sm font-semibold transition-colors duration-150 rounded-md hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                        href="#"
-                      >
-                        <span>Sales</span>
-                        <span
-                          class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-600 bg-red-100 rounded-full dark:text-red-100 dark:bg-red-600"
-                        >
-                          2
-                        </span>
-                      </a>
-                    </li>
-                    <li class="flex">
-                      <a
-                        class="inline-flex items-center justify-between w-full px-2 py-1 text-sm font-semibold transition-colors duration-150 rounded-md hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                        href="#"
-                      >
-                        <span>Alerts</span>
-                      </a>
-                    </li>
-                  </ul>
-                </template>
-              </li>
-              <!-- Profile menu -->
-              <li class="relative">
-                <button
-                  class="align-middle rounded-full focus:shadow-outline-purple focus:outline-none"
-                  @click="toggleProfileMenu"
-                  @keydown.escape="closeProfileMenu"
-                  aria-label="Account"
-                  aria-haspopup="true"
-                >
-                  <img
-                    class="object-cover w-8 h-8 rounded-full"
-                    src="https://images.unsplash.com/photo-1502378735452-bc7d86632805?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=aa3a807e1bbdfd4364d1f449eaa96d82"
-                    alt=""
-                    aria-hidden="true"
-                  />
-                </button>
-                <template x-if="isProfileMenuOpen">
-                  <ul
-                    x-transition:leave="transition ease-in duration-150"
-                    x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-0"
-                    @click.away="closeProfileMenu"
-                    @keydown.escape="closeProfileMenu"
-                    class="absolute right-0 w-56 p-2 mt-2 space-y-2 text-gray-600 bg-white border border-gray-100 rounded-md shadow-md dark:border-gray-700 dark:text-gray-300 dark:bg-gray-700"
-                    aria-label="submenu"
-                  >
-                    <li class="flex">
-                      <a
-                        class="inline-flex items-center w-full px-2 py-1 text-sm font-semibold transition-colors duration-150 rounded-md hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                        href="#"
-                      >
-                        <svg
-                          class="w-4 h-4 mr-3"
-                          aria-hidden="true"
-                          fill="none"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          ></path>
-                        </svg>
-                        <span>Profile</span>
-                      </a>
-                    </li>
-                    <li class="flex">
-                      <a
-                        class="inline-flex items-center w-full px-2 py-1 text-sm font-semibold transition-colors duration-150 rounded-md hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                        href="#"
-                      >
-                        <svg
-                          class="w-4 h-4 mr-3"
-                          aria-hidden="true"
-                          fill="none"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                          ></path>
-                          <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        <span>Settings</span>
-                      </a>
-                    </li>
-                    <li class="flex">
-                      <a
-                        class="inline-flex items-center w-full px-2 py-1 text-sm font-semibold transition-colors duration-150 rounded-md hover:bg-gray-100 hover:text-gray-800 dark:hover:bg-gray-800 dark:hover:text-gray-200"
-                        href="#"
-                      >
-                        <svg
-                          class="w-4 h-4 mr-3"
-                          aria-hidden="true"
-                          fill="none"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                          ></path>
-                        </svg>
-                        <span>Log out</span>
-                      </a>
-                    </li>
-                  </ul>
-                </template>
-              </li>
-            </ul>
-          </div>
-        </header>
-        
-      </div>
-    </div>
+					<!-- Institute Name -->
+					<div class="hidden lg:inline">
+						<h1 class="text-xl md:text-3xl lg:text-5xl font-medium text-primary">Gestion Stock</h1>
+					</div>
 
-  </container>
+					<div
+						class="flex items-center gap-3 lg:order-2">
+						<!-- Notification icon -->
+						<button type="button" data-dropdown-toggle="notification-dropdown" class="flex items-center justify-center relative w-9 h-9 rounded-xl text-acent1 bg-bgLight hover:bg-acent1 hover:text-white focus:bg-acent1 focus:text-white transition-all duration-200">
+							<span class="absolute flex h-5 w-6 -top-2 -right-3">
+								<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-acent1 opacity-75"></span>
+								<span class="relative flex items-center justify-center rounded-full h-6 w-6 bg-acent1 text-[9px] text-white">02</span>
+							</span>
+							<i class="text-lg fa-regular fa-bell"></i>
+						</button>
 
-  {% endblock %}
+						<!-- Notification Dropdown menu -->
+						<div class="hidden overflow-hidden z-50 my-4 max-w-sm text-base list-none bg-white divide-y divide-gray-100 shadow-lg dark:divide-gray-600 dark:bg-gray-700 rounded-xl" id="notification-dropdown">
+							<h4 class="block py-2 px-4 text-base font-medium text-center text-white bg-acent1">Notifications</h4>
+							<div>
+								<a href="#" class="flex py-3 px-4 border-b border-gray-300 hover:bg-bgLight">
+									<div class="flex-shrink-0">
+										<img class="w-11 h-11 rounded-full object-cover" src="../assets/images/teachers/8.png" alt="Rubel Islam"/>
+									</div>
+									<div class="pl-3 w-full">
+										<div class="text-gray-500 font-normal text-sm mb-1.5 dark:text-gray-400">
+											New message from
+											<span class="font-semibold text-gray">Rubel Islam</span>: "Create a new class text for class 10."
+										</div>
+										<div class="text-xs font-medium text-primary">a few moments ago</div>
+									</div>
+								</a>
+								<a href="#" class="flex py-3 px-4 border-b border-gray-300 hover:bg-bgLight">
+									<div class="flex-shrink-0">
+										<img class="w-11 h-11 rounded-full object-cover" src="../assets/images/teachers/8.png" alt="Rubel Islam"/>
+									</div>
+									<div class="pl-3 w-full">
+										<div class="text-gray-500 font-normal text-sm mb-1.5 dark:text-gray-400">
+											New message from
+											<span class="font-semibold text-gray">Rubel Islam</span>: "Create a new class text for class 10."
+										</div>
+										<div class="text-xs font-medium text-primary">a few moments ago</div>
+									</div>
+								</a>
+								<a href="#" class="flex py-3 px-4 border-b border-gray-300 hover:bg-bgLight">
+									<div class="flex-shrink-0">
+										<img class="w-11 h-11 rounded-full object-cover" src="../assets/images/teachers/8.png" alt="Rubel Islam"/>
+									</div>
+									<div class="pl-3 w-full">
+										<div class="text-gray-500 font-normal text-sm mb-1.5 dark:text-gray-400">
+											New message from
+											<span class="font-semibold text-gray">Rubel Islam</span>: "Create a new class text for class 10."
+										</div>
+										<div class="text-xs font-medium text-primary">a few moments ago</div>
+									</div>
+								</a>
+								<a href="#" class="flex py-3 px-4 hover:bg-bgLight">
+									<div class="flex-shrink-0">
+										<img class="w-11 h-11 rounded-full object-cover" src="../assets/images/teachers/8.png" alt="Rubel Islam"/>
+									</div>
+									<div class="pl-3 w-full">
+										<div class="text-gray-500 font-normal text-sm mb-1.5 dark:text-gray-400">
+											New message from
+											<span class="font-semibold text-gray">Rubel Islam</span>: "Create a new class text for class 10."
+										</div>
+										<div class="text-xs font-medium text-primary">a few moments ago</div>
+									</div>
+								</a>
+							</div>
+							<a href="#" class="block py-2 text-md font-medium text-center text-white bg-acent1 hover:bg-secondary">
+								<div class="inline-flex items-center">
+									<i class="fa-solid fa-eye mr-2 text-lg text-white"></i>
+									View all
+								</div>
+							</a>
+						</div>
+						<!-- End of the Notification -->
+
+						<!-- Setting -->
+						<button type="button" data-dropdown-toggle="apps-dropdown" class="flex items-center justify-center relative w-9 h-9 rounded-xl text-acent1 bg-bgLight hover:bg-acent1 hover:text-white focus:bg-acent1 focus:text-white transition-all duration-200">
+							<span class="absolute flex h-5 w-6 -top-2 -right-3">
+								<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-acent1 opacity-75"></span>
+								<span class="relative flex items-center justify-center rounded-full h-6 w-6 bg-acent1 text-[9px] text-white">02</span>
+							</span>
+							<i class="fa-solid fa-gear text-lg"></i>
+						</button>
+
+						<!-- Setting Dropdown menu -->
+						<div class="hidden overflow-hidden z-50 my-4 max-w-sm text-base list-none bg-white divide-y divide-gray-100 shadow-lg dark:bg-gray-700 dark:divide-gray-600 rounded-xl" id="apps-dropdown">
+							<h4 class="block py-2 px-4 text-base font-medium text-center text-white bg-acent1">Setting</h4>
+							<div class="grid grid-cols-3 gap-4 p-4">
+								<a href="#" class="block p-4 text-center rounded-lg hover:bg-bgLight transition-all">
+									<i class="fa-solid fa-graduation-cap text-xl text-acent1"></i>
+									<div class="text-sm text-gray-900">Student</div>
+								</a>
+								<a href="#" class="block p-4 text-center rounded-lg hover:bg-bgLight transition-all">
+									<i class="fa-solid fa-chalkboard-user text-xl text-acent1"></i>
+									<div class="text-sm text-gray-900">Teacher</div>
+								</a>
+								<a href="#" class="block p-4 text-center rounded-lg hover:bg-bgLight transition-all">
+									<i class="fa-solid fa-users text-xl text-acent1"></i>
+									<div class="text-sm text-gray-900">Staff</div>
+								</a>
+								<a href="#" class="block p-4 text-center rounded-lg hover:bg-bgLight transition-all">
+									<i class="fa-solid fa-circle-user text-xl text-acent1"></i>
+									<div class="text-sm text-gray-900">Profile</div>
+								</a>
+								<a href="#" class="block p-4 text-center rounded-lg hover:bg-bgLight transition-all">
+									<i class="fa-solid fa-gear text-xl text-acent1"></i>
+									<div class="text-sm text-gray-900">Settings</div>
+								</a>
+								<a href="#" class="block p-4 text-center rounded-lg hover:bg-bgLight transition-all">
+									<i class="fa-solid fa-chart-simple text-xl text-acent1"></i>
+									<div class="text-sm text-gray-900">Analysis</div>
+								</a>
+							</div>
+						</div>
+						<!-- End of the Setting -->
+
+						<!-- User Profile -->
+						<button type="button" class="flex mx-3 text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown">
+							<span class="sr-only">Open user menu</span>
+							<img class="w-8 h-8 rounded-full object-cover" src="https://cdn.pixabay.com/photo/2015/04/13/12/07/business-720429_1280.jpg" alt="user photo"/>
+						</button>
+						<!-- Dropdown menu -->
+						<div class="hidden z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl" id="dropdown">
+							<div class="py-3 px-4">
+								<span class="block text-sm font-semibold text-gray-900">Adnan Kabir</span>
+								<span class="block text-sm text-gray-900 truncate">Admin</span>
+							</div>
+							<ul class="py-1 text-gray-700" aria-labelledby="dropdown">
+								<li>
+									<a href="#" class="block py-2 px-4 text-sm hover:bg-bgLight">My profile</a>
+								</li>
+								<li>
+									<a href="#" class="block py-2 px-4 text-sm hover:bg-bgLight">Account settings</a>
+								</li>
+							</ul>
+							<ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
+								<li>
+									<a href="#" class="flex items-center py-2 px-4 text-sm hover:bg-bgLight">
+										<svg class="mr-2 w-5 h-5 text-gray-400" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+											<path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"></path>
+										</svg>
+										Shedule</a>
+								</li>
+								<li>
+									<a href="#" class="flex justify-between items-center py-2 px-4 text-sm hover:bg-bgLight">
+										<span class="flex items-center">
+											<i class="fa-solid fa-dollar-sign mr-2 text-md text-primary-600 dark:text-primary-500"></i>
+											Payments
+										</span>
+										<i class="fa-solid fa-chevron-right text-base text-gray-400"></i>
+									</a>
+								</li>
+							</ul>
+							<ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
+								<li>
+									<a href="#" class="block py-2 px-4 text-sm hover:bg-bgLight">Log out</a>
+								</li>
+							</ul>
+						</div>
+						<!-- End of the user profile -->
+					</div>
+				</div>
+			</nav>
+			<!-- End of the Navbar -->
+
+			<!-- Sidebar -->
+			<aside class="scrollbar fixed top-0 left-0 z-40 w-72 lg:w-56 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 lg:translate-x-0" aria-label="Sidenav" id="drawer-navigation">
+				<div
+					class="overflow-y-auto py-5 px-3 h-full bg-white">
+					<!-- Menu (It's for mobile) -->
+					<ul class="space-y-0.5 inline lg:hidden">
+						<li>
+							<a href="index.html" class="flex items-center p-2 text-base font-medium text-primary rounded-lg hover:bg-acent1 group transition duration-75">
+								<i class="fa-solid fa-house text-lg text-acent1 group-hover:text-white transition duration-75"></i>
+								<span class="ml-3">Dashboard</span>
+							</a>
+						</li>
+						<li>
+							<button type="button" class="flex items-center p-2 w-full text-base font-medium text-primary rounded-lg transition duration-75 group hover:bg-acent1" aria-controls="dropdown-teacher" data-collapse-toggle="dropdown-teacher">
+								<i class="fa-solid fa-chalkboard-user text-lg text-acent1 transition duration-75 group-hover:text-white"></i>
+								<span class="flex-1 ml-3 text-left whitespace-nowrap">Teacher</span>
+								<i class="fa-solid fa-chevron-down text-base font-bold"></i>
+							</button>
+							<ul id="dropdown-teacher" class="tabs hidden py-2 space-y-1 pl-2">
+								<li>
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Teacher</a>
+								</li>
+								<li data-tab-target="#add_teacher">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Add Teacher</a>
+								</li>
+								<li data-tab-target="#teacher_billing">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Teacher Billing</a>
+								</li>
+								<li data-tab-target="#upload_data">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Upload From Excel</a>
+								</li>
+								<li data-tab-target="#branch_transfer">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Branch Transfer</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<button type="button" class="flex items-center p-2 w-full text-base font-medium text-primary rounded-lg transition duration-75 group hover:bg-acent1" aria-controls="dropdown-student" data-collapse-toggle="dropdown-student">
+								<i class="fa-solid fa-graduation-cap text-lg text-acent1 transition duration-75 group-hover:text-white"></i>
+								<span class="flex-1 ml-3 text-left whitespace-nowrap">Student</span>
+								<i class="fa-solid fa-chevron-down text-base font-bold"></i>
+							</button>
+							<ul id="dropdown-student" class="tabs hidden py-2 space-y-1 pl-2">
+								<li data-tab-target="#student">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Students</a>
+								</li>
+								<li data-tab-target="#change_billing">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Change Billing</a>
+								</li>
+								<li data-tab-target="#upload_data">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Upload From Excel</a>
+								</li>
+								<li data-tab-target="#admit_tc_report">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Admit and TC Report</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<button type="button" class="flex items-center p-2 w-full text-base font-medium text-primary rounded-lg transition duration-75 group hover:bg-acent1" aria-controls="dropdown-attendance" data-collapse-toggle="dropdown-attendance">
+								<i class="fa-solid fa-clipboard-user text-lg text-acent1 transition duration-75 group-hover:text-white"></i>
+								<span class="flex-1 ml-3 text-left whitespace-nowrap">Attendance</span>
+								<i class="fa-solid fa-chevron-down text-base font-bold"></i>
+							</button>
+							<ul id="dropdown-attendance" class="tabs hidden py-2 space-y-1 pl-2">
+								<li data-tab-target="#attendance_default">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Attendanace Default</a>
+								</li>
+								<li data-tab-target="#attendance_report">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Attendanace Report</a>
+								</li>
+								<li data-tab-target="#student_absent_payment">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Student Absent Payment</a>
+								</li>
+								<li data-tab-target="#absent_find_sms">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Absent Fine SMS</a>
+								</li>
+								<li>
+									<button type="button" class="flex items-center p-2 w-full text-sm font-medium text-primary rounded-lg transition duration-75 group hover:bg-acent1" aria-controls="other" data-collapse-toggle="other">
+										<span class="flex-1 text-left whitespace-nowrap">Other</span>
+										<i class="fa-solid fa-chevron-down text-base font-bold"></i>
+									</button>
+									<ul id="other" class="hidden space-y-1 pl-2">
+										<li>
+											<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Item</a>
+										</li>
+										<li>
+											<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Item</a>
+										</li>
+										<li>
+											<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Item</a>
+										</li>
+										<li>
+											<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Item</a>
+										</li>
+									</ul>
+								</li>
+							</ul>
+						</li>
+
+						<li>
+							<button type="button" class="flex items-center p-2 w-full text-base font-medium text-primary rounded-lg transition duration-75 group hover:bg-acent1" aria-controls="dropdown-exam" data-collapse-toggle="dropdown-exam">
+								<i class="fa-solid fa-file-pen text-lg text-acent1 transition duration-75 group-hover:text-white"></i>
+								<span class="flex-1 ml-3 text-left whitespace-nowrap">Exam</span>
+								<i class="fa-solid fa-chevron-down text-base font-bold"></i>
+							</button>
+							<ul id="dropdown-exam" class="tabs hidden py-2 space-y-1 pl-2">
+								<li data-tab-target="#all_exam">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Exam</a>
+								</li>
+								<li data-tab-target="#add_exam">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Add Exam</a>
+								</li>
+								<li data-tab-target="#exam_head">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Exam Head</a>
+								</li>
+								<li data-tab-target="#exam_sub_head">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Exam Sub-Head</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<a href="subject.html" class="flex items-center p-2 text-base font-medium text-primary rounded-lg hover:bg-acent1 group transition duration-75">
+								<i class="fa-solid fa-book text-lg text-acent1 group-hover:text-white transition duration-75"></i>
+								<span class="ml-3">Subject</span>
+							</a>
+						</li>
+						<li>
+							<button type="button" class="flex items-center p-2 w-full text-base font-medium text-primary rounded-lg transition duration-75 group hover:bg-acent1" aria-controls="dropdown-result" data-collapse-toggle="dropdown-result">
+								<i class="fa-solid fa-square-poll-vertical text-lg text-acent1 transition duration-75 group-hover:text-white"></i>
+								<span class="flex-1 ml-3 text-left whitespace-nowrap">Result</span>
+								<i class="fa-solid fa-chevron-down text-base font-bold"></i>
+							</button>
+							<ul id="dropdown-result" class="tabs hidden py-2 space-y-1 pl-2">
+								<li data-tab-target="#mark_input">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Mark Input</a>
+								</li>
+								<li data-tab-target="#mark_view">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Mark View</a>
+								</li>
+								<li data-tab-target="#result_view">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Result</a>
+								</li>
+								<li data-tab-target="#">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Tabulation</a>
+								</li>
+								<li data-tab-target="#">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Result By Student ID</a>
+								</li>
+								<li data-tab-target="#">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Commnets Input</a>
+								</li>
+								<li data-tab-target="#mark_input_by_excel">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Mark Input By Excel</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<button type="button" class="flex items-center p-2 w-full text-base font-medium text-primary rounded-lg transition duration-75 group hover:bg-acent1" aria-controls="dropdown-analysis" data-collapse-toggle="dropdown-analysis">
+								<i class="fa-solid fa-chart-simple text-lg text-acent1 transition duration-75 group-hover:text-white"></i>
+								<span class="flex-1 ml-3 text-left whitespace-nowrap">Mark Analysis</span>
+								<i class="fa-solid fa-chevron-down text-base font-bold"></i>
+							</button>
+							<ul id="dropdown-analysis" class="tabs hidden py-2 space-y-1 pl-2">
+								<li data-tab-target="#analysis_default">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Analysis</a>
+								</li>
+								<li data-tab-target="#default_list">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Default List</a>
+								</li>
+								<li data-tab-target="#merit_list">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Merit List</a>
+								</li>
+								<li data-tab-target="#result_analysis">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Resilt Analysis</a>
+								</li>
+								<li data-tab-target="#segregation">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Segregation</a>
+								</li>
+							</ul>
+						</li>
+						<li>
+							<button type="button" class="flex items-center p-2 w-full text-base font-medium text-primary rounded-lg transition duration-75 group hover:bg-acent1" aria-controls="dropdown-task" data-collapse-toggle="dropdown-task">
+								<i class="fa-solid fa-thumbtack text-lg text-acent1 transition duration-75 group-hover:text-white"></i>
+								<span class="flex-1 ml-3 text-left whitespace-nowrap">Task</span>
+								<i class="fa-solid fa-chevron-down text-base font-bold"></i>
+							</button>
+							<ul id="dropdown-task" class="tabs hidden py-2 space-y-1 pl-2">
+								<li data-tab-target="#home_work">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Home Work</a>
+								</li>
+								<li data-tab-target="#exam_routine">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Exam Routine</a>
+								</li>
+								<li data-tab-target="#class_routine">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Class Routine</a>
+								</li>
+								<li data-tab-target="#syllabus">
+									<a href="#" class="flex items-center p-2 text-sm font-medium text-primary rounded-lg hover:bg-acent1 hover:text-white group transition duration-75">Sullabus</a>
+								</li>
+							</ul>
+						</li>
+
+						<li>
+							<a href="setting.html" class="flex items-center p-2 text-base font-medium text-primary rounded-lg hover:bg-acent1 group transition duration-75">
+								<i class="fa-solid fa-gear text-lg text-acent1 transition duration-75 group-hover:text-white"></i>
+								<span class="ml-3">Setting</span>
+							</a>
+						</li>
+					</ul>
+
+					<!-- Menu (It's for Lablet and Desktop) -->
+					<ul class="hidden lg:inline space-y-0.5">
+						<li>
+							<a href="#" class="flex items-center p-2 text-base font-medium text-primary rounded-lg hover:bg-acent1 group transition duration-75">
+								<i class="fa-solid fa-house text-lg text-acent1 group-hover:text-white transition duration-75"></i>
+								<span class="ml-3">Dashboard</span>
+							</a>
+						</li>
+						<li>
+							<a href="{{ path('category_index') }}" class="flex items-center p-2 w-full text-base font-medium text-primary rounded-lg transition duration-75 group hover:bg-acent1">
+								<i class="fa-solid fa-chalkboard-user text-lg text-acent1 transition duration-75 group-hover:text-white"></i>
+								<span class="flex-1 ml-3 text-left whitespace-nowrap">Categories</span>
+							</a>
+						</li>
+						<li>
+							<a href="{{ path('equipment_index') }}" class="flex items-center p-2 w-full text-base font-medium text-primary rounded-lg transition duration-75 group hover:bg-acent1">
+								<i class="fa-solid fa-graduation-cap text-lg text-acent1 transition duration-75 group-hover:text-white"></i>
+								<span class="flex-1 ml-3 text-left whitespace-nowrap">Equipment</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+				<div class="hidden absolute bottom-0 left-0 justify-center p-4 space-x-4 w-full lg:flex bg-white z-20">
+					<a href="setting.html" data-tooltip-target="tooltip-settings" class="inline-flex w-9 h-9 justify-center items-center bg-bgLight text-acent1 rounded-xl cursor-pointer hover:text-white hover:bg-acent1">
+						<i class="fa-solid fa-gear text-md"></i>
+					</a>
+					<div id="tooltip-settings" role="tooltip" class="inline-block absolute invisible z-10 py-2 px-3 text-sm font-medium text-white bg-acent1 rounded-lg shadow-sm opacity-0 transition-opacity duration-300 tooltip">
+						Settings page
+						<div class="tooltip-arrow" data-popper-arrow></div>
+					</div>
+					<a href="#" data-tooltip-target="tooltip-tutorial" class="inline-flex w-9 h-9 justify-center items-center bg-bgLight text-acent1 rounded-xl cursor-pointer hover:text-white hover:bg-acent1">
+						<i class="fa-solid fa-video text-md"></i>
+					</a>
+					<div id="tooltip-tutorial" role="tooltip" class="inline-block absolute invisible z-10 py-2 px-3 text-sm font-medium text-white bg-acent1 rounded-lg shadow-sm opacity-0 transition-opacity duration-300 tooltip">
+						Tutorials
+						<div class="tooltip-arrow" data-popper-arrow></div>
+					</div>
+					<a href="#" data-tooltip-target="tooltip-support" class="inline-flex w-9 h-9 justify-center items-center bg-bgLight text-acent1 rounded-xl cursor-pointer hover:text-white hover:bg-acent1">
+						<i class="fa-solid fa-headset text-md"></i>
+					</a>
+					<div id="tooltip-support" role="tooltip" class="inline-block absolute invisible z-10 py-2 px-3 text-sm font-medium text-white bg-acent1 rounded-lg shadow-sm opacity-0 transition-opacity duration-300 tooltip">
+						Support
+						<div class="tooltip-arrow" data-popper-arrow></div>
+					</div>
+				</div>
+			</aside>
+			<!-- End of the Sidebar -->
+		</div>
+
+	</body>
+
+
 

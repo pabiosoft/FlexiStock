@@ -20,25 +20,28 @@ class Category
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 100)]
-    #[Assert\NotBlank(message: 'Le nom du produit ne peut pas être vide')]
+    #[Assert\NotBlank(message: 'Le nom de la catégorie ne peut pas être vide')]
+    #[Assert\Length(
+        max: 100,
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $name = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
-    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Equipment::class)]
-    private Collection $equipmentItems;
-
-    #[ORM\Column(type: 'integer')]
-    private $categoryOrder;
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private ?int $categoryOrder = 0;
 
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'categories')]
-    #[ORM\JoinColumn(onDelete: 'CASCADE')]
-    private $parent;
+    #[ORM\JoinColumn(onDelete: 'CASCADE', nullable: true)]
+    private ?self $parent = null;
 
-    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
-    private $categories;
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class, cascade: ['persist', 'remove'])]
+    private Collection $categories;
 
+    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Equipment::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $equipmentItems;
 
     public function __construct()
     {
@@ -59,6 +62,7 @@ class Category
     public function setName(string $name): self
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -70,6 +74,7 @@ class Category
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -78,7 +83,7 @@ class Category
         return $this->categoryOrder;
     }
 
-    public function setCategoryOrder(int $categoryOrder): self
+    public function setCategoryOrder(?int $categoryOrder): self
     {
         $this->categoryOrder = $categoryOrder;
 
@@ -97,6 +102,32 @@ class Category
         return $this;
     }
 
+    public function getCategories(): Collection
+    {
+        return $this->categories;
+    }
+
+    public function addCategory(self $category): self
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+            $category->setParent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(self $category): self
+    {
+        if ($this->categories->removeElement($category)) {
+            if ($category->getParent() === $this) {
+                $category->setParent(null);
+            }
+        }
+
+        return $this;
+    }
+
     public function getEquipmentItems(): Collection
     {
         return $this->equipmentItems;
@@ -111,10 +142,8 @@ class Category
         }
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }
-
-    
 }

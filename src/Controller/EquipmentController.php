@@ -46,6 +46,10 @@ class EquipmentController extends AbstractController
             $this->handleImages($form->get('images')->getData(), $equipment, $entityManager, $pictureService);
             $equipment->setCreatedAt(new \DateTimeImmutable());
 
+            // On arrondit le prix 
+            // $prix = $equipment->getPrice() * $equipment->getQuantity();
+            // $equipment->setPrice($prix);
+
             if ($this->isSlugUnique($equipment, $entityManager)) {
                 $entityManager->persist($equipment);
                 $entityManager->flush();
@@ -56,6 +60,7 @@ class EquipmentController extends AbstractController
                 $this->addFlash('error', 'Cet équipement existe déjà.');
             }
         }
+        // $this->addFlash('error', 'Veuillez remplir tous les champs.');
 
         return $this->render('equipment/new.html.twig', [
             'equipmentForm' => $form->createView(),
@@ -77,6 +82,7 @@ class EquipmentController extends AbstractController
 
             $this->handleExistingImages($equipment, $entityManager, $pictureService, $form->get('images')->getData());
             $this->handleImages($form->get('images')->getData(), $equipment, $entityManager, $pictureService);
+            
 
             if ($this->isSlugUnique($equipment, $entityManager)) {
                 $entityManager->persist($equipment);
@@ -107,6 +113,8 @@ class EquipmentController extends AbstractController
         foreach ($equipment->getImages() as $image) {
             $pictureService->delete($image->getName(), 'equipments', 300, 300);
         }
+
+        
 
         $entityManager->remove($equipment);
         $entityManager->flush();

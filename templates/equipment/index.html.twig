@@ -4,9 +4,10 @@
 {% endblock %}
 
 {% block body %}
+	{% include "_partials/_flush.html.twig" %}
 	{% include '_partials/_adminav.html.twig' %}
 	<main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5">
-		<div class="px-4 sm:px-6 lg:px-8">
+		<div class="px-6 py-8 lg:px-8">
 			<div class="sm:flex sm:items-center">
 				<div class="sm:flex-auto my-6">
 					<h1 class="text-3xl font-semibold text-gray-900 ">Equipment list</h1>
@@ -59,6 +60,7 @@
 										<th scope="row" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Date</th>
 										<th scope="row" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
 										<th scope="row" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Quantity</th>
+										<th scope="row" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Prix</th>
 										<th scope="row" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
 											<span class="sr-only">Edit</span>
 										</th>
@@ -104,13 +106,15 @@
 											</td>
 											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
 												<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5
-																																																								        {% if equipment.status == 'active' %}
-																																										            bg-red-100 text-red-800
-																																																								        {% endif %}">
+																																																																						        {% if equipment.status == 'active' %}
+																																																								            bg-red-100 text-red-800
+																																																																						        {% endif %}">
 													{{ equipment.status }}
 												</span>
 											</td>
 											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{equipment.quantity}}</td>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{equipment.price}}
+												GNF</td>
 											<td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 flex space-x-2">
 												<a href="{{ path('equipment_show', {'id': equipment.id}) }}">
 													<i class="fa-solid fa-eye text-blue-900 text-3xl"></i>

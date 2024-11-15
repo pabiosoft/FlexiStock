@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Movement{% endblock %}
+
+{% block body %}
+    <h1>Edit Movement</h1>
+
+    {{ form_start(form) }}
+        {{ form_row(form.quantity) }}
+        {{ form_row(form.reason) }}
+        {{ form_row(form.movementDate) }}
+        {{ form_row(form.equipment) }}
+        {{ form_row(form.user) }}
+        {{ form_row(form.category) }}
+        {{ form_row(form.type) }}
+
+        <button class="btn btn-primary" type="submit">Save Changes</button>
+    {{ form_end(form) }}
+
+    <a href="{{ path('movement_index') }}" class="btn btn-secondary">Back to List</a>
+{% endblock %}

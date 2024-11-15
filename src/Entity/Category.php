@@ -29,8 +29,20 @@ class Category
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Equipment::class)]
     private Collection $equipmentItems;
 
+    #[ORM\Column(type: 'integer')]
+    private $categoryOrder;
+
+    #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'categories')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    private $parent;
+
+    #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
+    private $categories;
+
+
     public function __construct()
     {
+        $this->categories = new ArrayCollection();
         $this->equipmentItems = new ArrayCollection();
     }
 
@@ -58,6 +70,30 @@ class Category
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+        return $this;
+    }
+
+    public function getCategoryOrder(): ?int
+    {
+        return $this->categoryOrder;
+    }
+
+    public function setCategoryOrder(int $categoryOrder): self
+    {
+        $this->categoryOrder = $categoryOrder;
+
+        return $this;
+    }
+
+    public function getParent(): ?self
+    {
+        return $this->parent;
+    }
+
+    public function setParent(?self $parent): self
+    {
+        $this->parent = $parent;
+
         return $this;
     }
 

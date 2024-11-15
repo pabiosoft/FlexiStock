@@ -48,6 +48,7 @@ class Equipment
     private int $quantity;
 
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
+    #[Assert\GreaterThanOrEqual(0)]
     private int $minThreshold;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
@@ -72,6 +73,9 @@ class Equipment
     public function __construct()
     {
         $this->images = new ArrayCollection();
+        $this->quantity = 0; // Valeur par défaut
+        $this->minThreshold = 1; // Valeur par défaut
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     // Getters and Setters

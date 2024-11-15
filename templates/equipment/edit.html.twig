@@ -3,6 +3,8 @@
 {% block title %}Edit Equipment{% endblock %}
 
 {% block body %}
+	{% include "_partials/_flush.html.twig" %}
+
     <div class="max-w-sm mx-auto">
         <h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">Modify Equipment</h1>
         <a href="{{ path('equipment_index') }}">Back to list</a>

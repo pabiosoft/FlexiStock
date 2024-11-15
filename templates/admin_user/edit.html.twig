@@ -3,6 +3,8 @@
 {% block title %}Modifier l'utilisateur{% endblock %}
 
 {% block body %}
+	{% include "_partials/_flush.html.twig" %}
+<div class="container max-w-md mx-auto"  >
     <h1 class="text-3xl font-bold mb-4">Modifier l'utilisateur</h1>
 
     {{ form_start(form) }}
@@ -11,6 +13,8 @@
         {{ form_row(form.plainPassword) }}
         {{ form_row(form.role) }}
         
-        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+        <button type="submit" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">Mettre à jour</button>
     {{ form_end(form) }}
+     <a href="{{ path('admin_user_index') }}" type="button" > Back to list <i class="fa-solid fa-backward-step"></i></a>
+    </div>
 {% endblock %}

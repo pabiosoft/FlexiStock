@@ -1,29 +1,26 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Category{% endblock %}
+{% block title %}Equipments in {{ category.name }}{% endblock %}
 
 {% block body %}
-    <h1>Category</h1>
-
-    <table>
-        <tr>
-            <th>ID</th>
-            <td>{{ category.id }}</td>
-        </tr>
-        <tr>
-            <th>Name</th>
-            <td>{{ category.name }}</td>
-        </tr>
-        <tr>
-            <th>Description</th>
-            <td>{{ category.description }}</td>
-        </tr>
-    </table>
-
-    <a href="{{ path('category_index') }}">Back to list</a>
-    <a href="{{ path('category_edit', {'slug': category.slug}) }}">Edit</a>
-    <form method="post" action="{{ path('category_delete', {'slug': category.slug}) }}" style="display:inline-block;">
-        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
-        <button type="submit">Delete</button>
-    </form>
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6">Equipments in {{ category.name }}</h1>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for equipment in equipments %}
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    {% if equipment.images|length > 0 %}
+                        <img class="w-full h-48 object-cover mb-4" src="{{ asset('uploads/equipments/mini/300x300-' ~ equipment.images[0].name) }}" alt="{{ equipment.name }} - {{ equipment.images[0].name }}" loading="lazy">
+                    {% endif %}
+                    <h2 class="text-xl font-semibold mb-2">{{ equipment.name }}</h2>
+                    <p class="text-gray-700 mb-2">Brand: {{ equipment.brand }}</p>
+                    <p class="text-gray-700 mb-2">Serial Number: {{ equipment.serialNumber }}</p>
+                    <p class="text-gray-700 mb-2">Category: {{ equipment.category.name }}</p>
+                    <p class="text-gray-700 mb-2">Quantity: {{ equipment.quantity }}</p>
+                    <p class="text-gray-700 mb-2">Price: ${{ equipment.price }}</p>
+                    <p class="text-gray-700 mb-2">Status: {{ equipment.status }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 {% endblock %}

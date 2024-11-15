@@ -1,20 +1,27 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Modifier l'utilisateur{% endblock %}
+{% block title %}Modifier l'utilisateur
+{% endblock %}
 
 {% block body %}
 	{% include "_partials/_flush.html.twig" %}
-<div class="container max-w-md mx-auto"  >
-    <h1 class="text-3xl font-bold mb-4">Modifier l'utilisateur</h1>
+	{% include '_partials/_adminav.html.twig' %}
+	<main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5">
+		<div class="px-6 py-8 lg:px-8">
+			<h1 class="text-3xl font-bold mb-4">Modifier l'utilisateur</h1>
 
-    {{ form_start(form) }}
-        {{ form_row(form.name) }}
-        {{ form_row(form.email) }}
-        {{ form_row(form.plainPassword) }}
-        {{ form_row(form.role) }}
-        
-        <button type="submit" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">Mettre à jour</button>
-    {{ form_end(form) }}
-     <a href="{{ path('admin_user_index') }}" type="button" > Back to list <i class="fa-solid fa-backward-step"></i></a>
-    </div>
+			{{ form_start(form) }}
+			{{ form_row(form.name) }}
+			{{ form_row(form.email) }}
+			{{ form_row(form.plainPassword) }}
+			{{ form_row(form.role) }}
+
+			<button type="submit" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">Mettre à jour</button>
+			{{ form_end(form) }}
+			<a href="{{ path('admin_user_index') }}" type="button">
+				Back to list
+				<i class="fa-solid fa-backward-step"></i>
+			</a>
+		</div>
+	</main>
 {% endblock %}

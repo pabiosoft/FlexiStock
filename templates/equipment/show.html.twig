@@ -4,48 +4,53 @@
 {% endblock %}
 
 {% block body %}
-	<h1>Equipment</h1>
+	{{ include('_partials/_adminav.html.twig') }}
+	<main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5">
+		<div class="px-6 py-8 lg:px-8">
+			<h1>Equipment</h1>
 
-	<table>
-		<tr>
-			<th>ID</th>
-			<td>{{ equipment.id }}</td>
-		</tr>
-		<tr>
-			<th>Name</th>
-			<td>{{ equipment.name }}</td>
+			<table>
+				<tr>
+					<th>ID</th>
+					<td>{{ equipment.id }}</td>
+				</tr>
+				<tr>
+					<th>Name</th>
+					<td>{{ equipment.name }}</td>
 
-		</tr>
-		<tr>
-			<th>brand</th>
-			 <td>{{ equipment.brand }}</td>
-		</tr>
-        <tr>
-			<th>PRICE</th>
-			 <td>{{ equipment.price }}</td>
-		</tr>
-        <tr>
-            <th>salePrice</th>
-            <td>{{ equipment.salePrice }}</td>
-        </tr>
-        <tr>
-            <th>quantity</th>
-            <td>{{ equipment.quantity }}</td>
-        </tr>
-        <tr>
-            <th>category</th>
-            <td>{{ equipment.category }}</td>
-        </tr>
-        <tr>
-            <th>status</th>
-            <td>{{ equipment.status }}</td>
-        </tr>
-	</table>
+				</tr>
+				<tr>
+					<th>brand</th>
+					<td>{{ equipment.brand }}</td>
+				</tr>
+				<tr>
+					<th>PRICE</th>
+					<td>{{ equipment.price }}</td>
+				</tr>
+				<tr>
+					<th>salePrice</th>
+					<td>{{ equipment.salePrice }}</td>
+				</tr>
+				<tr>
+					<th>quantity</th>
+					<td>{{ equipment.quantity }}</td>
+				</tr>
+				<tr>
+					<th>category</th>
+					<td>{{ equipment.category }}</td>
+				</tr>
+				<tr>
+					<th>status</th>
+					<td>{{ equipment.status }}</td>
+				</tr>
+			</table>
 
-	<a href="{{ path('equipment_index') }}">Back to list</a>
-	<a href="{{ path('equipment_edit', {'id': equipment.id}) }}">Edit</a>
-	<form method="post" action="{{ path('equipment_delete', {'id': equipment.id}) }}" style="display:inline-block;">
-		<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipment.id) }}">
-		<button type="submit">Delete</button>
-	</form>
+			<a href="{{ path('equipment_index') }}">Back to list</a>
+			<a href="{{ path('equipment_edit', {'id': equipment.id}) }}">Edit</a>
+			<form method="post" action="{{ path('equipment_delete', {'id': equipment.id}) }}" style="display:inline-block;">
+				<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipment.id) }}">
+				<button type="submit">Delete</button>
+			</form>
+		</div>
+	</main>
 {% endblock %}

@@ -5,45 +5,48 @@ namespace App\Controller;
 use App\Entity\Category;
 use App\Form\CategoryType;
 use App\Repository\CategoryRepository;
-use App\Repository\EquipmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-
 #[Route('/category')]
-
 class CategoryController extends AbstractController
 {
-    
-    #[Route('/', name: 'category_index', methods: ['GET'])]
-    #[IsGranted('ROLE_ADMIN')]
-    public function index(EntityManagerInterface $entityManager, CategoryRepository $categoryRepository): Response
+    private EntityManagerInterface $entityManager;
+    private CategoryRepository $categoryRepository;
+
+    public function __construct(EntityManagerInterface $entityManager, CategoryRepository $categoryRepository)
     {
-        $categories = $entityManager->getRepository(Category::class)->findAll();
-        
+        $this->entityManager = $entityManager;
+        $this->categoryRepository = $categoryRepository;
+    }
+    #[Route('/', name: 'category_index', methods: ['GET'])]
+    public function index(CategoryRepository $categoryRepository): Response
+    {
+        $categories = $categoryRepository->findBy([], ['name' => 'ASC']); // Sorted alphabetically
+
         return $this->render('category/index.html.twig', [
             'categories' => $categories,
         ]);
     }
 
     #[Route('/new', name: 'category_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, CategoryRepository $categoryRepository): Response
     {
         $category = new Category();
-        $form = $this->createForm(CategoryType::class, $category);
+        $form = $this->createForm(CategoryType::class, $category, [
+            'categories' => $categoryRepository->findAll(),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $category->updateSlug();
 
-            // Check if the slug is already in use
-            $existingCategory = $entityManager->getRepository(Category::class)->findOneBy(['slug' => $category->getSlug()]);
-            if ($existingCategory) {
-                $this->addFlash('error', 'A category with this slug already exists.');
+            // Validate no cyclic relationship
+            if ($this->isCyclicRelationship($category)) {
+                $this->addFlash('error', 'Invalid hierarchy: a category cannot be its own parent or create a cyclic relationship.');
                 return $this->redirectToRoute('category_new');
             }
 
@@ -51,7 +54,6 @@ class CategoryController extends AbstractController
             $entityManager->flush();
 
             $this->addFlash('success', 'Category created successfully.');
-
             return $this->redirectToRoute('category_index');
         }
 
@@ -61,46 +63,26 @@ class CategoryController extends AbstractController
         ]);
     }
 
-    // #[Route('/{slug}', name: 'category_show', methods: ['GET'])]
-    // public function show(string $slug, EntityManagerInterface $entityManager): Response
-    // {
-    //     $category = $entityManager->getRepository(Category::class)->findOneBy(['slug' => $slug]);
-
-    //     if (!$category) {
-    //         throw $this->createNotFoundException('The category does not exist');
-    //     }
-
-    //     return $this->render('category/show.html.twig', [
-    //         'category' => $category,
-    //     ]);
-    // }
-
-    #[Route('/{slug}/edit', name: 'category_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, string $slug, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}/edit', name: 'category_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Category $category, EntityManagerInterface $entityManager, CategoryRepository $categoryRepository): Response
     {
-        $category = $entityManager->getRepository(Category::class)->findOneBy(['slug' => $slug]);
-
-        if (!$category) {
-            throw $this->createNotFoundException('The category does not exist');
-        }
-
-        $form = $this->createForm(CategoryType::class, $category);
+        $form = $this->createForm(CategoryType::class, $category, [
+            'categories' => $categoryRepository->findAll(),
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $category->updateSlug();
 
-            // Check if the new slug is already in use by another category
-            $existingCategory = $entityManager->getRepository(Category::class)->findOneBy(['slug' => $category->getSlug()]);
-            if ($existingCategory && $existingCategory->getId() !== $category->getId()) {
-                $this->addFlash('error', 'A category with this slug already exists.');
-                return $this->redirectToRoute('category_edit', ['slug' => $category->getSlug()]);
+            // Validate no cyclic relationship
+            if ($this->isCyclicRelationship($category)) {
+                $this->addFlash('error', 'Invalid hierarchy: a category cannot be its own parent or create a cyclic relationship.');
+                return $this->redirectToRoute('category_edit', ['id' => $category->getId()]);
             }
 
             $entityManager->flush();
 
             $this->addFlash('success', 'Category updated successfully.');
-
             return $this->redirectToRoute('category_index');
         }
 
@@ -110,32 +92,46 @@ class CategoryController extends AbstractController
         ]);
     }
 
-    #[Route('/{slug}', name: 'category_delete', methods: ['POST'])]
-    public function delete(Request $request, string $slug, EntityManagerInterface $entityManager): Response
+    #[Route('/{id}', name: 'category_delete', methods: ['POST'])]
+    public function delete(Request $request, Category $category, EntityManagerInterface $entityManager): Response
     {
-        $category = $entityManager->getRepository(Category::class)->findOneBy(['slug' => $slug]);
-
-        if (!$category) {
-            throw $this->createNotFoundException('The category does not exist');
-        }
-
         if ($this->isCsrfTokenValid('delete' . $category->getId(), $request->request->get('_token'))) {
             $entityManager->remove($category);
             $entityManager->flush();
+            $this->addFlash('success', 'Category deleted successfully.');
         }
 
         return $this->redirectToRoute('category_index');
     }
-    // afficher les équipements d'une catégorie :
-    
+
     #[Route('/{slug}/equipments', name: 'category_equipments', methods: ['GET'])]
-    public function showEquipments($slug, CategoryRepository $categoryRepository): Response
+    public function showEquipments(string $slug): Response
     {
-        $category = $categoryRepository->findOneBy(['slug' => $slug]);
-        // on va chercher la liste des equipments de la catégorie
+        $category = $this->categoryRepository->findOneBy(['slug' => $slug]);
+
+        if (!$category) {
+            throw $this->createNotFoundException('La catégorie n\'existe pas.');
+        }
+
         $equipments = $category->getEquipmentItems();
 
-
-        return $this->render('category/show.html.twig', compact('category', 'equipments'));
+        return $this->render('category/show.html.twig', [
+            'category' => $category,
+            'equipments' => $equipments,
+        ]);
     }
+
+    private function isCyclicRelationship(Category $category): bool
+    {
+        $parent = $category->getParent();
+        while ($parent !== null) {
+            if ($parent === $category) {
+                return true; // Cyclic relationship found
+            }
+            $parent = $parent->getParent();
+        }
+        return false;
+    }
+    // Other methods for the hierarchy management
+    // ...
 }

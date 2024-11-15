@@ -70,15 +70,50 @@ class Equipment
     #[ORM\OneToMany(mappedBy: 'equipment', targetEntity: Images::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $images;
 
+    /**
+     * @ORM\ManyToMany(targetEntity=Category::class)
+     * @ORM\JoinTable(name="equipment_subcategories")
+     */
+    private $subcategories;
+
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
         $this->quantity = 0; // Valeur par défaut
         $this->minThreshold = 1; // Valeur par défaut
         $this->createdAt = new \DateTimeImmutable();
+        $this->subcategories = new ArrayCollection();
     }
 
     // Getters and Setters
+
+     /**
+     * @return Collection|Category[]
+     */
+    public function getSubcategories(): Collection
+    {
+        return $this->subcategories;
+    }
+
+    public function addSubcategory(Category $subcategory): self
+    {
+        if (!$this->subcategories->contains($subcategory)) {
+            $this->subcategories[] = $subcategory;
+        }
+
+        return $this;
+    }
+
+    public function removeSubcategory(Category $subcategory): self
+    {
+        $this->subcategories->removeElement($subcategory);
+
+        return $this;
+    }
+
+    // ... other methods
+
 
     public function getId(): int
     {

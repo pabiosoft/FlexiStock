@@ -4,20 +4,27 @@ namespace App\Controller;
 
 use App\Entity\Category;
 use App\Form\CategoryType;
+use App\Repository\CategoryRepository;
+use App\Repository\EquipmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
 
 #[Route('/category')]
+
 class CategoryController extends AbstractController
 {
+    
     #[Route('/', name: 'category_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
+    #[IsGranted('ROLE_ADMIN')]
+    public function index(EntityManagerInterface $entityManager, CategoryRepository $categoryRepository): Response
     {
         $categories = $entityManager->getRepository(Category::class)->findAll();
-
+        
         return $this->render('category/index.html.twig', [
             'categories' => $categories,
         ]);
@@ -54,19 +61,19 @@ class CategoryController extends AbstractController
         ]);
     }
 
-    #[Route('/{slug}', name: 'category_show', methods: ['GET'])]
-    public function show(string $slug, EntityManagerInterface $entityManager): Response
-    {
-        $category = $entityManager->getRepository(Category::class)->findOneBy(['slug' => $slug]);
+    // #[Route('/{slug}', name: 'category_show', methods: ['GET'])]
+    // public function show(string $slug, EntityManagerInterface $entityManager): Response
+    // {
+    //     $category = $entityManager->getRepository(Category::class)->findOneBy(['slug' => $slug]);
 
-        if (!$category) {
-            throw $this->createNotFoundException('The category does not exist');
-        }
+    //     if (!$category) {
+    //         throw $this->createNotFoundException('The category does not exist');
+    //     }
 
-        return $this->render('category/show.html.twig', [
-            'category' => $category,
-        ]);
-    }
+    //     return $this->render('category/show.html.twig', [
+    //         'category' => $category,
+    //     ]);
+    // }
 
     #[Route('/{slug}/edit', name: 'category_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, string $slug, EntityManagerInterface $entityManager): Response
@@ -92,6 +99,8 @@ class CategoryController extends AbstractController
 
             $entityManager->flush();
 
+            $this->addFlash('success', 'Category updated successfully.');
+
             return $this->redirectToRoute('category_index');
         }
 
@@ -116,5 +125,17 @@ class CategoryController extends AbstractController
         }
 
         return $this->redirectToRoute('category_index');
+    }
+    // afficher les équipements d'une catégorie :
+    
+    #[Route('/{slug}/equipments', name: 'category_equipments', methods: ['GET'])]
+    public function showEquipments($slug, CategoryRepository $categoryRepository): Response
+    {
+        $category = $categoryRepository->findOneBy(['slug' => $slug]);
+        // on va chercher la liste des equipments de la catégorie
+        $equipments = $category->getEquipmentItems();
+
+
+        return $this->render('category/show.html.twig', compact('category', 'equipments'));
     }
 }

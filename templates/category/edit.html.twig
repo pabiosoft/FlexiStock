@@ -4,6 +4,7 @@
 {% endblock %}
 
 {% block body %}
+	{% include "_partials/_flush.html.twig" %}
 	<div class="max-w-sm mx-auto">
 		<h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">Modifier un Category</h1>
 		<a href="{{ path('category_index') }}">Back to list</a>

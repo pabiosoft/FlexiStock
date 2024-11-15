@@ -20,6 +20,7 @@ class AdminUserController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function index(EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');  // Vérifie si l'utilisateur est administrateur
         $users = $entityManager->getRepository(User::class)->findAll();  // Récupère tous les utilisateurs
 
         return $this->render('admin_user/index.html.twig', [
@@ -28,9 +29,10 @@ class AdminUserController extends AbstractController
     }
 
     // Créer un nouvel utilisateur
-    #[Route('/admin/user/new', name: 'new', methods: ['GET', 'POST'])]
+    #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $entityManager): Response
     {
+
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
@@ -47,6 +49,8 @@ class AdminUserController extends AbstractController
             // Persist the new user entity
             $entityManager->persist($user);
             $entityManager->flush();
+
+            $this->addFlash('success', 'L\'utilisateur a bien été créé.');
 
             // Redirect to the user listing page
             return $this->redirectToRoute('admin_user_index');
@@ -77,6 +81,8 @@ class AdminUserController extends AbstractController
             // Sauvegarde les modifications dans la base de données
             $entityManager->flush();
 
+            $this->addFlash('success', 'L\'utilisateur a bien été modifié.');
+
             return $this->redirectToRoute('admin_user_index');  // Redirige vers la liste des utilisateurs
         }
 
@@ -95,6 +101,8 @@ class AdminUserController extends AbstractController
             $entityManager->remove($user);
             $entityManager->flush();
         }
+
+        $this->addFlash('success', 'L\'utilisateur a bien été supprimé.');
 
         return $this->redirectToRoute('admin_user_index');  // Redirige vers la liste des utilisateurs
     }

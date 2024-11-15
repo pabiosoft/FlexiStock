@@ -4,9 +4,10 @@
 {% endblock %}
 
 {% block body %}
+	{% include "_partials/_flush.html.twig" %}
+
 <div class="max-w-sm mx-auto">
 	<h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">Create New Category</h1>
-	{# {% include "_partials/_flush.html.twig" %} #}
 
 	{% include 'equipment/_form.html.twig'%}
 

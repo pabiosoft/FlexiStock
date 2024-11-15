@@ -2,21 +2,23 @@
 
 namespace App\Entity;
 
-use App\Enum\MouvementType;
+use App\Entity\User;
+use App\Entity\Category;
+use App\Entity\Equipment;
+use App\Enum\MovementChoice;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\MovementRepository;
 
 #[ORM\Entity(repositoryClass: MovementRepository::class)]
-class Mouvement
+class Movement
 {
-    
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private int $id;
 
-    #[ORM\ManyToOne(targetEntity: Equipment::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: Equipment::class, inversedBy: 'movements', cascade: ['remove'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private Equipment $equipment;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
@@ -34,6 +36,14 @@ class Mouvement
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $movementDate;
 
+    #[ORM\ManyToOne(targetEntity: Category::class)]
+    private ?Category $category;
+
+    public function __construct()
+    {
+        $this->movementDate = new \DateTimeImmutable(); // Initialisation par défaut de la date
+    }
+
     // Getters and Setters
 
     public function getId(): int
@@ -49,7 +59,6 @@ class Mouvement
     public function setEquipment(Equipment $equipment): self
     {
         $this->equipment = $equipment;
-
         return $this;
     }
 
@@ -61,7 +70,6 @@ class Mouvement
     public function setUser(?User $user): self
     {
         $this->user = $user;
-
         return $this;
     }
 
@@ -72,8 +80,8 @@ class Mouvement
 
     public function setType(string $type): self
     {
+       
         $this->type = $type;
-
         return $this;
     }
 
@@ -85,7 +93,6 @@ class Mouvement
     public function setQuantity(int $quantity): self
     {
         $this->quantity = $quantity;
-
         return $this;
     }
 
@@ -97,7 +104,6 @@ class Mouvement
     public function setReason(?string $reason): self
     {
         $this->reason = $reason;
-
         return $this;
     }
 
@@ -109,7 +115,17 @@ class Mouvement
     public function setMovementDate(\DateTimeInterface $movementDate): self
     {
         $this->movementDate = $movementDate;
+        return $this;
+    }
 
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): self
+    {
+        $this->category = $category;
         return $this;
     }
 }

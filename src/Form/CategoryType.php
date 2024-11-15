@@ -16,6 +16,8 @@ class CategoryType extends AbstractType
             'Nom', 'attr' => ['placeholder' => 'Nom de la catégorie', 'class' => 'form-control ']])
             ->add('description', options: ['label' => 
             'Description', 'attr' => ['placeholder' => 'Description de la catégorie']])
+            ->add('categoryOrder', options: ['label' => 'Ordre', 'attr' => ['placeholder' => 'Ordre de la catégorie']])
+            // ->add('parentCategory', options: ['label' => 'Catégorie parente', 'class' => Category::class])
         ;
     }
 

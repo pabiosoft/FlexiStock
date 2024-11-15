@@ -5,7 +5,9 @@
 
 {% block body %}
 	{% include '_partials/_adminav.html.twig' %}
+	{% include '_partials/_flush.html.twig' %}
 	<main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5">
+
 		{# <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 m-4">
 			<div class="border-2 border-dashed border-gray-300 rounded-lg dark:border-gray-600 h-10 "></div>
 			<div class="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-10 "></div>
@@ -53,7 +55,8 @@
 								<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ category.slug }}</td>
 								<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ category.description }}</td>
 								<td class="relative whitespace-nowrap  pl-3 text-center text-sm font-medium sm:pr-6">
-									<a href="{{ path('category_show', {'slug': category.slug}) }}"><i class="fa-solid fa-eye text-blue-900 text-3xl px-2"></i></a>
+									{# <a href="{{ path('category_show', {'slug': category.slug}) }}"><i class="fa-solid fa-eye text-blue-900 text-3xl px-2"></i></a> #}
+									<a href="{{ path('category_equipments', {'slug': category.slug}) }}"><i class="fa-solid fa-eye text-blue-900 text-3xl px-2"></i></a>
 									<a href="{{ path('category_edit', {'slug': category.slug}) }}"><i class="fa-solid fa-pen-to-square text-blue-900 text-3xl px-2"></i></a>
 									<form method="post" action="{{ path('category_delete', {'slug': category.slug}) }}" style="display:inline-block;">
 										<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">

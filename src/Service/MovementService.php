@@ -24,9 +24,6 @@ class MovementService
         $this->equipmentRepository = $equipmentRepository;
     }
 
-    /**
-     * Creates a new movement entry and updates the equipment quantity.
-     */
     public function createMovement(Movement $movement): void
     {
         $this->validateMovementType($movement);
@@ -51,9 +48,6 @@ class MovementService
         $this->entityManager->flush();
     }
 
-    /**
-     * Validates the movement type.
-     */
     private function validateMovementType(Movement $movement): void
     {
         $validTypes = ['IN', 'OUT'];
@@ -62,28 +56,18 @@ class MovementService
         }
     }
 
-    /**
-     * Retrieves all movements from the database.
-     */
     public function getAllMovements(): array
     {
         return $this->movementRepository->findAll();
     }
 
-    /**
-     * Retrieves a single movement by its ID.
-     */
     public function getMovementById(int $id): ?Movement
     {
         return $this->movementRepository->find($id);
     }
 
-    /**
-     * Updates an existing movement entry.
-     */
     public function updateMovement(Movement $movement): void
     {
-        // Find the original movement record from the database
         $originalMovement = $this->movementRepository->find($movement->getId());
 
         if (!$originalMovement) {
@@ -95,14 +79,12 @@ class MovementService
             throw new \InvalidArgumentException('Equipment not found.');
         }
 
-        // Revert the equipment quantity based on the original movement type
         if ($originalMovement->getType() === 'IN') {
             $equipment->setQuantity($equipment->getQuantity() - $originalMovement->getQuantity());
         } elseif ($originalMovement->getType() === 'OUT') {
             $equipment->setQuantity($equipment->getQuantity() + $originalMovement->getQuantity());
         }
 
-        // Apply the updated movement quantity based on the new movement type
         if ($movement->getType() === 'IN') {
             $equipment->setQuantity($equipment->getQuantity() + $movement->getQuantity());
         } elseif ($movement->getType() === 'OUT') {
@@ -113,7 +95,6 @@ class MovementService
             }
         }
 
-        // Persist changes to the movement and equipment
         try {
             $this->entityManager->persist($movement);
             $this->entityManager->persist($equipment);
@@ -123,9 +104,6 @@ class MovementService
         }
     }
 
-    /**
-     * Deletes a movement and adjusts the equipment quantity.
-     */
     public function deleteMovement(Movement $movement): void
     {
         if (null === $equipment = $movement->getEquipment()) {
@@ -137,6 +115,7 @@ class MovementService
                 $equipment->setQuantity($equipment->getQuantity() - $movement->getQuantity());
             } elseif ($movement->getType() === 'OUT') {
                 $equipment->setQuantity($equipment->getQuantity() + $movement->getQuantity());
+                $equipment->setQuantity(max(0, $equipment->getQuantity()));
             }
 
             $this->entityManager->remove($movement);
@@ -149,15 +128,12 @@ class MovementService
 
     public function deleteEquipmentWithMovements(Equipment $equipment): void
     {
-        // Find all movements associated with the equipment
         $movements = $this->movementRepository->findBy(['equipment' => $equipment]);
 
-        // Delete each movement
         foreach ($movements as $movement) {
             $this->entityManager->remove($movement);
         }
 
-        // Now delete the equipment
         $this->entityManager->remove($equipment);
         $this->entityManager->flush();
     }

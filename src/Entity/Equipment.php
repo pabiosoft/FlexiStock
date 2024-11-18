@@ -45,6 +45,7 @@ class Equipment
     private string $status;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    #[Assert\GreaterThanOrEqual(0)]
     private int $quantity;
 
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
@@ -77,6 +78,13 @@ class Equipment
     private $subcategories;
 
 
+    #[ORM\Column(type: 'integer')]
+    private int $stockQuantity;  // Total stock available
+
+    #[ORM\Column(type: 'integer')]
+    private int $reservedQuantity = 0;  // Reserved quantity for orders
+
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
@@ -88,7 +96,7 @@ class Equipment
 
     // Getters and Setters
 
-     /**
+    /**
      * @return Collection|Category[]
      */
     public function getSubcategories(): Collection
@@ -274,6 +282,39 @@ class Equipment
         return $this;
     }
 
+    public function getStockQuantity(): int
+    {
+        return $this->stockQuantity;
+    }
+
+    public function setStockQuantity(int $stockQuantity): self
+    {
+        $this->stockQuantity = $stockQuantity;
+        return $this;
+    }
+
+    public function getReservedQuantity(): int
+    {
+        return $this->reservedQuantity;
+    }
+
+    public function setReservedQuantity(int $reservedQuantity): self
+    {
+        $this->reservedQuantity = $reservedQuantity;
+        return $this;
+    }
+
+    public function adjustStockQuantity(int $quantity): self
+    {
+        $this->stockQuantity -= $quantity;
+        return $this;
+    }
+
+    public function adjustReservedQuantity(int $quantity): self
+    {
+        $this->reservedQuantity += $quantity;
+        return $this;
+    }
     /**
      * @return Collection<int, Images>
      */
@@ -308,5 +349,9 @@ class Equipment
     public function updateSlug(): void
     {
         $this->initializeSlug($this->getName());
+    }
+    public function __toString(): string
+    {
+        return $this->name; // Ensure the equipment name is returned as a string
     }
 }

@@ -12,10 +12,19 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
+
 
 #[Route('/equipment')]
 class EquipmentController extends AbstractController
 {
+    private $security;
+
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
+    }
+
     #[Route('/', name: 'equipment_index', methods: ['GET'])]
     public function index(EntityManagerInterface $entityManager): Response
     {
@@ -32,6 +41,8 @@ class EquipmentController extends AbstractController
     #[Route('/new', name: 'equipment_new', methods: ['GET', 'POST'])]
     public function add(Request $request, EntityManagerInterface $entityManager, PictureService $pictureService): Response
     {
+
+
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $equipment = new Equipment();
         $form = $this->createForm(EquipmentType::class, $equipment);
@@ -42,6 +53,8 @@ class EquipmentController extends AbstractController
             if (!$this->isCsrfTokenValid('new_equipment', $token)) {
                 throw $this->createAccessDeniedException('CSRF token is invalid.');
             }
+            // Automatically assign the current user
+            $equipment->setAssignedUser($this->security->getUser());
 
             $this->handleImages($form->get('images')->getData(), $equipment, $entityManager, $pictureService);
             $equipment->setCreatedAt(new \DateTimeImmutable());
@@ -79,10 +92,11 @@ class EquipmentController extends AbstractController
             if (!$this->isCsrfTokenValid('equipment_edit_' . $equipment->getId(), $token)) {
                 throw $this->createAccessDeniedException('CSRF token is invalid.');
             }
+            $equipment->setAssignedUser($this->security->getUser());
 
             $this->handleExistingImages($equipment, $entityManager, $pictureService, $form->get('images')->getData());
             $this->handleImages($form->get('images')->getData(), $equipment, $entityManager, $pictureService);
-            
+
 
             if ($this->isSlugUnique($equipment, $entityManager)) {
                 $entityManager->persist($equipment);
@@ -114,7 +128,7 @@ class EquipmentController extends AbstractController
             $pictureService->delete($image->getName(), 'equipments', 300, 300);
         }
 
-        
+
 
         $entityManager->remove($equipment);
         $entityManager->flush();

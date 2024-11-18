@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Order List{% endblock %}
+
+{% block body %}
+    <h1>All Orders</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                <tr>
+                    <td>{{ order.id }}</td>
+                    <td>{{ order.customer.name }}</td>
+                    <td>{{ order.status }}</td>
+                    <td>
+                        <a href="{{ path('order_show', {id: order.id}) }}">View</a> | 
+                        <a href="{{ path('order_validate', {id: order.id}) }}" 
+                           {% if order.status == 'paid' %} class="disabled" {% endif %}>Validate</a>
+                        | <a href="{{ path('order_invoice', {id: order.id}) }}">Generate Invoice</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

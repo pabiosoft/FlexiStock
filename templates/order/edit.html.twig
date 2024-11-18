@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Order{% endblock %}
+
+{% block body %}
+    <h1>Edit Order</h1>
+
+    {{ form_start(form) }}
+        {{ form_row(form.customer) }}
+        {{ form_row(form.supplier) }}
+        {{ form_row(form.orderDate) }}
+        {{ form_row(form.status) }}
+
+        <button class="btn btn-primary">Update Order</button>
+    {{ form_end(form) }}
+{% endblock %}

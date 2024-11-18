@@ -27,27 +27,32 @@ class MovementController extends AbstractController
     {
         $movement = new Movement();
         $form = $this->createForm(MovementType::class, $movement);
-
+    
         // Handle the form submission
         $form->handleRequest($request);
-
+    
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                // Create the movement using the service
-                $this->movementService->createMovement($movement);
-
-                // Add a flash message for success
-                $this->addFlash('success', 'Movement created successfully!');
-
-                // Redirect to the movement index or detail page
-                return $this->redirectToRoute('movement_index');
+                // If the quantity becomes negative, add a flash message
+                if ($movement->getType() === 'OUT' && $movement->getQuantity() < 0) {
+                    $this->addFlash('error', 'Quantity must be greater than or equal to 0.');
+                } else {
+                    // Create the movement using the service
+                    $this->movementService->createMovement($movement);
+    
+                    // Add a flash message for success
+                    $this->addFlash('success', 'Movement created successfully!');
+    
+                    // Redirect to the movement index or detail page
+                    return $this->redirectToRoute('movement_index');
+                }
             } catch (\Exception $e) {
                 // Add a form error in case of an invalid movement type
                 $form->get('type')->addError(new FormError('Invalid movement type.'));
                 $this->addFlash('error', 'An error occurred: ' . $e->getMessage());
             }
         }
-
+    
         return $this->render('movement/new.html.twig', [
             'form' => $form->createView(),
         ]);

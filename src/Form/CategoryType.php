@@ -17,10 +17,10 @@ class CategoryType extends AbstractType
             ->add('name', TextType::class, [
                 'label' => 'Category Name',
             ])
-            ->add('description', TextType::class, [
-                'label' => 'Description',
-                'required' => false,
-            ])
+            // ->add('description', TextType::class, [
+            //     'label' => 'Description',
+            //     'required' => false,
+            // ])
             ->add('categoryOrder', TextType::class, [
                 'label' => 'Order',
                 'required' => false,

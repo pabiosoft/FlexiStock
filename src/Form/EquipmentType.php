@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Entity\User;
 use App\Entity\Category;
 use App\Entity\Equipment;
 use App\Enum\EquipmentStatus;
@@ -108,7 +109,21 @@ class EquipmentType extends AbstractType
                     'data-category-target' => true, // For JavaScript targeting if needed
                 ],
             ])
+            ->add('stockQuantity', null, [
+                'label' => 'Quantité en Stock',
+            ])
+            // ->add('createdBy', EntityType::class, [
             
+            // ->add('assignedUser', EntityType::class, [ 
+            //     'class' => User::class, 
+            //     'choice_label' => 'name', 
+            //     'label' => 'Assigned User', 
+            //     'placeholder' => 'Select a User', 
+            //     'required' => false,
+            //     'desabled' => true,
+            //     'attr' => [ 
+            //         'class' => 'mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm', 
+            //     ], ])
             
         ;
     }

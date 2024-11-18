@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Manage Stock{% endblock %}
+
+{% block body %}
+    <h1>Manage Stock</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Available Stock</th>
+                <th>Reserved Quantity</th>
+                <th>Total Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for equipment in equipmentList %}
+                <tr>
+                    <td>{{ equipment.name }}</td>
+                    <td>{{ equipment.stockQuantity - equipment.reservedQuantity }}</td>
+                    <td>{{ equipment.reservedQuantity }}</td>
+                    <td>{{ equipment.stockQuantity }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

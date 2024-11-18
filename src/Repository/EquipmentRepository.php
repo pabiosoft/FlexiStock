@@ -40,4 +40,19 @@ class EquipmentRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    public function getAvailableStock(Equipment $equipment): int
+    {
+        // Example: Return available stock by calculating stock minus sales/reservations
+        $totalStock = $equipment->getQuantity(); // Assume this exists
+        $soldStock = $this->calculateSoldStock($equipment);
+
+        return $totalStock - $soldStock;
+    }
+
+    private function calculateSoldStock(Equipment $equipment): int
+    {
+        // Logic to calculate sold/reserved stock
+        return 0; // Example: Replace with real calculation logic
+    }
 }

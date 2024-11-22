@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use App\enum\OrderStatus;
+use App\enum\PaymentStatus;
 use App\Repository\OrderRequestRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -21,6 +23,9 @@ class OrderRequest
 
     #[ORM\Column(type: 'string', length: 20)]
     private string $status = 'pending';
+
+    #[ORM\Column(type: 'string', length: 20)]
+    private string $paymentStatus ='pending';
 
     #[ORM\ManyToOne(targetEntity: Supplier::class)]
     #[ORM\JoinColumn(nullable: true)]
@@ -43,19 +48,16 @@ class OrderRequest
     private \DateTimeInterface $createdAt;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    private?\DateTimeInterface $validatedAt = null;
+    private ?\DateTimeInterface $validatedAt = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $notes = null;
 
     public function __construct()
     {
-
         $this->items = new ArrayCollection();
         $this->orderDate = new \DateTimeImmutable();
         $this->createdAt = new \DateTimeImmutable();
-        $this->validatedAt = new \DateTimeImmutable();
-
     }
 
     #[ORM\PrePersist]
@@ -89,6 +91,17 @@ class OrderRequest
     public function setStatus(string $status): self
     {
         $this->status = $status;
+        return $this;
+    }
+
+    public function getPaymentStatus(): string
+    {
+        return $this->paymentStatus;
+    }
+
+    public function setPaymentStatus(string $paymentStatus): self
+    {
+        $this->paymentStatus = $paymentStatus;
         return $this;
     }
 
@@ -166,12 +179,12 @@ class OrderRequest
         $this->receivedAt = $receivedAt;
         return $this;
     }
-    
-    public function getValidatedAt():?\DateTimeInterface
+
+    public function getValidatedAt(): ?\DateTimeInterface
     {
         return $this->validatedAt;
     }
-    
+
     public function setValidatedAt(?\DateTimeInterface $validatedAt): self
     {
         $this->validatedAt = $validatedAt;
@@ -203,6 +216,12 @@ class OrderRequest
     public function updateStatus(string $newStatus): self
     {
         $this->status = $newStatus;
+        return $this;
+    }
+
+    public function updatePaymentStatus(string $newPaymentStatus): self
+    {
+        $this->paymentStatus = $newPaymentStatus;
         return $this;
     }
 }

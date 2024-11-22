@@ -22,33 +22,33 @@ class OrderType extends AbstractType
     {
         $builder
             // Add a collection of equipments and quantities
-            ->add('items', CollectionType::class, [
-                'entry_type' => OrderItemType::class,
-                'entry_options' => [
-                    'equipment_choices' => $options['equipment_choices'], // Pass equipment choices
-                ],
-                'allow_add' => true,
-                'allow_delete' => true,
-            ])
+            // ->add('items', CollectionType::class, [
+            //     'entry_type' => OrderItemType::class,
+            //     'entry_options' => [
+            //         'equipment_choices' => $options['equipment_choices'], // Pass equipment choices
+            //     ],
+            //     'allow_add' => true,
+            //     'allow_delete' => true,
+            // ])
             ->add('supplier', EntityType::class, [
                 'class' => Supplier::class,
                 'choice_label' => 'name',
             ])
-            ->add('status', ChoiceType::class, [
-                'choices' => [
-                    'Pending' => 'Pending',
-                    'Approved' => 'Approved',
-                    'Rejected' => 'Rejected',
-                ],
-            ])
+            // ->add('status', ChoiceType::class, [
+            //     'choices' => [
+            //         'Pending' => 'Pending',
+            //         'Approved' => 'Approved',
+            //         'Rejected' => 'Rejected',
+            //     ],
+            // ])
            ->add('customer', EntityType::class, [
                 'class' => User::class,
                 'choice_label' => 'name',
             ])
-            ->add('orderDate', DateType::class, [ 
-                'widget' => 'single_text', 
-                'disabled' => true, 
-            ]);
+            // ->add('orderDate', DateType::class, [ 
+            //     'widget' => 'single_text', 
+            //     'disabled' => true, 
+            // ]);
                     
             ;
     }

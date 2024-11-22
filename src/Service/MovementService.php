@@ -112,10 +112,10 @@ class MovementService
 
         try {
             if ($movement->getType() === 'IN') {
-                $equipment->setQuantity($equipment->getQuantity() - $movement->getQuantity());
+                $equipment->setStockQuantity($equipment->getStockQuantity() - $movement->getQuantity());
             } elseif ($movement->getType() === 'OUT') {
-                $equipment->setQuantity($equipment->getQuantity() + $movement->getQuantity());
-                $equipment->setQuantity(max(0, $equipment->getQuantity()));
+                $equipment->setStockQuantity($equipment->getStockQuantity() + $movement->getQuantity());
+                $equipment->setStockQuantity(max(0, $equipment->getStockQuantity()));
             }
 
             $this->entityManager->remove($movement);

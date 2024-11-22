@@ -40,6 +40,9 @@
         <div class="mt-4">
             <a href="{{ path('order_validate', {id: order.id}) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Validate Order</a>
         </div>
+        <div class="mt-4">
+            <a href="{{ path('order_cancel', {id: order.id}) }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Cancel Order</a>
+        </div>
     {% endif %}
 </div>
 {% endblock %}

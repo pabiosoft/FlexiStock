@@ -79,21 +79,40 @@ class Equipment
     #[ORM\JoinTable(name: "equipment_subcategories")]
     private Collection $subcategories;
 
+    #[ORM\OneToMany(mappedBy: 'equipment', targetEntity: Movement::class, cascade: ['remove'])]
+    private Collection $movements;
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
         $this->subcategories = new ArrayCollection();
+        $this->movements = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->stockQuantity = 0;
         $this->reservedQuantity = 0;
         $this->minThreshold = 1;
     }
 
-    // Reservation Management Methods
+    // Méthodes de gestion du stock
+    public function getAvailableStock(): int
+    {
+        return $this->stockQuantity - $this->reservedQuantity;
+    }
+
+    public function canReserve(int $quantity): bool
+    {
+        return $quantity <= $this->getAvailableStock();
+    }
+
     public function reserve(int $quantity): self
     {
-        if ($quantity > ($this->stockQuantity - $this->reservedQuantity)) {
-            throw new \LogicException('Not enough stock available to reserve.');
+        if (!$this->canReserve($quantity)) {
+            throw new \LogicException(sprintf(
+                'Stock insuffisant pour %s. Demandé: %d, Disponible: %d',
+                $this->name,
+                $quantity,
+                $this->getAvailableStock()
+            ));
         }
 
         $this->reservedQuantity += $quantity;
@@ -103,17 +122,38 @@ class Equipment
     public function release(int $quantity): self
     {
         if ($quantity > $this->reservedQuantity) {
-            throw new \LogicException('Cannot release more than reserved.');
+            throw new \LogicException(sprintf(
+                'Impossible de libérer plus que la quantité réservée. Demandé: %d, Réservé: %d',
+                $quantity,
+                $this->reservedQuantity
+            ));
         }
 
         $this->reservedQuantity -= $quantity;
         return $this;
     }
 
-    public function adjustStockAfterReservation(int $quantity): self
+    public function adjustStock(int $quantity, string $type): self
     {
-        $this->stockQuantity -= $quantity;
+        if ($type === 'OUT' && $quantity > $this->getAvailableStock()) {
+            throw new \LogicException(sprintf(
+                'Stock insuffisant pour %s. Demandé: %d, Disponible: %d',
+                $this->name,
+                $quantity,
+                $this->getAvailableStock()
+            ));
+        }
+
+        $this->stockQuantity = $type === 'IN' 
+            ? $this->stockQuantity + $quantity 
+            : $this->stockQuantity - $quantity;
+
         return $this;
+    }
+
+    public function isLowStock(): bool
+    {
+        return $this->getAvailableStock() <= $this->minThreshold;
     }
 
     // Getters and Setters
@@ -206,6 +246,9 @@ class Equipment
 
     public function setStockQuantity(int $stockQuantity): self
     {
+        if ($stockQuantity < 0) {
+            throw new \InvalidArgumentException('La quantité en stock ne peut pas être négative.');
+        }
         $this->stockQuantity = $stockQuantity;
         return $this;
     }
@@ -217,6 +260,12 @@ class Equipment
 
     public function setReservedQuantity(int $reservedQuantity): self
     {
+        if ($reservedQuantity < 0) {
+            throw new \InvalidArgumentException('La quantité réservée ne peut pas être négative.');
+        }
+        if ($reservedQuantity > $this->stockQuantity) {
+            throw new \InvalidArgumentException('La quantité réservée ne peut pas dépasser le stock total.');
+        }
         $this->reservedQuantity = $reservedQuantity;
         return $this;
     }
@@ -228,6 +277,9 @@ class Equipment
 
     public function setMinThreshold(int $minThreshold): self
     {
+        if ($minThreshold < 0) {
+            throw new \InvalidArgumentException('Le seuil minimum ne peut pas être négatif.');
+        }
         $this->minThreshold = $minThreshold;
         return $this;
     }
@@ -239,6 +291,9 @@ class Equipment
 
     public function setPrice(?float $price): self
     {
+        if ($price !== null && $price < 0) {
+            throw new \InvalidArgumentException('Le prix ne peut pas être négatif.');
+        }
         $this->price = $price;
         return $this;
     }
@@ -250,6 +305,9 @@ class Equipment
 
     public function setSalePrice(?float $salePrice): self
     {
+        if ($salePrice !== null && $salePrice < 0) {
+            throw new \InvalidArgumentException('Le prix de vente ne peut pas être négatif.');
+        }
         $this->salePrice = $salePrice;
         return $this;
     }
@@ -258,7 +316,6 @@ class Equipment
     {
         return $this->createdAt;
     }
-
     public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
@@ -298,7 +355,6 @@ class Equipment
             $this->images[] = $image;
             $image->setEquipment($this);
         }
-
         return $this;
     }
 
@@ -309,7 +365,6 @@ class Equipment
                 $image->setEquipment(null);
             }
         }
-
         return $this;
     }
 
@@ -323,13 +378,36 @@ class Equipment
         if (!$this->subcategories->contains($subcategory)) {
             $this->subcategories[] = $subcategory;
         }
-
         return $this;
     }
 
     public function removeSubcategory(Category $subcategory): self
     {
         $this->subcategories->removeElement($subcategory);
+        return $this;
+    }
+
+    public function getMovements(): Collection
+    {
+        return $this->movements;
+    }
+
+    public function addMovement(Movement $movement): self
+    {
+        if (!$this->movements->contains($movement)) {
+            $this->movements[] = $movement;
+            $movement->setEquipment($this);
+        }
+        return $this;
+    }
+
+    public function removeMovement(Movement $movement): self
+    {
+        if ($this->movements->removeElement($movement)) {
+            if ($movement->getEquipment() === $this) {
+                $movement->setEquipment(null);
+            }
+        }
         return $this;
     }
 

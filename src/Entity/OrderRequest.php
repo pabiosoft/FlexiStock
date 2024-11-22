@@ -52,6 +52,9 @@ class OrderRequest
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $notes = null;
+    
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $paymentMethod = null;
 
     public function __construct()
     {
@@ -71,7 +74,17 @@ class OrderRequest
     {
         return $this->id;
     }
+    public function getPaymentMethod(): ?string
+    {
+        return $this->paymentMethod;
+    }
 
+    public function setPaymentMethod(?string $paymentMethod): self
+    {
+        $this->paymentMethod = $paymentMethod;
+
+        return $this;
+    }
     public function getOrderDate(): \DateTimeInterface
     {
         return $this->orderDate;

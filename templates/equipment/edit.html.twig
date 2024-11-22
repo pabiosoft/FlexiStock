@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Equipment
+{% endblock %}
+
+{% block body %}
+	{% include "_partials/_flush.html.twig" %}
+	{% include '_partials/_adminav.html.twig' %}
+	<main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5">
+		<div class="px-6 py-8 lg:px-8">
+			<h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">Modify Equipment</h1>
+			<a href="{{ path('equipment_index') }}">Back to list</a>
+			{{ form_start(equipmentForm) }}
+			{{ form_widget(equipmentForm) }}
+			<input type="hidden" name="_token" value="{{ csrf_token('equipment_edit_' ~ equipment.id) }}">
+			<button type="submit" class="btn btn-primary">Modify</button>
+			{{ form_end(equipmentForm) }}
+		</div>
+	</main>
+{% endblock %}

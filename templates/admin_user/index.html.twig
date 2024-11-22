@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello AdminUserController!
+{% endblock %}
+
+{% block body %}
+	{% include '_partials/_adminav.html.twig' %}
+	{% include "_partials/_flush.html.twig" %}
+
+
+	<main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5">
+		<div class="px-4 sm:px-6 lg:px-8">
+			<div class="sm:flex sm:items-center">
+				<div class="sm:flex-auto">
+					<h1 class="text-xl font-semibold text-gray-900">Users</h1>
+				</div>
+				<div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+					<a type="button" href="{{ path('admin_user_new') }}" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">Add user</a>
+				</div>
+			</div>
+			<div class="mt-8 flex flex-col">
+				<div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+					<div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+						<div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+							<table class="min-w-full divide-y divide-gray-300">
+								<thead class="bg-gray-50">
+									<tr>
+										<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Id</th>
+										<th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Name</th>
+										<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Email</th>
+										<th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Role</th>
+										<th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+											<span class="sr-only">Edit</span>
+										</th>
+									</tr>
+								</thead>
+								<tbody class="divide-y divide-gray-200 bg-white">
+									{% for user in users %}
+										<tr>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ user.id }}</td>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ user.name }}</td>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ user.email }}</td>
+											<td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+												{% for role in user.roles %}
+													{% if role == 'ROLE_ADMIN' %}
+														{% set roleName = 'ADMIN' %}
+														{% set color = 'bg-red-500' %}
+													{% elseif role == 'ROLE_MANAGER' %}
+														{% set roleName = 'MANAGER' %}
+														{% set color = 'bg-yellow-500' %}
+													{% elseif role == 'ROLE_EMPLOYEE' %}
+														{% set roleName = 'EMPLOYEE' %}
+														{% set color = 'bg-green-500' %}
+													{% elseif role == 'ROLE_USER' %}
+														{% set roleName = 'USER' %}
+														{% set color = 'bg-blue-500' %}
+													{% endif %}
+													
+													<span class="{{ color }} inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium leading-4 text-white">{{ roleName }}</span>
+
+												{% endfor %}
+											</td>
+											<td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+												<a href="#">
+													<i class="fa-solid fa-eye text-blue-900 text-3xl"></i>
+												</a>
+												<a href="{{ path('admin_user_edit', {'id': user.id}) }}">
+													<i class="fa-solid fa-pen-to-square text-blue-900 text-3xl"></i>
+												</a>
+												<form method="post" action="{{ path('admin_user_delete', {'id': user.id}) }}" style="display:inline;">
+													<input type="hidden" name="_token" value="{{ csrf_token('user_delete_' ~ user.id) }}">
+													<button type="submit">
+														<i class="fa-solid fa-trash text-red-600 text-3xl"></i>
+													</button>
+												</form>
+											</td>
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+{% endblock %}

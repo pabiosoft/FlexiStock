@@ -1,17 +1,23 @@
 <?php
 
-// src/Entity/Equipment.php
-
 namespace App\Entity;
 
-use App\Enum\EquipmentStatus;
+use App\Entity\User;
+use App\Entity\Images;
+use App\Entity\Category;
+use App\Entity\Trait\SlugTrait;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\EquipmentRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: EquipmentRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Equipment
 {
+    use SlugTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -39,16 +45,78 @@ class Equipment
     private string $status;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
-    private int $quantity;
+    #[Assert\GreaterThanOrEqual(0)]
+    private int $stockQuantity;
+
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    #[Assert\GreaterThanOrEqual(0)]
+    private int $reservedQuantity = 0;
 
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
+    #[Assert\GreaterThanOrEqual(0)]
     private int $minThreshold;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?float $price;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?float $salePrice;
 
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
-    // Getters and Setters
+    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'equipmentItems')]
+    #[ORM\JoinColumn(nullable: false)]
+    private Category $category;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    private ?User $assignedUser;
+
+    #[ORM\OneToMany(mappedBy: 'equipment', targetEntity: Images::class, cascade: ['persist'], orphanRemoval: true)]
+    private Collection $images;
+
+    #[ORM\ManyToMany(targetEntity: Category::class)]
+    #[ORM\JoinTable(name: "equipment_subcategories")]
+    private Collection $subcategories;
+
+    public function __construct()
+    {
+        $this->images = new ArrayCollection();
+        $this->subcategories = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->stockQuantity = 0;
+        $this->reservedQuantity = 0;
+        $this->minThreshold = 1;
+    }
+
+    // Reservation Management Methods
+    public function reserve(int $quantity): self
+    {
+        if ($quantity > ($this->stockQuantity - $this->reservedQuantity)) {
+            throw new \LogicException('Not enough stock available to reserve.');
+        }
+
+        $this->reservedQuantity += $quantity;
+        return $this;
+    }
+
+    public function release(int $quantity): self
+    {
+        if ($quantity > $this->reservedQuantity) {
+            throw new \LogicException('Cannot release more than reserved.');
+        }
+
+        $this->reservedQuantity -= $quantity;
+        return $this;
+    }
+
+    public function adjustStockAfterReservation(int $quantity): self
+    {
+        $this->stockQuantity -= $quantity;
+        return $this;
+    }
+
+    // Getters and Setters
     public function getId(): int
     {
         return $this->id;
@@ -62,7 +130,6 @@ class Equipment
     public function setName(string $name): self
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -74,7 +141,6 @@ class Equipment
     public function setBrand(?string $brand): self
     {
         $this->brand = $brand;
-
         return $this;
     }
 
@@ -86,7 +152,6 @@ class Equipment
     public function setModel(?string $model): self
     {
         $this->model = $model;
-
         return $this;
     }
 
@@ -98,7 +163,6 @@ class Equipment
     public function setSerialNumber(string $serialNumber): self
     {
         $this->serialNumber = $serialNumber;
-
         return $this;
     }
 
@@ -110,7 +174,6 @@ class Equipment
     public function setPurchaseDate(?\DateTimeInterface $purchaseDate): self
     {
         $this->purchaseDate = $purchaseDate;
-
         return $this;
     }
 
@@ -122,7 +185,6 @@ class Equipment
     public function setWarrantyDate(?\DateTimeInterface $warrantyDate): self
     {
         $this->warrantyDate = $warrantyDate;
-
         return $this;
     }
 
@@ -134,19 +196,28 @@ class Equipment
     public function setStatus(string $status): self
     {
         $this->status = $status;
-
         return $this;
     }
 
-    public function getQuantity(): int
+    public function getStockQuantity(): int
     {
-        return $this->quantity;
+        return $this->stockQuantity;
     }
 
-    public function setQuantity(int $quantity): self
+    public function setStockQuantity(int $stockQuantity): self
     {
-        $this->quantity = $quantity;
+        $this->stockQuantity = $stockQuantity;
+        return $this;
+    }
 
+    public function getReservedQuantity(): int
+    {
+        return $this->reservedQuantity;
+    }
+
+    public function setReservedQuantity(int $reservedQuantity): self
+    {
+        $this->reservedQuantity = $reservedQuantity;
         return $this;
     }
 
@@ -158,7 +229,28 @@ class Equipment
     public function setMinThreshold(int $minThreshold): self
     {
         $this->minThreshold = $minThreshold;
+        return $this;
+    }
 
+    public function getPrice(): ?float
+    {
+        return $this->price;
+    }
+
+    public function setPrice(?float $price): self
+    {
+        $this->price = $price;
+        return $this;
+    }
+
+    public function getSalePrice(): ?float
+    {
+        return $this->salePrice;
+    }
+
+    public function setSalePrice(?float $salePrice): self
+    {
+        $this->salePrice = $salePrice;
         return $this;
     }
 
@@ -170,7 +262,86 @@ class Equipment
     public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
+        return $this;
+    }
+
+    public function getCategory(): Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(Category $category): self
+    {
+        $this->category = $category;
+        return $this;
+    }
+
+    public function getAssignedUser(): ?User
+    {
+        return $this->assignedUser;
+    }
+
+    public function setAssignedUser(?User $assignedUser): self
+    {
+        $this->assignedUser = $assignedUser;
+        return $this;
+    }
+
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(Images $image): self
+    {
+        if (!$this->images->contains($image)) {
+            $this->images[] = $image;
+            $image->setEquipment($this);
+        }
 
         return $this;
+    }
+
+    public function removeImage(Images $image): self
+    {
+        if ($this->images->removeElement($image)) {
+            if ($image->getEquipment() === $this) {
+                $image->setEquipment(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getSubcategories(): Collection
+    {
+        return $this->subcategories;
+    }
+
+    public function addSubcategory(Category $subcategory): self
+    {
+        if (!$this->subcategories->contains($subcategory)) {
+            $this->subcategories[] = $subcategory;
+        }
+
+        return $this;
+    }
+
+    public function removeSubcategory(Category $subcategory): self
+    {
+        $this->subcategories->removeElement($subcategory);
+        return $this;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updateSlug(): void
+    {
+        $this->initializeSlug($this->getName());
+    }
+
+    public function __toString(): string
+    {
+        return $this->name;
     }
 }

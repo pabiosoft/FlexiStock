@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum MouvementType: string
+enum MovementChoice: string
 {
     case IN = 'in';
     case OUT = 'out';
@@ -13,5 +13,9 @@ enum MouvementType: string
             self::IN,
             self::OUT,
         ];
+    }
+     public function toString(): string
+    {
+        return $this->value;
     }
 }

@@ -14,13 +14,9 @@ class StockService
      */
     public function checkStock(OrderItem $orderItem): bool
     {
-        // Get the equipment associated with the order item
         $equipment = $orderItem->getEquipment();
-
-        // Calculate the available stock: total stock - reserved stock
         $availableStock = $equipment->getStockQuantity() - $equipment->getReservedQuantity();
 
-        // Return true if the requested quantity is less than or equal to available stock
         return $orderItem->getQuantity() <= $availableStock;
     }
 
@@ -31,32 +27,34 @@ class StockService
      */
     public function reserveStock(OrderItem $orderItem): void
     {
-        // Get the equipment associated with the order item
         $equipment = $orderItem->getEquipment();
 
-        // Reserve the stock by increasing the reserved quantity
+        // Update reserved quantity without reducing stock directly
         $equipment->setReservedQuantity($equipment->getReservedQuantity() + $orderItem->getQuantity());
-
-        // Optionally, reduce the available stock to reflect the reservation
-        $equipment->setStockQuantity($equipment->getStockQuantity() - $orderItem->getQuantity());
-
-        // Persist changes (this should be handled in the controller or service layer)
     }
 
     /**
-     * Finalizes the stock after the order has been completed.
+     * Finalizes stock after an order is completed.
      * 
      * @param OrderItem $orderItem The order item to finalize stock for
      */
     public function finalizeStock(OrderItem $orderItem): void
     {
-        // Get the equipment associated with the order item
         $equipment = $orderItem->getEquipment();
 
-        // Remove the reservation (cancel the reservation made earlier)
+        // Deduct reserved stock and reduce actual stock
         $equipment->setReservedQuantity($equipment->getReservedQuantity() - $orderItem->getQuantity());
-
-        // Reduce the stock quantity to reflect the completed order
         $equipment->setStockQuantity($equipment->getStockQuantity() - $orderItem->getQuantity());
+    }
+
+    /**
+     * Cancels stock reservation for an order item.
+     * 
+     * @param OrderItem $orderItem The order item to cancel reservation for
+     */
+     public function cancelReservation(OrderItem $orderItem): void
+    {
+        $equipment = $orderItem->getEquipment();
+        $equipment->setReservedQuantity($equipment->getReservedQuantity() - $orderItem->getQuantity());
     }
 }

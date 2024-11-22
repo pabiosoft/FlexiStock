@@ -71,9 +71,9 @@ class EquipmentType extends AbstractType
                 'multiple' => false,
                 'label' => 'Statut',
             ])
-            ->add('quantity', null, [
-                'label' => 'Quantité',
-            ])
+            // ->add('quantity', null, [
+            //     'label' => 'Quantité',
+            // ])
             ->add('minThreshold', null, [
                 'label' => 'Seuil Minimum',
             ])

@@ -2,9 +2,8 @@
 
 namespace App\Entity;
 
-use App\Enum\ReservationStatus;
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ReservationRepository;
+use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 class Reservation
@@ -18,6 +17,9 @@ class Reservation
     #[ORM\JoinColumn(nullable: false)]
     private Equipment $equipment;
 
+    #[ORM\Column(type: 'integer')]
+    private int $reservedQuantity;
+
     #[ORM\Column(type: 'string', length: 20)]
     private string $status;
 
@@ -27,8 +29,13 @@ class Reservation
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $returnDate;
 
-    // Getters and Setters
+    public function __construct()
+    {
+        $this->reservationDate = new \DateTimeImmutable();
+        $this->reservedQuantity = 0;
+    }
 
+    // Getters and Setters
     public function getId(): int
     {
         return $this->id;
@@ -42,6 +49,18 @@ class Reservation
     public function setEquipment(Equipment $equipment): self
     {
         $this->equipment = $equipment;
+
+        return $this;
+    }
+
+    public function getReservedQuantity(): int
+    {
+        return $this->reservedQuantity;
+    }
+
+    public function setReservedQuantity(int $reservedQuantity): self
+    {
+        $this->reservedQuantity = $reservedQuantity;
 
         return $this;
     }

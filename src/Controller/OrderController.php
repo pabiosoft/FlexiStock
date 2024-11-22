@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Form\OrderType;
+use App\Entity\Equipment;
 use App\Entity\OrderItem;
 use App\Entity\OrderRequest;
 use App\Service\OrderService;
@@ -13,9 +14,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Entity\Reservation; // Add this line to import the Reservation class
 
 class OrderController extends AbstractController
 {
@@ -23,87 +25,137 @@ class OrderController extends AbstractController
     private OrderService $orderService;
     private InvoiceService $invoiceService;
 
-    public function __construct(EntityManagerInterface $entityManager, OrderService $orderService, InvoiceService $invoiceService)
-    {
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        OrderService $orderService,
+        InvoiceService $invoiceService
+    ) {
         $this->entityManager = $entityManager;
         $this->orderService = $orderService;
         $this->invoiceService = $invoiceService;
     }
 
-    #[Route('/order/create', name: 'order_create')]
-    public function create(
-        Request $request,
-        StockService $stockService,
-        EquipmentRepository $equipmentRepository
-    ): Response {
-        $orderRequest = new OrderRequest();
-        $orderItem = new OrderItem();
-        $orderItem->setQuantity(1); // Example default quantity
-        $orderRequest->addItem($orderItem); // Add the OrderItem to the OrderRequest
+    // Add to cart
+   // Add to cart
+   #[Route('/order/add-to-cart/{equipmentId}', name: 'order_add_to_cart')]
+   public function addToCart(
+       $equipmentId,
+       SessionInterface $session,
+       EquipmentRepository $equipmentRepository
+   ): Response {
+       $equipment = $equipmentRepository->find($equipmentId);
 
-        $equipmentChoices = $equipmentRepository->findBy([], ['name' => 'ASC']); // Fetch equipment choices();
-        
+       if (!$equipment) {
+           throw $this->createNotFoundException('Equipment not found.');
+       }
 
-        // Create the form for the OrderRequest entity
-        $form = $this->createForm(OrderType::class, $orderRequest, [
-            'equipment_choices' => $equipmentChoices, // Pass the equipment choices to the form
-        ]);
+       $cart = $session->get('cart', []);
+       if (!isset($cart[$equipmentId])) {
+           $cart[$equipmentId] = [
+               'equipment' => $equipment,
+               'quantity' => 1,
+               'unitPrice' => $equipment->getPrice(),
+               'totalPrice' => $equipment->getPrice(),
+           ];
+       } else {
+           $cart[$equipmentId]['quantity'] += 1;
+           $cart[$equipmentId]['totalPrice'] += $equipment->getPrice();
+       }
 
-        $form->handleRequest($request);
+       $session->set('cart', $cart);
+       $this->addFlash('success', 'Item added to cart!');
+       return $this->redirectToRoute('order_create');
+   }
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            try {
-                // Check stock availability for all items
-                $insufficientItems = [];
-                foreach ($orderRequest->getItems() as $item) {
-                    if (!$item || !$item->getEquipment() || !$stockService->checkStock($item)) {
-                        $insufficientItems[] = sprintf(
-                            '%s (Requested: %d, Available: %d)',
-                            $item->getEquipment()->getName(),
-                            $item->getQuantity(),
-                            $item->getEquipment()->getStockQuantity()
-                        );
-                    }
-                }
+   // Create order
+   #[Route('/order/create', name: 'order_create')]
+   public function create(
+       Request $request,
+       SessionInterface $session,
+       StockService $stockService,
+       EquipmentRepository $equipmentRepository
+   ): Response {
+       $orderRequest = new OrderRequest();
+       $cart = $session->get('cart', []);
 
-                // If there are insufficient items, show an error
-                if (!empty($insufficientItems)) {
-                    $this->addFlash('error', 'Insufficient stock for: ' . implode(', ', $insufficientItems));
-                    return $this->redirectToRoute('order_create');
-                }
+       foreach ($cart as $equipmentId => $details) {
+           $orderItem = new OrderItem();
+           $orderItem->setEquipment($this->entityManager->getRepository(Equipment::class)->find($equipmentId));
+           $orderItem->setQuantity($details['quantity']);
+           $orderItem->setUnitPrice($details['unitPrice']);
+           $orderRequest->addItem($orderItem);
+       }
 
-                // Set the order status as pending
-                $orderRequest->setStatus('pending');
-                foreach ($orderRequest->getItems() as $item) {
-                    if (!$item) {
-                        throw new \RuntimeException('Order item is null');
-                    }
-                    $stockService->reserveStock($item); // Reserve stock for each item
-                }
+       $form = $this->createForm(OrderType::class, $orderRequest);
+       $form->handleRequest($request);
 
-                // Persist the order and flush to database
-                $this->entityManager->persist($orderRequest);
-                $this->entityManager->flush();
+       if ($form->isSubmitted() && $form->isValid()) {
+           try {
+               $insufficientItems = [];
+               foreach ($orderRequest->getItems() as $item) {
+                   if (!$stockService->checkStock($item)) {
+                       $insufficientItems[] = sprintf(
+                           '%s (Requested: %d, Available: %d)',
+                           $item->getEquipment()->getName(),
+                           $item->getQuantity(),
+                           $item->getEquipment()->getStockQuantity()
+                       );
+                   }
+               }
 
-                // Generate the invoice
-                // $this->invoiceService->generateInvoice($orderRequest);
+               if (!empty($insufficientItems)) {
+                   $this->addFlash('error', 'Insufficient stock for: ' . implode(', ', $insufficientItems));
+                   return $this->redirectToRoute('order_create');
+               }
 
-                $this->addFlash('success', 'Order placed successfully!');
-                return $this->redirectToRoute('order_show', ['id' => $orderRequest->getId()]);
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'An unexpected error occurred. Please contact support: ' . $e->getMessage());
-            }
+               foreach ($orderRequest->getItems() as $item) {
+                   $stockService->reserveStock($item);
+
+                   // Create a reservation entry
+                   $reservation = new Reservation();
+                   $reservation->setEquipment($item->getEquipment());
+                   $reservation->setStatus('reserved');
+                   $reservation->setReservationDate(new \DateTime());
+                   $reservation->setReservedQuantity($item->getQuantity());
+
+                   $this->entityManager->persist($reservation);
+               }
+
+               $orderRequest->setStatus('pending');
+               $this->entityManager->persist($orderRequest);
+               $this->entityManager->flush();
+
+               $this->addFlash('success', 'Order placed successfully!');
+               $session->remove('cart');
+               return $this->redirectToRoute('order_show', ['id' => $orderRequest->getId()]);
+           } catch (\Exception $e) {
+               $this->addFlash('error', 'An unexpected error occurred: ' . $e->getMessage());
+           }
+       }
+
+       $equipmentList = $equipmentRepository->findAll();
+
+       return $this->render('order/create.html.twig', [
+           'form' => $form->createView(),
+           'cart' => $cart,
+           'equipmentList' => $equipmentList,
+       ]);
+   }
+    // Remove from cart
+    #[Route('/order/remove-from-cart/{equipmentId}', name: 'order_remove_from_cart')]
+    public function removeFromCart($equipmentId, SessionInterface $session): Response {
+        $cart = $session->get('cart', []);
+        if (isset($cart[$equipmentId])) {
+            unset($cart[$equipmentId]);
+            $session->set('cart', $cart);
         }
 
-        // Render the order creation form
-        return $this->render('order/create.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        return $this->redirectToRoute('order_create');
     }
 
+    // Show order
     #[Route('/order/{id}', name: 'order_show', requirements: ['id' => '\d+'])]
-    public function show(int $id): Response
-    {
+    public function show(int $id): Response {
         $orderRequest = $this->entityManager->getRepository(OrderRequest::class)->find($id);
 
         if (!$orderRequest) {
@@ -115,37 +167,51 @@ class OrderController extends AbstractController
         ]);
     }
 
-    #[Route("/order/{id}/validate", name: "order_validate")]
-    public function validateOrder(int $id): Response
-    {
+    // List all orders
+    #[Route('/order/list', name: 'order_list')]
+    public function list(): Response {
+        $orders = $this->entityManager->getRepository(OrderRequest::class)->findAll();
+
+        return $this->render('order/index.html.twig', [
+            'orders' => $orders,
+        ]);
+    }
+
+    // Validate order
+    #[Route('/order/{id}/validate', name: 'order_validate')]
+    public function validateOrder(int $id): Response {
         $orderRequest = $this->entityManager->getRepository(OrderRequest::class)->find($id);
 
         if (!$orderRequest) {
             throw $this->createNotFoundException('Order not found.');
         }
 
-        // Mark the order as validated and paid
         $orderRequest->setStatus('validated');
-        $orderRequest->setValidatedAt(new \DateTime());
+        $this->entityManager->flush();
 
-        $this->entityManager->flush(); // Persist changes to the database
-
-        $this->addFlash('success', 'Order validated and marked as paid.');
-        return $this->redirectToRoute('order_list', ['id' => $orderRequest->getId()]);
+        $this->addFlash('success', 'Order validated.');
+        return $this->redirectToRoute('order_list');
     }
 
-    #[Route("/order/list", name: "order_list")]
-    public function list(): Response
-    {
-        $orderRequests = $this->entityManager->getRepository(OrderRequest::class)->findAll();
-        return $this->render('order/index.html.twig', [
-            'orders' => $orderRequests,
-        ]);
+    // Cancel order
+    #[Route('/order/{id}/cancel', name: 'order_cancel')]
+    public function cancelOrder(int $id): Response {
+        $orderRequest = $this->entityManager->getRepository(OrderRequest::class)->find($id);
+
+        if (!$orderRequest) {
+            throw $this->createNotFoundException('Order not found.');
+        }
+
+        $orderRequest->setStatus('cancelled');
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'Order cancelled.');
+        return $this->redirectToRoute('order_list');
     }
 
+    // Generate invoice
     #[Route('/order/{id}/invoice', name: 'order_invoice')]
-    public function generateInvoice(int $id): Response
-    {
+    public function generateInvoice(int $id): Response {
         $orderRequest = $this->entityManager->getRepository(OrderRequest::class)->find($id);
 
         if (!$orderRequest) {
@@ -156,14 +222,29 @@ class OrderController extends AbstractController
             $pdfPath = $this->invoiceService->generateInvoice($orderRequest);
             $this->addFlash('success', 'Invoice generated successfully.');
 
-            // Offer the file as a download
             return $this->file($pdfPath, 'invoice-' . $orderRequest->getId() . '.pdf');
         } catch (\Exception $e) {
             $this->addFlash('error', 'Failed to generate invoice: ' . $e->getMessage());
             return $this->redirectToRoute('order_show', ['id' => $id]);
         }
     }
-    #[Route('/order/{id}/view-invoice', name: 'order_view_invoice', requirements: ['id' => '\d+'])]
+
+    // Delete order
+    #[Route('/order/{id}/delete', name: 'order_delete', requirements: ['id' => '\d+'])]
+    public function delete(int $id): Response {
+        $orderRequest = $this->entityManager->getRepository(OrderRequest::class)->find($id);
+
+        if (!$orderRequest) {
+            throw $this->createNotFoundException('The order does not exist');
+        }
+
+        $this->entityManager->remove($orderRequest);
+        $this->entityManager->flush();
+
+        $this->addFlash('success', 'Order deleted successfully.');
+        return $this->redirectToRoute('order_list');
+    }
+     #[Route('/order/{id}/view-invoice', name: 'order_view_invoice', requirements: ['id' => '\d+'])]
     public function viewInvoice(OrderRequest $orderRequest): Response
     {
         // Path to the invoice PDF file

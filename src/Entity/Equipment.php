@@ -46,7 +46,11 @@ class Equipment
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     #[Assert\GreaterThanOrEqual(0)]
-    private int $quantity;
+    private int $stockQuantity;
+
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    #[Assert\GreaterThanOrEqual(0)]
+    private int $reservedQuantity = 0;
 
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
     #[Assert\GreaterThanOrEqual(0)]
@@ -71,58 +75,48 @@ class Equipment
     #[ORM\OneToMany(mappedBy: 'equipment', targetEntity: Images::class, cascade: ['persist'], orphanRemoval: true)]
     private Collection $images;
 
-    /**
-     * @ORM\ManyToMany(targetEntity=Category::class)
-     * @ORM\JoinTable(name="equipment_subcategories")
-     */
-    private $subcategories;
-
-
-    #[ORM\Column(type: 'integer')]
-    private int $stockQuantity;  // Total stock available
-
-    #[ORM\Column(type: 'integer')]
-    private int $reservedQuantity = 0;  // Reserved quantity for orders
-
+    #[ORM\ManyToMany(targetEntity: Category::class)]
+    #[ORM\JoinTable(name: "equipment_subcategories")]
+    private Collection $subcategories;
 
     public function __construct()
     {
         $this->images = new ArrayCollection();
-        $this->quantity = 0; // Valeur par défaut
-        $this->minThreshold = 1; // Valeur par défaut
-        $this->createdAt = new \DateTimeImmutable();
         $this->subcategories = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->stockQuantity = 0;
+        $this->reservedQuantity = 0;
+        $this->minThreshold = 1;
+    }
+
+    // Reservation Management Methods
+    public function reserve(int $quantity): self
+    {
+        if ($quantity > ($this->stockQuantity - $this->reservedQuantity)) {
+            throw new \LogicException('Not enough stock available to reserve.');
+        }
+
+        $this->reservedQuantity += $quantity;
+        return $this;
+    }
+
+    public function release(int $quantity): self
+    {
+        if ($quantity > $this->reservedQuantity) {
+            throw new \LogicException('Cannot release more than reserved.');
+        }
+
+        $this->reservedQuantity -= $quantity;
+        return $this;
+    }
+
+    public function adjustStockAfterReservation(int $quantity): self
+    {
+        $this->stockQuantity -= $quantity;
+        return $this;
     }
 
     // Getters and Setters
-
-    /**
-     * @return Collection|Category[]
-     */
-    public function getSubcategories(): Collection
-    {
-        return $this->subcategories;
-    }
-
-    public function addSubcategory(Category $subcategory): self
-    {
-        if (!$this->subcategories->contains($subcategory)) {
-            $this->subcategories[] = $subcategory;
-        }
-
-        return $this;
-    }
-
-    public function removeSubcategory(Category $subcategory): self
-    {
-        $this->subcategories->removeElement($subcategory);
-
-        return $this;
-    }
-
-    // ... other methods
-
-
     public function getId(): int
     {
         return $this->id;
@@ -205,14 +199,25 @@ class Equipment
         return $this;
     }
 
-    public function getQuantity(): int
+    public function getStockQuantity(): int
     {
-        return $this->quantity;
+        return $this->stockQuantity;
     }
 
-    public function setQuantity(int $quantity): self
+    public function setStockQuantity(int $stockQuantity): self
     {
-        $this->quantity = $quantity;
+        $this->stockQuantity = $stockQuantity;
+        return $this;
+    }
+
+    public function getReservedQuantity(): int
+    {
+        return $this->reservedQuantity;
+    }
+
+    public function setReservedQuantity(int $reservedQuantity): self
+    {
+        $this->reservedQuantity = $reservedQuantity;
         return $this;
     }
 
@@ -282,42 +287,6 @@ class Equipment
         return $this;
     }
 
-    public function getStockQuantity(): int
-    {
-        return $this->stockQuantity;
-    }
-
-    public function setStockQuantity(int $stockQuantity): self
-    {
-        $this->stockQuantity = $stockQuantity;
-        return $this;
-    }
-
-    public function getReservedQuantity(): int
-    {
-        return $this->reservedQuantity;
-    }
-
-    public function setReservedQuantity(int $reservedQuantity): self
-    {
-        $this->reservedQuantity = $reservedQuantity;
-        return $this;
-    }
-
-    public function adjustStockQuantity(int $quantity): self
-    {
-        $this->stockQuantity -= $quantity;
-        return $this;
-    }
-
-    public function adjustReservedQuantity(int $quantity): self
-    {
-        $this->reservedQuantity += $quantity;
-        return $this;
-    }
-    /**
-     * @return Collection<int, Images>
-     */
     public function getImages(): Collection
     {
         return $this->images;
@@ -344,14 +313,35 @@ class Equipment
         return $this;
     }
 
+    public function getSubcategories(): Collection
+    {
+        return $this->subcategories;
+    }
+
+    public function addSubcategory(Category $subcategory): self
+    {
+        if (!$this->subcategories->contains($subcategory)) {
+            $this->subcategories[] = $subcategory;
+        }
+
+        return $this;
+    }
+
+    public function removeSubcategory(Category $subcategory): self
+    {
+        $this->subcategories->removeElement($subcategory);
+        return $this;
+    }
+
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
     public function updateSlug(): void
     {
         $this->initializeSlug($this->getName());
     }
+
     public function __toString(): string
     {
-        return $this->name; // Ensure the equipment name is returned as a string
+        return $this->name;
     }
 }

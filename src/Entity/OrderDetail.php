@@ -11,11 +11,11 @@ class OrderDetail
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private int $id;
+    private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'orderDetails')]
+    #[ORM\ManyToOne(targetEntity: OrderRequest::class, inversedBy: 'details')]
     #[ORM\JoinColumn(nullable: false)]
-    private Order $order;
+    private OrderRequest $orderRequest;
 
     #[ORM\ManyToOne(targetEntity: Equipment::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -24,25 +24,30 @@ class OrderDetail
     #[ORM\Column(type: 'integer')]
     private int $quantity;
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    private ?float $unitPrice;
+    #[ORM\Column(type: 'float')]
+    private float $unitPrice;
 
-    // Getters and Setters
+    #[ORM\Column(type: 'float')]
+    private float $totalPrice;
 
-    public function getId(): int
+    public function __construct()
+    {
+        $this->calculateTotal();
+    }
+
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getOrder(): Order
+    public function getOrderRequest(): OrderRequest
     {
-        return $this->order;
+        return $this->orderRequest;
     }
 
-    public function setOrder(Order $order): self
+    public function setOrderRequest(OrderRequest $orderRequest): self
     {
-        $this->order = $order;
-
+        $this->orderRequest = $orderRequest;
         return $this;
     }
 
@@ -54,7 +59,6 @@ class OrderDetail
     public function setEquipment(Equipment $equipment): self
     {
         $this->equipment = $equipment;
-
         return $this;
     }
 
@@ -66,19 +70,29 @@ class OrderDetail
     public function setQuantity(int $quantity): self
     {
         $this->quantity = $quantity;
-
+        $this->calculateTotal();
         return $this;
     }
 
-    public function getUnitPrice(): ?float
+    public function getUnitPrice(): float
     {
         return $this->unitPrice;
     }
 
-    public function setUnitPrice(?float $unitPrice): self
+    public function setUnitPrice(float $unitPrice): self
     {
         $this->unitPrice = $unitPrice;
-
+        $this->calculateTotal();
         return $this;
+    }
+
+    public function getTotalPrice(): float
+    {
+        return $this->totalPrice;
+    }
+
+    private function calculateTotal(): void
+    {
+        $this->totalPrice = $this->quantity * $this->unitPrice;
     }
 }

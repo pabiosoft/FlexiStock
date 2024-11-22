@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Add New Supplier{% endblock %}
+
+{% block body %}
+	{% include "_partials/_flush.html.twig" %}
+
+<div class="container max-w-md mx-auto p-4">
+    <h1>Add New Supplier</h1>
+    {{ form_start(form) }}
+        {{ form_widget(form) }}
+        <button type="submit">Save</button>
+    {{ form_end(form) }}
+	</div>
+{% endblock %}

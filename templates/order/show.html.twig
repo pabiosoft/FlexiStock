@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Order #{{ order.id }}{% endblock %}
+
+{% block body %}
+<div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-4 text-gray-800">Order #{{ order.id }}</h1>
+    <p class="mb-2 text-lg"><strong>Status:</strong> <span class="text-blue-500">{{ order.status }}</span></p>
+    <p class="mb-2 text-lg"><strong>Order Date:</strong> {{ order.orderDate|date('Y-m-d H:i') }}</p>
+
+    <h3 class="text-2xl font-semibold mt-6 mb-4 text-gray-700">Order Items</h3>
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300 rounded-lg">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Item</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Quantity</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Unit Price</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Total Price</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for item in order.items %}
+                    <tr class="hover:bg-gray-100">
+                        <td class="px-6 py-4 whitespace-nowrap">{{ item.equipment.name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ item.quantity }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ item.unitPrice|number_format(2) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ item.totalPrice|number_format(2) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-6">
+        <a href="{{ path('order_view_invoice', { id: order.id }) }}" target="_blank" class="inline-block text-blue-600 hover:text-blue-800 font-semibold underline">View Invoice</a>
+    </div>
+
+    {% if order.status == 'pending' %}
+        <div class="mt-4">
+            <a href="{{ path('order_validate', {id: order.id}) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Validate Order</a>
+        </div>
+        <div class="mt-4">
+            <a href="{{ path('order_cancel', {id: order.id}) }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Cancel Order</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

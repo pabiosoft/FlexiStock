@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Supplier Details{% endblock %}
+
+{% block body %}
+    <h1>Supplier Details</h1>
+    <p>Name: {{ supplier.id }}</p>
+    <a href="{{ path('supplier_edit', { 'slug': supplier.slug }) }}">Edit</a>
+    <form method="post" action="{{ path('supplier_delete', { 'slug': supplier.slug }) }}" style="display:inline-block;">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ supplier.id) }}">
+        <button type="submit">Delete</button>
+    </form>
+{% endblock %}

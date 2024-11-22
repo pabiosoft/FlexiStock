@@ -2,9 +2,10 @@
 
 namespace App\Entity;
 
-use App\Enum\RequestStatus;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\RequestRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: RequestRepository::class)]
 class Request
@@ -14,69 +15,79 @@ class Request
     #[ORM\Column(type: 'integer')]
     private int $id;
 
-    #[ORM\Column(type: 'string', length: 20)]
-    private RequestStatus $status; // Use the PHP 8.1 enum directly
-
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $title;
-
-    #[ORM\Column(type: 'text')]
-    private string $content;
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private User $requester;
 
     #[ORM\Column(type: 'datetime')]
-    private \DateTimeInterface $createdAt;
+    private \DateTimeInterface $requestedAt;
 
-    // Getters and Setters
+    #[ORM\Column(type: 'string', length: 20)]
+    private string $status = 'pending'; // pending, approved, rejected, planned
+
+    #[ORM\OneToMany(targetEntity: RequestItem::class, mappedBy: 'request', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $items;
+
+    public function __construct()
+    {
+        $this->requestedAt = new \DateTime();
+        $this->items = new ArrayCollection();
+    }
 
     public function getId(): int
     {
         return $this->id;
     }
 
-    public function getStatus(): RequestStatus
+    public function getRequester(): User
+    {
+        return $this->requester;
+    }
+
+    public function setRequester(User $requester): self
+    {
+        $this->requester = $requester;
+        return $this;
+    }
+
+    public function getRequestedAt(): \DateTimeInterface
+    {
+        return $this->requestedAt;
+    }
+
+    public function getStatus(): string
     {
         return $this->status;
     }
 
-    public function setStatus(RequestStatus $status): self
+    public function setStatus(string $status): self
     {
         $this->status = $status;
+        return $this;
+    }
+
+    public function getItems(): Collection
+    {
+        return $this->items;
+    }
+
+    public function addItem(RequestItem $item): self
+    {
+        if (!$this->items->contains($item)) {
+            $this->items[] = $item;
+            $item->setRequest($this);
+        }
 
         return $this;
     }
 
-    public function getTitle(): string
+    public function removeItem(RequestItem $item): self
     {
-        return $this->title;
-    }
-
-    public function setTitle(string $title): self
-    {
-        $this->title = $title;
-
-        return $this;
-    }
-
-    public function getContent(): string
-    {
-        return $this->content;
-    }
-
-    public function setContent(string $content): self
-    {
-        $this->content = $content;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): \DateTimeInterface
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
-    {
-        $this->createdAt = $createdAt;
+        if ($this->items->removeElement($item)) {
+            if ($item->getRequest() === $this) {
+                $item->setRequest(null);
+            }
+        }
 
         return $this;
     }

@@ -33,24 +33,24 @@
 							<tr>
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ movement.id }}</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-								<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5
-															  {% if movement.type == 'IN' %}
-															 bg-green-100 text-green-800
-																  {% elseif movement.type == 'OUT' %}
-															  bg-red-100 text-red-800
-											  {% endif %}">
-								{{ movement.type }}
+									<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5
+											{% if movement.type == 'IN' %}
+											bg-green-100 text-green-800
+												{% elseif movement.type == 'OUT' %}
+											bg-red-100 text-red-800
+											{% endif %}">
+										{{ movement.type }}</td>
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ movement.quantity }}</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ movement.equipment.name }}</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
 									<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5
-															  {% if movement.equipment.quantity > 0 %}
-															 bg-green-100 text-green-800
-																  {% elseif movement.equipment.quantity == 0 %}
-															  bg-red-100 text-red-800
-											  {% endif %}">
-										{{ movement.equipment.quantity }}</td>
+											{% if movement.equipment.stockQuantity > 0 %}
+											bg-green-100 text-green-800
+											{% elseif movement.equipment.stockQuantity == 0 %}
+											bg-red-100 text-red-800
+											{% endif %}">
+										{{ movement.equipment.stockQuantity }}</td>
 								</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ movement.movementDate|date('Y-m-d') }}</td>
 								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ movement.category ? movement.category.name : 'N/A' }}</td>

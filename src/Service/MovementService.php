@@ -34,10 +34,10 @@ class MovementService
         }
 
         if ($movement->getType() === 'IN') {
-            $equipment->setQuantity($equipment->getQuantity() + $movement->getQuantity());
+            $equipment->setStockQuantity($equipment->getStockQuantity() + $movement->getQuantity());
         } elseif ($movement->getType() === 'OUT') {
-            if ($equipment->getQuantity() >= $movement->getQuantity()) {
-                $equipment->setQuantity($equipment->getQuantity() - $movement->getQuantity());
+            if ($equipment->getStockQuantity() >= $movement->getQuantity()) {
+                $equipment->setStockQuantity($equipment->getStockQuantity() - $movement->getQuantity());
             } else {
                 throw new \InvalidArgumentException('Insufficient equipment stock for this movement.');
             }
@@ -80,16 +80,16 @@ class MovementService
         }
 
         if ($originalMovement->getType() === 'IN') {
-            $equipment->setQuantity($equipment->getQuantity() - $originalMovement->getQuantity());
+            $equipment->setStockQuantity($equipment->getStockQuantity() - $originalMovement->getQuantity());
         } elseif ($originalMovement->getType() === 'OUT') {
-            $equipment->setQuantity($equipment->getQuantity() + $originalMovement->getQuantity());
+            $equipment->setStockQuantity($equipment->getStockQuantity() + $originalMovement->getQuantity());
         }
 
         if ($movement->getType() === 'IN') {
-            $equipment->setQuantity($equipment->getQuantity() + $movement->getQuantity());
+            $equipment->setStockQuantity($equipment->getStockQuantity() + $movement->getQuantity());
         } elseif ($movement->getType() === 'OUT') {
-            if ($equipment->getQuantity() >= $movement->getQuantity()) {
-                $equipment->setQuantity($equipment->getQuantity() - $movement->getQuantity());
+            if ($equipment->getStockQuantity() >= $movement->getQuantity()) {
+                $equipment->setStockQuantity($equipment->getStockQuantity() - $movement->getQuantity());
             } else {
                 throw new \InvalidArgumentException('Insufficient equipment stock for this movement.');
             }

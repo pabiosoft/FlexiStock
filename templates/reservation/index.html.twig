@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ReservationController!{% endblock %}
+
+{% block body %}
+    {% include '_partials/_flush.html.twig' %}
+    {% include '_partials/_adminav.html.twig' %}
+    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200">
+        <div class="container mx-auto px-6 py-8">
+            <h3 class="text-3xl text-gray-900 font-semibold">Reservation List</h3>
+            <div class="mt-8">
+                <div class="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
+                    <div class="inline-block min-w-full shadow rounded-lg overflow-hidden">
+                        <table class="min-w-full leading-normal">
+                            <thead>
+                            <tr>
+
+                                <th scope="col" class="px-5 py-3 bg-white  border-b border-gray-200 text-gray-800  text-left text-sm uppercase font-normal"> ID</th>
+                                <th scope="col" class="px-5 py-3 bg-white  border-b border-gray-200 text-gray-800  text-left text-sm uppercase font-normal">Customer</th>
+                                <th scope="col" class="px-5 py-3 bg-white  border-b border-gray-200 text-gray-800  text-left text-sm uppercase font-normal">Equipment</th>
+                                <th scope="col" class="px-5 py-3 bg-white  border-b border-gray-200 text-gray-800  text-left text-sm uppercase font-normal">Status Date</th>
+                                <th scope="col" class="px-5 py-3 bg-white  border-b border-gray-200 text-gray-800  text-left text-sm uppercase font-normal">Quantity</th>
+                                <th scope="col" class="px-5 py-3 bg-white  border-b border-gray-200 text-gray-800  text-left text-sm uppercase font-normal">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for reservation in reservations %}
+                                <tr>
+                                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ reservation.id }}</td>
+                                    {# <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ reservation.customer.name }}</td> #}
+                                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ reservation.equipment.name }}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ reservation.reservationDate|date('Y-m-d') }}</td>
+                                    {# <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">{{ reservation.re|date('Y-m-d') }}</td> #}
+                                    <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                        {# <a href="{{ path('reservation_edit', { 'id': reservation.id }) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a> #}
+                                        {# <a href="{{ path('reservation_delete', { 'id': reservation.id }) }}" class="text-red-600 hover:text-red-900">Delete</a> #}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

@@ -27,15 +27,21 @@ class PaymentService
         if (!$this->canProcessPayment($order)) {
             return false;
         }
-
+       
+        $order->setPaymentMethod($paymentMethod); // Store the payment method
+    //     SI LE MEETHOSE DE PAYMENT EST CASH ON DELIVERY
+    // PAYMENT STAUS = CONFIRMED
+    
         $order->setPaymentStatus(PaymentStatus::PROCESSING->value);
         $this->entityManager->flush();
+        
 
         // Simuler le processus de paiement selon la méthode
         return match($paymentMethod) {
             'card' => $this->processCardPayment($order),
             'bank_transfer' => $this->processBankTransfer($order),
             'cash_on_delivery' => $this->processCashOnDelivery($order),
+            'other' => $this->processOtherPayment($order),
             default => false,
         };
     }
@@ -46,6 +52,11 @@ class PaymentService
         if (!in_array($order->getStatus(), [OrderStatus::PENDING->value, OrderStatus::VALIDATED->value])) {
             return false;
         }
+
+        // Vérifier si le payment method est approprié
+        // if ($order->$order->getPaymentMethod() === 'cash_on_delivery') {
+        //     return 
+        // }
 
         // Vérifier si le paiement n'est pas déjà traité
         if ($order->getPaymentStatus() === PaymentStatus::SUCCESSFUL->value) {
@@ -86,8 +97,21 @@ class PaymentService
     private function processCashOnDelivery(OrderRequest $order): bool
     {
         // Marquer comme en attente de livraison
-        $order->setPaymentStatus(PaymentStatus::PENDING->value);
+        $order->setPaymentStatus(PaymentStatus::SUCCESSFUL->value);
         $this->entityManager->flush();
+
+        return true;
+    }
+
+    private function processOtherPayment(OrderRequest $order): bool
+    {
+        // Marquer comme payé
+        $order->setPaymentStatus(PaymentStatus::SUCCESSFUL->value);
+        $order->setPaymentMethod('other'); // Store 'other' as the payment method
+
+        // Enregistrer le paiement en autre
+        // $this->entityManager->flush();
+
 
         return true;
     }
@@ -105,6 +129,7 @@ class PaymentService
     public function markPaymentFailed(OrderRequest $order, string $reason): void
     {
         $order->setPaymentStatus(PaymentStatus::FAILED->value);
+        $order->setPaymentMethod(null); // Clear payment method on failure
         $this->entityManager->flush();
 
         $session = $this->requestStack->getSession();

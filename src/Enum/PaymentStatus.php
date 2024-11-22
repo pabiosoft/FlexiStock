@@ -5,6 +5,7 @@ namespace App\Enum;
 enum PaymentStatus: string
 {
     case PENDING = 'pending';
+    case CONFIRMED = 'confirmed';
     case PROCESSING = 'processing';
     case SUCCESSFUL = 'successful';
     case FAILED = 'failed';
@@ -14,6 +15,7 @@ enum PaymentStatus: string
     {
         return [
             self::PENDING->value,
+            self::CONFIRMED->value,
             self::PROCESSING->value,
             self::SUCCESSFUL->value,
             self::FAILED->value,
@@ -25,6 +27,7 @@ enum PaymentStatus: string
     {
         $allowedTransitions = [
             'pending' => ['processing', 'failed'],
+            'confirmed' => ['processing', 'failed'],
             'processing' => ['successful', 'failed'],
             'successful' => ['refunded'],
             'failed' => ['processing'],

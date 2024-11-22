@@ -2,33 +2,35 @@
 
 namespace App\Enum;
 
-class PaymentStatus
+enum PaymentStatus: string
 {
-    public const PENDING = 'pending';
-    public const PROCESSING = 'processing';
-    public const SUCCESSFUL = 'successful';
-    public const FAILED = 'failed';
-    public const REFUNDED = 'refunded';
+    case PENDING = 'pending';
+    case PROCESSING = 'processing';
+    case SUCCESSFUL = 'successful';
+    case FAILED = 'failed';
+    case REFUNDED = 'refunded';
 
-    /**
-     * Get all valid payment statuses.
-     */
     public static function getAllStatuses(): array
     {
         return [
-            self::PENDING,
-            self::PROCESSING,
-            self::SUCCESSFUL,
-            self::FAILED,
-            self::REFUNDED,
+            self::PENDING->value,
+            self::PROCESSING->value,
+            self::SUCCESSFUL->value,
+            self::FAILED->value,
+            self::REFUNDED->value
         ];
     }
 
-    /**
-     * Check if a given status is valid.
-     */
-    public static function isValidStatus(string $status): bool
+    public static function canTransitionTo(string $currentStatus, string $newStatus): bool
     {
-        return in_array($status, self::getAllStatuses(), true);
+        $allowedTransitions = [
+            'pending' => ['processing', 'failed'],
+            'processing' => ['successful', 'failed'],
+            'successful' => ['refunded'],
+            'failed' => ['processing'],
+            'refunded' => []
+        ];
+
+        return in_array($newStatus, $allowedTransitions[$currentStatus] ?? []);
     }
 }

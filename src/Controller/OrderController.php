@@ -17,22 +17,28 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use App\Entity\Reservation; // Add this line to import the Reservation class
+use App\Entity\Reservation; 
+use App\Service\OrderValidationService;
+// Add this line to import the Reservation class
 
 class OrderController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     private OrderService $orderService;
     private InvoiceService $invoiceService;
+    private OrderValidationService $orderValidationService;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         OrderService $orderService,
-        InvoiceService $invoiceService
+        InvoiceService $invoiceService,
+        OrderValidationService $orderValidationService
+
     ) {
         $this->entityManager = $entityManager;
         $this->orderService = $orderService;
         $this->invoiceService = $invoiceService;
+        $this->orderValidationService = $orderValidationService;
     }
 
     // Add to cart
@@ -177,21 +183,21 @@ class OrderController extends AbstractController
         ]);
     }
 
-    // Validate order
-    #[Route('/order/{id}/validate', name: 'order_validate')]
-    public function validateOrder(int $id): Response {
-        $orderRequest = $this->entityManager->getRepository(OrderRequest::class)->find($id);
+    // // Validate order
+    // #[Route('/order/{id}/validate', name: 'order_validate')]
+    // public function validateOrder(int $id): Response {
+    //     $orderRequest = $this->entityManager->getRepository(OrderRequest::class)->find($id);
 
-        if (!$orderRequest) {
-            throw $this->createNotFoundException('Order not found.');
-        }
+    //     if (!$orderRequest) {
+    //         throw $this->createNotFoundException('Order not found.');
+    //     }
 
-        $orderRequest->setStatus('validated');
-        $this->entityManager->flush();
+    //     $orderRequest->setStatus('validated');
+    //     $this->entityManager->flush();
 
-        $this->addFlash('success', 'Order validated.');
-        return $this->redirectToRoute('order_list');
-    }
+    //     $this->addFlash('success', 'Order validated.');
+    //     return $this->redirectToRoute('order_list');
+    // }
 
     // Cancel order
     #[Route('/order/{id}/cancel', name: 'order_cancel')]
@@ -257,5 +263,29 @@ class OrderController extends AbstractController
 
         // Serve the PDF file as a response
         return $this->file($invoiceFile, 'invoice-' . $orderRequest->getId() . '.pdf', ResponseHeaderBag::DISPOSITION_INLINE);
+    }
+
+    #[Route('/order/validate/{id}', name: 'order_validate')]
+    public function validateOrder(OrderRequest $order): Response
+    {
+        if ($this->orderValidationService->validateOrder($order)) {
+            $this->addFlash('success', 'Order validated successfully.');
+        } else {
+            $this->addFlash('error', 'Order validation failed.');
+        }
+
+        return $this->redirectToRoute('order_show', ['id' => $order->getId()]);
+    }
+
+    #[Route('/order/{id}/update-status/{newStatus}', name: 'order_update_status')]
+    public function updateStatus(OrderRequest $order, string $newStatus): Response
+    {
+        if ($this->orderValidationService->updateOrderStatus($order, $newStatus)) {
+            $this->addFlash('success', 'Order status updated successfully.');
+        } else {
+            $this->addFlash('error', 'Invalid status transition.');
+        }
+
+        return $this->redirectToRoute('order_show', ['id' => $order->getId()]);
     }
 }

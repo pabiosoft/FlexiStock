@@ -5,44 +5,131 @@
 {% block body %}
 <div class="container mx-auto p-4">
     <h1 class="text-3xl font-bold mb-4 text-gray-800">Order #{{ order.id }}</h1>
-    <p class="mb-2 text-lg"><strong>Status:</strong> <span class="text-blue-500">{{ order.status }}</span></p>
-    <p class="mb-2 text-lg"><strong>Order Date:</strong> {{ order.orderDate|date('Y-m-d H:i') }}</p>
-
-    <h3 class="text-2xl font-semibold mt-6 mb-4 text-gray-700">Order Items</h3>
-    <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border border-gray-300 rounded-lg">
-            <thead class="bg-gray-200">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Item</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Quantity</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Unit Price</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Total Price</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-                {% for item in order.items %}
-                    <tr class="hover:bg-gray-100">
-                        <td class="px-6 py-4 whitespace-nowrap">{{ item.equipment.name }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ item.quantity }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ item.unitPrice|number_format(2) }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">{{ item.totalPrice|number_format(2) }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    
+    <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <p class="mb-2"><strong>Status:</strong> 
+                    <span class="px-2 py-1 rounded-full text-sm font-semibold
+                        {% if order.status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elseif order.status == 'validated' %}bg-blue-100 text-blue-800
+                        {% elseif order.status == 'processed' %}bg-purple-100 text-purple-800
+                        {% elseif order.status == 'shipped' %}bg-indigo-100 text-indigo-800
+                        {% elseif order.status == 'completed' %}bg-green-100 text-green-800
+                        {% elseif order.status == 'cancelled' %}bg-red-100 text-red-800
+                        {% elseif order.status == 'refunded' %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ order.status|upper }}
+                    </span>
+                </p>
+                <p class="mb-2"><strong>Payment Status:</strong>
+                    <span class="px-2 py-1 rounded-full text-sm font-semibold
+                        {% if order.paymentStatus == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elseif order.paymentStatus == 'processing' %}bg-blue-100 text-blue-800
+                        {% elseif order.paymentStatus == 'successful' %}bg-green-100 text-green-800
+                        {% elseif order.paymentStatus == 'failed' %}bg-red-100 text-red-800
+                        {% elseif order.paymentStatus == 'refunded' %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ order.paymentStatus|upper }}
+                    </span>
+                </p>
+                <p class="mb-2"><strong>Order Date:</strong> {{ order.orderDate|date('Y-m-d H:i') }}</p>
+            </div>
+            <div>
+                <p class="mb-2"><strong>Customer:</strong> {{ order.customer.name }}</p>
+                <p class="mb-2"><strong>Email:</strong> {{ order.customer.email }}</p>
+                {% if order.supplier %}
+                    <p class="mb-2"><strong>Supplier:</strong> {{ order.supplier.name }}</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
-    <div class="mt-6">
-        <a href="{{ path('order_view_invoice', { id: order.id }) }}" target="_blank" class="inline-block text-blue-600 hover:text-blue-800 font-semibold underline">View Invoice</a>
-    </div>
-
-    {% if order.status == 'pending' %}
-        <div class="mt-4">
-            <a href="{{ path('order_validate', {id: order.id}) }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg">Validate Order</a>
-        </div>
-        <div class="mt-4">
-            <a href="{{ path('order_cancel', {id: order.id}) }}" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Cancel Order</a>
-        </div>
+    {% if order.status == 'pending' and order.paymentStatus == 'pending' %}
+        {% include 'order/_payment_form.html.twig' with {'order': order} %}
     {% endif %}
+
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden mb-6">
+        <h3 class="text-xl font-semibold p-4 bg-gray-50 border-b">Order Items</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Price</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for item in order.items %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ item.equipment.name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">{{ item.quantity }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${{ item.unitPrice|number_format(2) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${{ item.totalPrice|number_format(2) }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="bg-gray-50">
+                        <td colspan="3" class="px-6 py-4 text-right font-semibold">Total:</td>
+                        <td class="px-6 py-4 whitespace-nowrap font-semibold">${{ order.totalPrice|number_format(2) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="flex gap-4 mb-6">
+        {% if order.status == 'pending' and order.paymentStatus == 'successful' %}
+            <a href="{{ path('order_validate', {id: order.id}) }}" 
+               class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Validate Order
+            </a>
+        {% endif %}
+
+        {% if order.status in ['pending', 'validated', 'processed'] %}
+            <a href="{{ path('order_update_status', {id: order.id, newStatus: 'cancelled'}) }}"
+               class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+               onclick="return confirm('Are you sure you want to cancel this order?')">
+                Cancel Order
+            </a>
+        {% endif %}
+
+        {% if order.status == 'validated' %}
+            <a href="{{ path('order_update_status', {id: order.id, newStatus: 'processed'}) }}"
+               class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+                Mark as Processing
+            </a>
+        {% endif %}
+
+        {% if order.status == 'processed' %}
+            <a href="{{ path('order_update_status', {id: order.id, newStatus: 'shipped'}) }}"
+               class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
+                Mark as Shipped
+            </a>
+        {% endif %}
+
+        {% if order.status == 'shipped' %}
+            <a href="{{ path('order_update_status', {id: order.id, newStatus: 'completed'}) }}"
+               class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                Mark as Completed
+            </a>
+        {% endif %}
+
+        {% if order.status in ['completed', 'cancelled'] and order.paymentStatus == 'successful' %}
+            <a href="{{ path('payment_refund', {id: order.id}) }}"
+               class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+               onclick="return confirm('Are you sure you want to refund this order?')">
+                Process Refund
+            </a>
+        {% endif %}
+
+        <a href="{{ path('order_view_invoice', {id: order.id}) }}" 
+           class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+            View Invoice
+        </a>
+    </div>
+
+    <a href="{{ path('order_list') }}" class="text-blue-500 hover:text-blue-700">
+        <i class="fas fa-arrow-left mr-2"></i>Back to Orders
+    </a>
 </div>
 {% endblock %}

@@ -1,0 +1,176 @@
+{# Performance Analytics Report Template #}
+{% if report.metrics %}
+<div class="space-y-6">
+    <!-- KPI Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-sm font-medium text-gray-500">Stock Turnover Rate</h3>
+            <p class="mt-2 text-3xl font-semibold text-gray-900">{{ report.metrics.turnoverRate|number_format(2) }}x</p>
+            <p class="text-sm text-gray-500 mt-1">Per Year</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-sm font-medium text-gray-500">Order Fulfillment Rate</h3>
+            <p class="mt-2 text-3xl font-semibold text-gray-900">{{ report.metrics.fulfillmentRate|number_format(1) }}%</p>
+            <p class="text-sm text-gray-500 mt-1">Orders Completed</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-sm font-medium text-gray-500">Stock Accuracy</h3>
+            <p class="mt-2 text-3xl font-semibold text-gray-900">{{ report.metrics.stockAccuracy|number_format(1) }}%</p>
+            <p class="text-sm text-gray-500 mt-1">Inventory Accuracy</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-sm font-medium text-gray-500">Dead Stock Value</h3>
+            <p class="mt-2 text-3xl font-semibold text-gray-900">${{ report.metrics.deadStockValue|number_format(2) }}</p>
+            <p class="text-sm text-gray-500 mt-1">Non-moving Items</p>
+        </div>
+    </div>
+
+    <!-- Performance Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Stock Efficiency Chart -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Stock Efficiency Trends</h3>
+            </div>
+            <div class="p-6">
+                <canvas id="stockEfficiencyChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+
+        <!-- Order Processing Times -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Order Processing Times</h3>
+            </div>
+            <div class="p-6">
+                <canvas id="processingTimesChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Metrics Table -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Performance Metrics Detail</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Metric</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Previous</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Change</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for metric in report.detailedMetrics %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ metric.name }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ metric.current }}{{ metric.unit }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ metric.previous }}{{ metric.unit }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {% if metric.change > 0 %}
+                                        bg-green-100 text-green-800
+                                    {% else %}
+                                        bg-red-100 text-red-800
+                                    {% endif %}">
+                                    {{ metric.change }}%
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ metric.target }}{{ metric.unit }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Stock Efficiency Chart
+    const efficiencyCtx = document.getElementById('stockEfficiencyChart').getContext('2d');
+    new Chart(efficiencyCtx, {
+        type: 'line',
+        data: {
+            labels: {{ report.trends.dates|json_encode|raw }},
+            datasets: [{
+                label: 'Turnover Rate',
+                data: {{ report.trends.turnoverRates|json_encode|raw }},
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4
+            }, {
+                label: 'Stock Accuracy',
+                data: {{ report.trends.accuracyRates|json_encode|raw }},
+                borderColor: 'rgb(16, 185, 129)',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Processing Times Chart
+    const processingCtx = document.getElementById('processingTimesChart').getContext('2d');
+    new Chart(processingCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ report.processingTimes.categories|json_encode|raw }},
+            datasets: [{
+                label: 'Average Processing Time (hours)',
+                data: {{ report.processingTimes.averages|json_encode|raw }},
+                backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                borderColor: 'rgb(59, 130, 246)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + 'h';
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% else %}
+<div class="text-center py-12">
+    <i class="fas fa-chart-line text-gray-400 text-5xl mb-4"></i>
+    <p class="text-gray-500">No performance data available for the selected period</p>
+</div>
+{% endif %}

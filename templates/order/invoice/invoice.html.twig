@@ -2,9 +2,13 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Invoice</title>
+    <title>Invoice #{{ order.id }}</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; }
+        body { 
+            font-family: DejaVu Sans, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
         .invoice-box {
             max-width: 800px;
             margin: auto;
@@ -13,130 +17,154 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
             font-size: 16px;
             line-height: 24px;
-            font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
             color: #555;
         }
-        .invoice-box table {
-            width: 100%;
-            line-height: inherit;
-            text-align: left;
-        }
-        .invoice-box table td {
-            padding: 5px;
-            vertical-align: top;
-        }
-        .invoice-box table tr td:nth-child(2) {
-            text-align: right;
-        }
-        .invoice-box table tr.top table td {
-            padding-bottom: 20px;
-        }
-        .invoice-box table tr.top table td.title {
-            font-size: 45px;
-            line-height: 45px;
-            color: #333;
-        }
-        .invoice-box table tr.information table td {
-            padding-bottom: 40px;
-        }
-        .invoice-box table tr.heading td {
-            background: #eee;
-            border-bottom: 1px solid #ddd;
-            font-weight: bold;
-        }
-        .invoice-box table tr.details td {
-            padding-bottom: 20px;
-        }
-        .invoice-box table tr.item td {
+        .header {
             border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
         }
-        .invoice-box table tr.item.last td {
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin: 0 0 10px 0;
+        }
+        .info-section {
+            margin-bottom: 30px;
+        }
+        .info-section h2 {
+            color: #333;
+            font-size: 18px;
+            margin: 0 0 10px 0;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .items-table th {
+            background-color: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+        }
+        .items-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .items-table tr:last-child td {
             border-bottom: none;
         }
-        .invoice-box table tr.total td:nth-child(2) {
+        .totals {
+            margin-top: 30px;
             border-top: 2px solid #eee;
+            padding-top: 20px;
+        }
+        .totals table {
+            width: 300px;
+            margin-left: auto;
+        }
+        .totals td {
+            padding: 5px;
+        }
+        .totals .total-row {
             font-weight: bold;
+            font-size: 18px;
+            border-top: 1px solid #ddd;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #777;
         }
     </style>
 </head>
 <body>
     <div class="invoice-box">
-        <table>
-            <tr class="top">
-                <td colspan="2">
-                    <table>
-                        <tr>
-                            <td class="title">
-                                <h1>Invoice</h1>
-                            </td>
-                            
-                            <td>
-                                Invoice #: {{ order.id }}<br>
-                                Created: {{ order.createdAt|date('Y-m-d') }}<br>
-                                Due: {{ order.orderDate|date('Y-m-d') }}
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            
-            <tr class="information">
-                <td colspan="2">
-                    <table>
-                        <tr>
-                            <td>
-                                Customer:<br>
-                                {{ order.customer.name }}<br>
-                                {{ order.customer.email }}
-                            </td>
-                            
-                            <td>
-                                {{ order.supplier.name }}<br>
-                                {# {{ order.supplier.address }}<br> #}
-                                {# {{ order.supplier.phone }} #}
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            
-            <tr class="heading">
-                <td>
-                    Item
-                </td>
-                <td>
-                    Quantity
-                </td>
-                <td>
-                    Price
-                </td>
-            </tr>
-            
-            {% for item in order.items %}
-            <tr class="item">
-                <td>
-                    {{ item.equipment.name }}
-                </td>
-                {# <td>
-                    {{ item.equipment.quantity }}
-                </td> #}
-                
-                <td>
-                    {{ item.quantity }} x {{ item.unitPrice }} = {{ item.totalPrice }}
-                </td>
-            </tr>
-           
-            
-            <tr class="total">
-                <td></td>
-                
-                <td>
-                   Total: {{ item.totalPrice }} $
-                   
-                </td>
-            </tr>
-             {% endfor %}
+        <div class="header">
+            <h1>INVOICE</h1>
+            <div class="info-grid">
+                <div>
+                    <p>Invoice #: {{ order.id }}</p>
+                    <p>Date: {{ order.orderDate|date('d M Y') }}</p>
+                    <p>Status: {{ order.status|capitalize }}</p>
+                </div>
+                <div style="text-align: right;">
+                    <p>Payment Status: {{ order.paymentStatus|capitalize }}</p>
+                    <p>Payment Method: {{ order.paymentMethod|default('Not specified')|capitalize }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <div class="info-grid">
+                <div>
+                    <h2>Bill To:</h2>
+                    <p>{{ order.customer.name }}<br>
+                    {{ order.customer.email }}</p>
+                </div>
+                {% if order.supplier %}
+                <div>
+                    <h2>Supplier:</h2>
+                    <p>{{ order.supplier.name }}<br>
+                    {% if order.supplier.email %}{{ order.supplier.email }}<br>{% endif %}
+                    {% if order.supplier.phone %}{{ order.supplier.phone }}{% endif %}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items %}
+                <tr>
+                    <td>{{ item.equipment.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.unitPrice|number_format(2) }}</td>
+                    <td>${{ item.totalPrice|number_format(2) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
+
+        <div class="totals">
+            <table>
+                <tr>
+                    <td>Subtotal:</td>
+                    <td style="text-align: right">${{ order.totalPrice|number_format(2) }}</td>
+                </tr>
+                <tr>
+                    <td>Tax (10%):</td>
+                    <td style="text-align: right">${{ (order.totalPrice * 0.1)|number_format(2) }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td>Total:</td>
+                    <td style="text-align: right">${{ (order.totalPrice * 1.1)|number_format(2) }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p>Thank you for your business!</p>
+            <p>Generated on {{ 'now'|date('d M Y H:i') }}</p>
+        </div>
     </div>
 </body>
 </html>

@@ -1,0 +1,158 @@
+{% if report.metrics %}
+<div class="space-y-6">
+    <!-- Efficiency Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-sm font-medium text-gray-500">Picking Accuracy</h3>
+            <p class="mt-2 text-3xl font-semibold text-gray-900">{{ report.metrics.pickingAccuracy|number_format(1) }}%</p>
+            <p class="text-sm text-gray-500 mt-1">Order Accuracy Rate</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-sm font-medium text-gray-500">Processing Time</h3>
+            <p class="mt-2 text-3xl font-semibold text-gray-900">{{ report.metrics.orderProcessingTime|number_format(1) }}h</p>
+            <p class="text-sm text-gray-500 mt-1">Average Time per Order</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-sm font-medium text-gray-500">Stockout Rate</h3>
+            <p class="mt-2 text-3xl font-semibold text-gray-900">{{ report.metrics.stockoutRate|number_format(1) }}%</p>
+            <p class="text-sm text-gray-500 mt-1">Items Out of Stock</p>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 class="text-sm font-medium text-gray-500">Inventory Turnover</h3>
+            <p class="mt-2 text-3xl font-semibold text-gray-900">{{ report.metrics.inventoryTurnover|number_format(2) }}x</p>
+            <p class="text-sm text-gray-500 mt-1">Annual Rate</p>
+        </div>
+    </div>
+
+    <!-- Efficiency Trends -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Daily Trends -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Daily Efficiency Trends</h3>
+            </div>
+            <div class="p-6">
+                <canvas id="dailyTrendsChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+
+        <!-- Weekly Trends -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Weekly Performance</h3>
+            </div>
+            <div class="p-6">
+                <canvas id="weeklyTrendsChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottlenecks Analysis -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Process Bottlenecks</h3>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {% for bottleneck in report.bottlenecks %}
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <h4 class="font-medium text-red-800">{{ bottleneck.process }}</h4>
+                        <p class="text-sm text-red-600 mt-1">Impact: {{ bottleneck.impact }}</p>
+                        <p class="text-sm text-red-600">Delay: {{ bottleneck.delay }} minutes</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Efficiency Recommendations</h3>
+        </div>
+        <div class="p-6">
+            <div class="space-y-4">
+                {% for recommendation in report.recommendations %}
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            {% if recommendation.type == 'location_optimization' %}
+                                <i class="fas fa-map-marker-alt text-blue-500"></i>
+                            {% elseif recommendation.type == 'reorder_point_adjustment' %}
+                                <i class="fas fa-chart-line text-green-500"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-900">{{ recommendation.item }}</h4>
+                            <p class="text-sm text-gray-500">{{ recommendation.reason }}</p>
+                            <div class="mt-2 text-sm">
+                                <span class="text-gray-500">Potential Improvements:</span>
+                                <ul class="list-disc list-inside mt-1 space-y-1">
+                                    <li>Time Saved: {{ recommendation.potential_improvement.time_saved|number_format(1) }} hours</li>
+                                    <li>Cost Reduction: ${{ recommendation.potential_improvement.cost_reduction|number_format(2) }}</li>
+                                    <li>Error Reduction: {{ recommendation.potential_improvement.error_reduction|number_format(1) }}%</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Daily Trends Chart
+    const dailyCtx = document.getElementById('dailyTrendsChart').getContext('2d');
+    new Chart(dailyCtx, {
+        type: 'line',
+        data: {
+            labels: {{ report.trends.daily.dates|json_encode|raw }},
+            datasets: [{
+                label: 'Efficiency Score',
+                data: {{ report.trends.daily.scores|json_encode|raw }},
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // Weekly Trends Chart
+    const weeklyCtx = document.getElementById('weeklyTrendsChart').getContext('2d');
+    new Chart(weeklyCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ report.trends.weekly.dates|json_encode|raw }},
+            datasets: [{
+                label: 'Processing Time',
+                data: {{ report.trends.weekly.times|json_encode|raw }},
+                backgroundColor: 'rgba(16, 185, 129, 0.5)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+{% else %}
+<div class="text-center py-12">
+    <i class="fas fa-cogs text-gray-400 text-5xl mb-4"></i>
+    <p class="text-gray-500">No efficiency data available for the selected period</p>
+</div>
+{% endif %}

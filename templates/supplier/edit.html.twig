@@ -1,13 +1,62 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Supplier{% endblock %}
+{% block title %}Edit Supplier - FlexiStock{% endblock %}
 
 {% block body %}
-	{% include "_partials/_flush.html.twig" %}
+    {% include '_partials/_adminav.html.twig' %}
+    {% include '_partials/_flush.html.twig' %}
 
-    <h1>Edit Supplier</h1>
-    {{ form_start(form) }}
-        {{ form_widget(form) }}
-        <button type="submit">Save</button>
-    {{ form_end(form) }}
+    <main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-64 h-auto pt-20 pb-5">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="mb-6">
+                    <h1 class="text-2xl font-bold text-gray-900">Edit Supplier</h1>
+                    <p class="mt-1 text-sm text-gray-500">Update the supplier's information below.</p>
+                </div>
+
+                {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                            {{ form_label(form.name, 'Supplier Name', {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                            {{ form_widget(form.name, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}}) }}
+                            {{ form_errors(form.name, {'attr': {'class': 'mt-1 text-sm text-red-600'}}) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.contact, 'Contact Person', {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                            {{ form_widget(form.contact, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}}) }}
+                            {{ form_errors(form.contact, {'attr': {'class': 'mt-1 text-sm text-red-600'}}) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.email, 'Email Address', {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                            {{ form_widget(form.email, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}}) }}
+                            {{ form_errors(form.email, {'attr': {'class': 'mt-1 text-sm text-red-600'}}) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.phone, 'Phone Number', {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                            {{ form_widget(form.phone, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}}) }}
+                            {{ form_errors(form.phone, {'attr': {'class': 'mt-1 text-sm text-red-600'}}) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.address, 'Address', {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                            {{ form_widget(form.address, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500', 'rows': 3}}) }}
+                            {{ form_errors(form.address, {'attr': {'class': 'mt-1 text-sm text-red-600'}}) }}
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 pt-6">
+                        <a href="{{ path('supplier_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Cancel
+                        </a>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Save Changes
+                        </button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </main>
 {% endblock %}

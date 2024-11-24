@@ -1,0 +1,107 @@
+{% if report.summary %}
+    <div class="space-y-6">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Total Revenue</h3>
+                <p class="mt-2 text-3xl font-semibold text-gray-900">${{ report.summary.total_revenue|number_format(2) }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Gross Profit</h3>
+                <p class="mt-2 text-3xl font-semibold text-gray-900">${{ report.summary.gross_profit|number_format(2) }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Average Order Value</h3>
+                <p class="mt-2 text-3xl font-semibold text-gray-900">${{ report.summary.average_order_value|number_format(2) }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Total Cost</h3>
+                <p class="mt-2 text-3xl font-semibold text-gray-900">${{ report.summary.total_cost|number_format(2) }}</p>
+            </div>
+        </div>
+
+        <!-- Monthly Breakdown -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Monthly Breakdown</h3>
+            </div>
+            <div class="p-6">
+                <canvas id="monthlyChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Payment Methods Distribution</h3>
+            </div>
+            <div class="p-6">
+                <canvas id="paymentMethodsChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Monthly Breakdown Chart
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: {{ report.monthly_breakdown|keys|json_encode|raw }},
+                    datasets: [{
+                        label: 'Revenue',
+                        data: {{ report.monthly_breakdown|map(m => m.revenue)|json_encode|raw }},
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Payment Methods Chart
+            const paymentCtx = document.getElementById('paymentMethodsChart').getContext('2d');
+            new Chart(paymentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ report.payment_methods|keys|json_encode|raw }},
+                    datasets: [{
+                        data: {{ report.payment_methods|values|json_encode|raw }},
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.5)',
+                            'rgba(16, 185, 129, 0.5)',
+                            'rgba(245, 158, 11, 0.5)',
+                            'rgba(239, 68, 68, 0.5)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+{% else %}
+    <div class="text-center py-12">
+        <i class="fas fa-chart-line text-gray-400 text-5xl mb-4"></i>
+        <p class="text-gray-500">No financial data available for the selected period</p>
+    </div>
+{% endif %}

@@ -5,11 +5,14 @@ namespace App\Controller;
 use App\Form\OrderType;
 use App\Entity\Equipment;
 use App\Entity\OrderItem;
+use App\Entity\Reservation;
 use App\Entity\OrderRequest;
 use App\Service\OrderService;
 use App\Service\StockService;
 use App\Service\InvoiceService;
+use App\Repository\CategoryRepository;
 use App\Repository\EquipmentRepository;
+use App\Service\OrderValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,8 +20,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use App\Entity\Reservation;
-use App\Service\OrderValidationService;
 // Add this line to import the Reservation class
 
 //is granted acces role admin
@@ -85,7 +86,8 @@ class OrderController extends AbstractController
         Request $request,
         SessionInterface $session,
         StockService $stockService,
-        EquipmentRepository $equipmentRepository
+        EquipmentRepository $equipmentRepository,
+        CategoryRepository $categoryRepository
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -153,6 +155,7 @@ class OrderController extends AbstractController
             'form' => $form->createView(),
             'cart' => $cart,
             'equipmentList' => $equipmentList,
+            'categories' => $categoryRepository->findAll(),
         ]);
     }
     // Remove from cart

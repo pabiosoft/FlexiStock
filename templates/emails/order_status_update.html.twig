@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Order Status Update</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .status-update { margin-bottom: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 5px; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Order Status Update</h1>
+        </div>
+
+        <div class="status-update">
+            <h2>Order #{{ order.id }}</h2>
+            <p>Your order status has been updated to: <strong>{{ order.status|capitalize }}</strong></p>
+            
+            {% if order.status == 'processed' %}
+                <p>Your order is being prepared for shipment.</p>
+            {% elseif order.status == 'shipped' %}
+                <p>Your order has been shipped and is on its way to you.</p>
+            {% elseif order.status == 'completed' %}
+                <p>Your order has been successfully delivered.</p>
+            {% elseif order.status == 'cancelled' %}
+                <p>Your order has been cancelled. If you have any questions, please contact our support team.</p>
+            {% endif %}
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{{ viewUrl }}" class="button">View Order Details</a>
+        </div>
+
+        <div style="margin-top: 30px; font-size: 14px; color: #666;">
+            <p>If you have any questions about your order, please contact our support team.</p>
+            <p>Thank you for choosing FlexiStock!</p>
+        </div>
+    </div>
+</body>
+</html>

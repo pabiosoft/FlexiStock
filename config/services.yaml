@@ -7,6 +7,7 @@ parameters:
     app.jwtsecret: '%env(JWT_SECRET)%'
     images_directory: '%kernel.project_dir%/public/uploads/'
     invoice_directory: '%kernel.project_dir%/var/invoices'
+    admin_email: '%env(ADMIN_EMAIL)%'
 
 services:
     # default configuration for services in *this* file
@@ -26,6 +27,10 @@ services:
     App\Service\InvoiceService:
         arguments:
             $invoiceDirectory: '%invoice_directory%'
+
+    App\Service\StockAlertService:
+        arguments:
+            $adminEmail: '%admin_email%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

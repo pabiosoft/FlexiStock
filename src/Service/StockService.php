@@ -21,9 +21,6 @@ class StockService
         $this->logger = $logger;
     }
 
-    /**
-     * Vérifie si le stock est suffisant pour un article commandé
-     */
     public function checkStock(OrderItem $orderItem): bool
     {
         $equipment = $orderItem->getEquipment();
@@ -32,9 +29,6 @@ class StockService
         return $orderItem->getQuantity() <= $availableStock;
     }
 
-    /**
-     * Réserve le stock pour un article commandé
-     */
     public function reserveStock(OrderItem $orderItem): void
     {
         $equipment = $orderItem->getEquipment();
@@ -50,17 +44,15 @@ class StockService
         }
 
         try {
-            // Créer une réservation
+            // Create reservation
             $reservation = new Reservation();
             $reservation->setEquipment($equipment);
             $reservation->setReservedQuantity($quantity);
             $reservation->setStatus('reserved');
             $reservation->setReservationDate(new \DateTime());
 
-            // Mettre à jour la quantité réservée
+            // Update reserved quantity
             $equipment->setReservedQuantity($equipment->getReservedQuantity() + $quantity);
-            // mettre à jour le stock total
-            // $equipment->setStockQuantity($equipment->getStockQuantity() - $quantity);
 
             $this->entityManager->persist($reservation);
             $this->entityManager->flush();
@@ -79,21 +71,63 @@ class StockService
         }
     }
 
-    /**
-     * Finalise le stock après validation de la commande
-     */
+    public function verifyReservation(OrderItem $orderItem): bool
+    {
+        try {
+            $equipment = $orderItem->getEquipment();
+            $reservation = $this->entityManager->getRepository(Reservation::class)
+                ->findOneBy([
+                    'equipment' => $equipment,
+                    'status' => 'reserved'
+                ]);
+
+            if (!$reservation) {
+                $this->logger->warning(sprintf(
+                    'No reservation found for equipment %s in order %d',
+                    $equipment->getName(),
+                    $orderItem->getOrderRequest()->getId()
+                ));
+                return false;
+            }
+
+            if ($reservation->getReservedQuantity() !== $orderItem->getQuantity()) {
+                $this->logger->warning(sprintf(
+                    'Reservation quantity mismatch for equipment %s: Reserved: %d, Ordered: %d',
+                    $equipment->getName(),
+                    $reservation->getReservedQuantity(),
+                    $orderItem->getQuantity()
+                ));
+                return false;
+            }
+
+            $this->logger->info(sprintf(
+                'Reservation verified for equipment %s: %d units',
+                $equipment->getName(),
+                $orderItem->getQuantity()
+            ));
+
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->error(sprintf(
+                'Error verifying reservation: %s',
+                $e->getMessage()
+            ));
+            return false;
+        }
+    }
+
     public function finalizeStock(OrderItem $orderItem): void
     {
         $equipment = $orderItem->getEquipment();
         $quantity = $orderItem->getQuantity();
 
         try {
-            // Déduire du stock réservé
+            // Deduct from reserved stock
             $equipment->setReservedQuantity($equipment->getReservedQuantity() - $quantity);
-            // Déduire du stock total
+            // Deduct from total stock
             $equipment->setStockQuantity($equipment->getStockQuantity() - $quantity);
 
-            // Mettre à jour le statut de la réservation
+            // Update reservation status
             $reservation = $this->entityManager->getRepository(Reservation::class)
                 ->findOneBy([
                     'equipment' => $equipment,
@@ -120,51 +154,6 @@ class StockService
             throw $e;
         }
     }
-
-    /**
-     * Annule la réservation de stock
-     */
-    // public function cancelReservation(OrderItem $orderItem): void
-    // {
-    //     $equipment = $orderItem->getEquipment();
-    //     $quantity = $orderItem->getQuantity();
-
-    //     try {
-    //         // Libérer le stock réservé
-    //         $equipment->setReservedQuantity($equipment->getReservedQuantity() - $quantity);
-
-    //         // Mettre à jour le statut de la réservation
-    //         $reservation = $this->entityManager->getRepository(Reservation::class)
-    //             ->findOneBy([
-    //                 'equipment' => $equipment,
-    //                 'status' => 'reserved'
-    //             ]);
-    //         // Mettre à jour la quantité de la reservation
-    //         $reservation->setReservedQuantity($reservation->getReservedQuantity() - $quantity);
-    //         // mettre à jour le stock total
-    //         $equipment->setStockQuantity($equipment->getStockQuantity() + $quantity);
-
-    //         if ($reservation) {
-    //             $reservation->setStatus('cancelled');
-    //             $reservation->setReturnDate(new \DateTime());
-
-    //         }
-
-    //         $this->entityManager->flush();
-
-    //         $this->logger->info(sprintf(
-    //             'Réservation annulée pour %s: %d unités',
-    //             $equipment->getName(),
-    //             $quantity
-    //         ));
-    //     } catch (\Exception $e) {
-    //         $this->logger->error(sprintf(
-    //             'Erreur lors de l\'annulation de la réservation: %s',
-    //             $e->getMessage()
-    //         ));
-    //         throw $e;
-    //     }
-    // }
 
     public function cancelReservation(OrderItem $orderItem): void
     {
@@ -196,7 +185,6 @@ class StockService
             }
 
             $equipment->setReservedQuantity($equipment->getReservedQuantity() - $quantity);
-            $equipment->setStockQuantity($equipment->getStockQuantity() + $quantity);
 
             $this->entityManager->flush();
 
@@ -214,19 +202,12 @@ class StockService
         }
     }
 
-
-    /**
-     * Vérifie si le stock est faible et nécessite un réapprovisionnement
-     */
     public function checkLowStock(Equipment $equipment): bool
     {
         $availableStock = $equipment->getStockQuantity() - $equipment->getReservedQuantity();
         return $availableStock <= $equipment->getMinThreshold();
     }
 
-    /**
-     * Ajuste le stock après un mouvement (entrée/sortie)
-     */
     public function adjustStock(Equipment $equipment, int $quantity, string $type): void
     {
         $currentStock = $equipment->getStockQuantity();
@@ -253,7 +234,6 @@ class StockService
                 $type
             ));
 
-            // Vérifier si le stock est faible après l'ajustement
             if ($this->checkLowStock($equipment)) {
                 $this->logger->warning(sprintf(
                     'Stock faible pour %s: %d unités restantes',

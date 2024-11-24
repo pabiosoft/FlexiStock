@@ -1,0 +1,117 @@
+{% if report.suppliers|length > 0 %}
+    <div class="space-y-6">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Total Suppliers</h3>
+                <p class="mt-2 text-3xl font-semibold text-gray-900">{{ report.summary.total_suppliers }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Active Suppliers</h3>
+                <p class="mt-2 text-3xl font-semibold text-gray-900">{{ report.summary.active_suppliers }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Total Orders</h3>
+                <p class="mt-2 text-3xl font-semibold text-gray-900">{{ report.summary.total_orders }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Total Value</h3>
+                <p class="mt-2 text-3xl font-semibold text-gray-900">${{ report.summary.total_value|number_format(2) }}</p>
+            </div>
+        </div>
+
+        <!-- Supplier Table -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Supplier Performance</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Supplier</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Value</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg Order Value</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Order</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for supplier in report.suppliers %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ supplier.name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ supplier.order_count }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    ${{ supplier.total_value|number_format(2) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    ${{ supplier.average_order_value|number_format(2) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ supplier.last_order_date|date('d M Y') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <a href="mailto:{{ supplier.email }}" class="text-blue-600 hover:text-blue-900">
+                                        {{ supplier.contact }}
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Supplier Distribution Chart -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Order Value Distribution</h3>
+            </div>
+            <div class="p-6">
+                <canvas id="supplierDistributionChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('supplierDistributionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: {{ report.suppliers|map(s => s.name)|json_encode|raw }},
+                    datasets: [{
+                        label: 'Total Order Value',
+                        data: {{ report.suppliers|map(s => s.total_value)|json_encode|raw }},
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+{% else %}
+    <div class="text-center py-12">
+        <i class="fas fa-truck text-gray-400 text-5xl mb-4"></i>
+        <p class="text-gray-500">No supplier data available for the selected period</p>
+    </div>
+{% endif %}

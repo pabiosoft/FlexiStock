@@ -7,6 +7,7 @@ use App\Entity\Equipment;
 use App\Repository\MovementRepository;
 use App\Repository\EquipmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class MovementService
 {
@@ -54,6 +55,11 @@ class MovementService
         if (!in_array($movement->getType(), $validTypes, true)) {
             throw new \InvalidArgumentException('Invalid movement type. Allowed types are: IN, OUT.');
         }
+    }
+
+    public function getMovementsByEquipment(Equipment $equipment, \DateTime $startDate, \DateTime $endDate): ArrayCollection
+    {
+        return $this->movementRepository->findByEquipmentAndDateRange($equipment, $startDate, $endDate);
     }
 
     public function getAllMovements(): array
@@ -124,17 +130,5 @@ class MovementService
         } catch (\Exception $e) {
             throw new \RuntimeException('An error occurred while deleting the movement.', 0, $e);
         }
-    }
-
-    public function deleteEquipmentWithMovements(Equipment $equipment): void
-    {
-        $movements = $this->movementRepository->findBy(['equipment' => $equipment]);
-
-        foreach ($movements as $movement) {
-            $this->entityManager->remove($movement);
-        }
-
-        $this->entityManager->remove($equipment);
-        $this->entityManager->flush();
     }
 }

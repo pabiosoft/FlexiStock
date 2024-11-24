@@ -1,82 +1,173 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Movement List
-{% endblock %}
+{% block title %}Movement List - FlexiStock{% endblock %}
 
 {% block body %}
-	{% include '_partials/_adminav.html.twig' %}
-	{% include '_partials/_flush.html.twig' %}
-	<main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5">
-		<div class="px-6 py-8 lg:px-8">
-			<h1 class="text-3xl font-bold text-blue-900 mb-6">Movements</h1>
-			<a href="{{ path('movement_new') }}" class="inline-block bg-indigo-600 text-white py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 mb-4">
-				<i class="fa-solid fa-plus"></i>
-				Add Movement
-			</a>
-			<div class="bg-white shadow overflow-hidden sm:rounded-lg">
-				<table class="min-w-full divide-y divide-gray-200">
-					<thead class="bg-gray-50">
-						<tr>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipment</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Quantity</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-							<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-						</tr>
-					</thead>
-					<tbody class="bg-white divide-y divide-gray-200">
-						{% for movement in movements %}
-							<tr>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ movement.id }}</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-									<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5
-											{% if movement.type == 'IN' %}
-											bg-green-100 text-green-800
-												{% elseif movement.type == 'OUT' %}
-											bg-red-100 text-red-800
-											{% endif %}">
-										{{ movement.type }}</td>
-								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ movement.quantity }}</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ movement.equipment.name }}</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-									<span class="inline-flex rounded-full px-2 text-xs font-semibold leading-5
-											{% if movement.equipment.stockQuantity > 0 %}
-											bg-green-100 text-green-800
-											{% elseif movement.equipment.stockQuantity == 0 %}
-											bg-red-100 text-red-800
-											{% endif %}">
-										{{ movement.equipment.stockQuantity }}</td>
-								</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ movement.movementDate|date('Y-m-d') }}</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ movement.category ? movement.category.name : 'N/A' }}</td>
-								<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">{{ movement.user ? movement.user.name : 'N/A' }}</td>
-								<td class="px-4 py-2">
-									<a href="{{ path('movement_show', {'id': movement.id}) }}" class="text-blue-600 hover:underline">
-										<i class="fas fa-eye"></i>
-									</a>
-									|
-									<a href="{{ path('movement_edit', {'id': movement.id}) }}" class="text-yellow-600 hover:underline">
-										<i class="fas fa-edit"></i>
-									</a>
-									|
-									<a href="{{ path('movement_delete', {'id': movement.id}) }}" class="text-red-600 hover:underline" onclick="return confirm('Are you sure?');">
-										<i class="fas fa-trash"></i>
-									</a>
-								</td>
-							</tr>
-						{% else %}
-							<tr>
-								<td colspan="9" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No movements found.</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</main>
+    {% include '_partials/_adminav.html.twig' %}
+    {% include '_partials/_flush.html.twig' %}
+
+    <main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-64 h-auto pt-20 pb-5">
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-900">Stock Movements</h1>
+                <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
+                    <a href="{{ path('movement_new') }}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-plus mr-2"></i>
+                        New Movement
+                    </a>
+                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="dateRangeButton">
+                        <i class="fas fa-calendar mr-2"></i>
+                        Date Range
+                    </button>
+                </div>
+            </div>
+
+            <!-- Date Range Picker (Hidden by default) -->
+            <div class="hidden mb-6 p-4 bg-gray-50 rounded-lg" id="dateRangePanel">
+                <form action="{{ path('movement_index') }}" method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Start Date</label>
+                        <input type="date" name="start_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">End Date</label>
+                        <input type="date" name="end_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Apply Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Movement Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-green-50 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-arrow-circle-up text-green-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-green-800">Total In</h3>
+                            <p class="text-2xl font-semibold text-green-900">{{ inCount ?? 0 }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-red-50 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-arrow-circle-down text-red-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-red-800">Total Out</h3>
+                            <p class="text-2xl font-semibold text-red-900">{{ outCount ?? 0 }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exchange-alt text-blue-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-blue-800">Total Movements</h3>
+                            <p class="text-2xl font-semibold text-blue-900">{{ movements|length }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Movements Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipment</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for movement in movements %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ movement.movementDate|date('d M Y H:i') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        {% if movement.type == 'IN' %}
+                                            bg-green-100 text-green-800
+                                        {% else %}
+                                            bg-red-100 text-red-800
+                                        {% endif %}">
+                                        {{ movement.type }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="text-sm font-medium text-gray-900">{{ movement.equipment.name }}</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ movement.quantity }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ movement.category ? movement.category.name : 'N/A' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ movement.user ? movement.user.name : 'System' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ movement.reason|default('N/A') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div class="flex justify-end space-x-2">
+                                        <a href="{{ path('movement_edit', {'id': movement.id}) }}" class="text-yellow-600 hover:text-yellow-900" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('movement_delete', {'id': movement.id}) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this movement?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ movement.id) }}">
+                                            <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                                    No movements found
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Date range panel toggle
+    const dateRangeButton = document.getElementById('dateRangeButton');
+    const dateRangePanel = document.getElementById('dateRangePanel');
+    
+    dateRangeButton.addEventListener('click', function() {
+        dateRangePanel.classList.toggle('hidden');
+    });
+});
+</script>
 {% endblock %}

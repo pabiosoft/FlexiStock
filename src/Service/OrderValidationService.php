@@ -24,139 +24,130 @@ class OrderValidationService
         $this->logger = $logger;
     }
 
-    public function validateOrder(OrderRequest $order): array
+    public function validateOrder(OrderRequest $order): bool
     {
-        $errors = [];
-
-        // Stock validation
-        foreach ($order->getItems() as $item) {
-            if (!$this->stockService->checkStock($item)) {
-                $errors[] = sprintf('Stock insuffisant pour l\'article %s.', $item->getEquipment()->getName());
+        try {
+            // Check payment status
+            if ($order->getPaymentStatus() !== PaymentStatus::SUCCESSFUL->value) {
+                $this->logger->warning('Order validation failed: Payment not successful', [
+                    'order_id' => $order->getId(),
+                    'payment_status' => $order->getPaymentStatus()
+                ]);
+                return false;
             }
-        }
 
-        // Customer validation
-        if (!$this->validateCustomerInformation($order)) {
-            $errors[] = 'Informations client invalides.';
-        }
+            // Check stock availability
+            foreach ($order->getItems() as $item) {
+                if (!$this->stockService->checkStock($item)) {
+                    $this->logger->warning('Order validation failed: Insufficient stock', [
+                        'order_id' => $order->getId(),
+                        'equipment' => $item->getEquipment()->getName(),
+                        'requested' => $item->getQuantity(),
+                        'available' => $item->getEquipment()->getAvailableStock()
+                    ]);
+                    return false;
+                }
+            }
 
-        // Payment validation
-        if ($order->getPaymentStatus() !== PaymentStatus::SUCCESSFUL->value) {
-            $errors[] = 'Le paiement n\'a pas été validé.';
-        }
-
-        // If no errors, update status
-        if (empty($errors)) {
+            // Update order status
             $order->setStatus(OrderStatus::VALIDATED->value);
             $this->entityManager->flush();
+
+            $this->logger->info('Order validated successfully', [
+                'order_id' => $order->getId()
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            $this->logger->error('Error validating order: ' . $e->getMessage(), [
+                'order_id' => $order->getId(),
+                'exception' => $e
+            ]);
+            return false;
         }
-
-        return $errors;
-    }
-
-    private function validateCustomerInformation(OrderRequest $order): bool
-    {
-        $customer = $order->getCustomer();
-        return $customer !== null && $customer->getEmail() !== null;
-    }
-
-    public function canUpdateStatus(OrderRequest $order, string $newStatus): bool
-    {
-        return OrderStatus::canTransitionTo($order->getStatus(), $newStatus);
     }
 
     public function updateOrderStatus(OrderRequest $order, string $newStatus): bool
     {
-        if (!$this->canUpdateStatus($order, $newStatus)) {
-            $this->logger->warning(sprintf(
-                'Transition non autorisée: %s vers %s pour la commande %d.',
-                $order->getStatus(),
-                $newStatus,
-                $order->getId()
-            ));
-            return false;
-        }
-
         try {
-            // Handle status-specific updates
+            if (!OrderStatus::canTransitionTo($order->getStatus(), $newStatus)) {
+                $this->logger->warning('Invalid status transition', [
+                    'order_id' => $order->getId(),
+                    'current_status' => $order->getStatus(),
+                    'new_status' => $newStatus
+                ]);
+                return false;
+            }
+
+            // Handle status-specific actions
             switch ($newStatus) {
-                case OrderStatus::CANCELLED->value:
-                    $this->handleCancelledStatus($order);
+                case OrderStatus::PROCESSED->value:
+                    $this->handleProcessedStatus($order);
                     break;
-
-                case OrderStatus::COMPLETED->value:
-                    $order->setPaymentStatus(PaymentStatus::SUCCESSFUL->value);
-                    break;
-
-                case OrderStatus::REFUNDED->value:
-                    $order->setPaymentStatus(PaymentStatus::REFUNDED->value);
-                    break;
-
-                case OrderStatus::PENDING->value:
-                    $order->setPaymentStatus(PaymentStatus::PROCESSING->value);
-                    break;
-                
 
                 case OrderStatus::SHIPPED->value:
                     $this->handleShippedStatus($order);
                     break;
 
-                default:
-                    $this->logger->info(sprintf(
-                        'Aucune action supplémentaire requise pour la transition vers %s pour la commande %d.',
-                        $newStatus,
-                        $order->getId()
-                    ));
+                case OrderStatus::COMPLETED->value:
+                    $this->handleCompletedStatus($order);
+                    break;
+
+                case OrderStatus::CANCELLED->value:
+                    $this->handleCancelledStatus($order);
+                    break;
             }
 
             $order->setStatus($newStatus);
             $this->entityManager->flush();
 
-            $this->logger->info(sprintf(
-                'Statut de la commande %d mis à jour vers %s.',
-                $order->getId(),
-                $newStatus
-            ));
+            $this->logger->info('Order status updated successfully', [
+                'order_id' => $order->getId(),
+                'new_status' => $newStatus
+            ]);
 
             return true;
         } catch (\Exception $e) {
-            $this->logger->error(sprintf(
-                'Erreur lors de la mise à jour du statut de la commande %d vers %s: %s',
-                $order->getId(),
-                $newStatus,
-                $e->getMessage()
-            ));
-            throw $e;
+            $this->logger->error('Error updating order status: ' . $e->getMessage(), [
+                'order_id' => $order->getId(),
+                'exception' => $e
+            ]);
+            return false;
         }
     }
 
-    private function handleCancelledStatus(OrderRequest $order): void
+    private function handleProcessedStatus(OrderRequest $order): void
     {
-        $order->setPaymentStatus(PaymentStatus::REFUNDED->value);
-
+        // Verify stock reservations
         foreach ($order->getItems() as $item) {
-            $this->stockService->cancelReservation($item);
+            $this->stockService->verifyReservation($item);
         }
-
-        $this->logger->info(sprintf(
-            'Commande %d annulée: le stock a été libéré et le paiement remboursé.',
-            $order->getId()
-        ));
     }
 
     private function handleShippedStatus(OrderRequest $order): void
     {
+        // Update stock levels
         foreach ($order->getItems() as $item) {
             $this->stockService->finalizeStock($item);
-            // Update reservation logic here if necessary
         }
+    }
 
+    private function handleCompletedStatus(OrderRequest $order): void
+    {
         $order->setPaymentStatus(PaymentStatus::SUCCESSFUL->value);
-        $this->logger->info(sprintf(
-            'Commande %d expédiée: le stock a été finalisé.',
-            $order->getId()
-        ));
+        // Additional completion logic (e.g., send confirmation email)
+    }
 
-        // Optionally, handle delivery date updates or reservation updates
+    private function handleCancelledStatus(OrderRequest $order): void
+    {
+        // Release reserved stock
+        foreach ($order->getItems() as $item) {
+            $this->stockService->cancelReservation($item);
+        }
+        
+        // Update payment status if needed
+        if ($order->getPaymentStatus() === PaymentStatus::SUCCESSFUL->value) {
+            $order->setPaymentStatus(PaymentStatus::REFUNDED->value);
+        }
     }
 }

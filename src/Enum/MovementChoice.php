@@ -4,8 +4,8 @@ namespace App\Enum;
 
 enum MovementChoice: string
 {
-    case IN = 'in';
-    case OUT = 'out';
+    case IN = 'IN';
+    case OUT = 'OUT';
 
     public static function getAllTypes(): array
     {

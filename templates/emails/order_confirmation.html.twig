@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Order Confirmation</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .order-details { margin-bottom: 30px; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .items-table th, .items-table td { padding: 10px; border: 1px solid #ddd; }
+        .items-table th { background-color: #f8f9fa; }
+        .total { text-align: right; margin-top: 20px; }
+        .button { display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Order Confirmation</h1>
+            <p>Thank you for your order!</p>
+        </div>
+
+        <div class="order-details">
+            <h2>Order #{{ order.id }}</h2>
+            <p><strong>Date:</strong> {{ order.orderDate|date('d M Y H:i') }}</p>
+            <p><strong>Status:</strong> {{ order.status|capitalize }}</p>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items %}
+                    <tr>
+                        <td>{{ item.equipment.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.unitPrice|number_format(2) }}</td>
+                        <td>${{ item.totalPrice|number_format(2) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="total">
+            <p><strong>Subtotal:</strong> ${{ order.totalPrice|number_format(2) }}</p>
+            <p><strong>Tax (10%):</strong> ${{ (order.totalPrice * 0.1)|number_format(2) }}</p>
+            <p><strong>Total:</strong> ${{ (order.totalPrice * 1.1)|number_format(2) }}</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{{ viewUrl }}" class="button">View Order Details</a>
+        </div>
+
+        <div style="margin-top: 30px; font-size: 14px; color: #666;">
+            <p>If you have any questions about your order, please contact our support team.</p>
+            <p>Thank you for choosing FlexiStock!</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -22,9 +22,6 @@ return [
     '@symfony/stimulus-bundle' => [
         'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
     ],
-    '@hotwired/turbo' => [
-        'version' => '7.3.0',
-    ],
     'react' => [
         'version' => '18.3.1',
     ],
@@ -36,5 +33,8 @@ return [
     ],
     '@symfony/ux-react' => [
         'path' => './vendor/symfony/ux-react/assets/dist/loader.js',
+    ],
+    '@hotwired/turbo' => [
+        'version' => '7.3.0',
     ],
 ];

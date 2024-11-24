@@ -1,1 +1,184 @@
-{# Navbar and sidebar #}
+<!DOCTYPE html>
+<nav class="bg-white shadow-sm px-4 py-3 mb-6 fixed left-0 right-0 top-0 z-50">
+    <div class="flex flex-wrap justify-between items-center">
+        <div class="flex justify-start items-center">
+            <button data-drawer-target="drawer-navigation" data-drawer-toggle="drawer-navigation" aria-controls="drawer-navigation" class="p-2 mr-2 text-gray-600 rounded-lg cursor-pointer lg:hidden hover:bg-gray-100 focus:bg-gray-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+
+            <a href="/" class="flex items-center space-x-3">
+                {# <img src="{{ asset('images/logo.svg') }}" class="h-8" alt="FlexiStock Logo"> #}
+                <span class="self-center text-2xl font-semibold whitespace-nowrap">FlexiStock</span>
+            </a>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <!-- Search -->
+            <div class="hidden md:block">
+                <div class="relative">
+                    <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5" placeholder="Search...">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <button type="button" class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none" data-dropdown-toggle="notification-dropdown">
+                <span class="sr-only">View notifications</span>
+                <i class="fas fa-bell text-xl"></i>
+                {% if alerts|default([])|length > 0 %}
+                    <div class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></div>
+                {% endif %}
+            </button>
+
+            <!-- Notifications Dropdown -->
+            <div class="hidden z-50 max-w-sm my-4 overflow-hidden text-base list-none bg-white divide-y divide-gray-100 rounded shadow-lg" id="notification-dropdown">
+                <div class="block px-4 py-2 text-base font-semibold text-gray-700 bg-gray-50">
+                    Notifications
+                </div>
+                <div class="divide-y divide-gray-100">
+                    {% for alert in alerts|default([]) %}
+                        <a href="#" class="flex px-4 py-3 hover:bg-gray-50">
+                            <div class="flex-shrink-0">
+                                {% if alert.level == 'warning' %}
+                                    <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                                {% elseif alert.level == 'critical' %}
+                                    <i class="fas fa-exclamation-circle text-red-500"></i>
+                                {% else %}
+                                    <i class="fas fa-info-circle text-blue-500"></i>
+                                {% endif %}
+                            </div>
+                            <div class="w-full pl-3">
+                                <div class="text-sm text-gray-800">{{ alert.message }}</div>
+                                <div class="text-xs text-gray-500">{{ alert.createdAt|date('d M Y H:i') }}</div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- User Menu -->
+            <div class="flex items-center">
+                <button type="button" class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300" id="user-menu-button" data-dropdown-toggle="user-dropdown">
+                    <span class="sr-only">Open user menu</span>
+                    <img class="w-8 h-8 rounded-full" src="https://ui-avatars.com/api/?name={{ app.user ? app.user.name|url_encode : 'User' }}&background=random" alt="user photo">
+                </button>
+                <!-- User Dropdown -->
+                <div class="hidden z-50 my-4 w-56 text-base list-none bg-white rounded divide-y divide-gray-100 shadow" id="user-dropdown">
+                    <div class="py-3 px-4">
+                        <span class="block text-sm font-semibold text-gray-900">{{ app.user ? app.user.name : 'Guest' }}</span>
+                        <span class="block text-sm text-gray-500 truncate">{{ app.user ? app.user.email : '' }}</span>
+                    </div>
+                    <ul class="py-1 text-gray-700" aria-labelledby="user-menu-button">
+                        <li>
+                            <a href="#" class="flex items-center px-4 py-2 text-sm hover:bg-gray-100">
+                                <i class="fas fa-user-circle w-4 h-4 mr-2"></i>
+                                Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center px-4 py-2 text-sm hover:bg-gray-100">
+                                <i class="fas fa-cog w-4 h-4 mr-2"></i>
+                                Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ path('app_logout') }}" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt w-4 h-4 mr-2"></i>
+                                Sign out
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Sidebar -->
+<aside class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 my-4 transition-transform -translate-x-full bg-white border-r border-gray-200 lg:translate-x-0" aria-label="Sidebar">
+    <div class="h-full px-3 pb-4 overflow-y-auto bg-white">
+        <ul class="space-y-2 font-medium">
+            <li>
+                <a href="{{ path('app_home') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ app.request.get('_route') == 'app_home' ? 'bg-gray-100' : '' }}">
+                    <i class="fas fa-home w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                    <span class="ml-3">Dashboard</span>
+                </a>
+            </li>
+            {% if is_granted('ROLE_ADMIN') %}
+            <li>
+                <a href="{{ path('equipment_index') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ app.request.get('_route') starts with 'equipment_' ? 'bg-gray-100' : '' }}">
+                    <i class="fas fa-box w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                    <span class="ml-3">Equipment</span>
+                    {% if low_stock_count|default(0) > 0 %}
+                        <span class="ml-auto inline-flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-red-500 rounded-full">
+                            {{ low_stock_count }}
+                        </span>
+                    {% endif %}
+                </a>
+            </li>
+            {% endif %}
+            <li>
+                <a href="{{ path('category_index') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ app.request.get('_route') starts with 'category_' ? 'bg-gray-100' : '' }}">
+                    <i class="fas fa-tags w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                    <span class="ml-3">Categories</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('movement_index') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ app.request.get('_route') starts with 'movement_' ? 'bg-gray-100' : '' }}">
+                    <i class="fas fa-exchange-alt w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                    <span class="ml-3">Movements</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('order_list') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ app.request.get('_route') starts with 'order_' ? 'bg-gray-100' : '' }}">
+                    <i class="fas fa-shopping-cart w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                    <span class="ml-3">Orders</span>
+                    {% if pending_orders|default(0) > 0 %}
+                        <span class="ml-auto inline-flex items-center justify-center px-2 py-1 text-xs font-semibold text-white bg-blue-500 rounded-full">
+                            {{ pending_orders }}
+                        </span>
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{{ path('supplier_index') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ app.request.get('_route') starts with 'supplier_' ? 'bg-gray-100' : '' }}">
+                    <i class="fas fa-truck w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                    <span class="ml-3">Suppliers</span>
+                </a>
+            </li>
+            {% if is_granted('ROLE_ADMIN') %}
+            <li>
+                <a href="{{ path('admin_user_index') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ app.request.get('_route') starts with 'admin_user_' ? 'bg-gray-100' : '' }}">
+                    <i class="fas fa-users w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                    <span class="ml-3">Users</span>
+                </a>
+            </li>
+            {% endif %}
+            <li>
+                <a href="{{ path('app_reservation') }}" class="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group {{ app.request.get('_route') starts with 'app_reservation' ? 'bg-gray-100' : '' }}">
+                    <i class="fas fa-calendar-alt w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                    <span class="ml-3">Reservations</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Quick Actions -->
+        <div class="mt-8 pt-8 border-t border-gray-200">
+            <h3 class="px-2 mb-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quick Actions</h3>
+            <div class="grid grid-cols-2 gap-2">
+                <a href="{{ path('equipment_new') }}" class="flex flex-col items-center p-4 text-sm text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-plus-circle mb-2 text-blue-500 text-xl"></i>
+                    Add Equipment
+                </a>
+                <a href="{{ path('movement_new') }}" class="flex flex-col items-center p-4 text-sm text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-exchange-alt mb-2 text-green-500 text-xl"></i>
+                    New Movement
+                </a>
+            </div>
+        </div>
+    </div>
+</aside>

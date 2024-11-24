@@ -13,19 +13,44 @@ class EquipmentRepository extends ServiceEntityRepository
         parent::__construct($registry, Equipment::class);
     }
 
-    // Add your custom queries here, e.g., to find equipment by status
-    public function searchEquipments(array $criteria)
+    public function findLowStockItems(): array
     {
-        $qb = $this->createQueryBuilder('e');
+        return $this->createQueryBuilder('e')
+            ->where('e.stockQuantity <= e.minThreshold')
+            ->andWhere('e.status = :status')
+            ->setParameter('status', 'active')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findExpiringItems(int $daysThreshold = 30): array
+    {
+        $thresholdDate = new \DateTime("+{$daysThreshold} days");
+
+        return $this->createQueryBuilder('e')
+            ->where('e.warrantyDate IS NOT NULL')
+            ->andWhere('e.warrantyDate <= :thresholdDate')
+            ->andWhere('e.warrantyDate >= :today')
+            ->setParameter('thresholdDate', $thresholdDate)
+            ->setParameter('today', new \DateTime())
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function searchEquipments(array $criteria): array
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->leftJoin('e.category', 'c')
+            ->addSelect('c');
 
         if (!empty($criteria['name'])) {
             $qb->andWhere('e.name LIKE :name')
                 ->setParameter('name', '%' . $criteria['name'] . '%');
         }
 
-        if (!empty($criteria['brand'])) {
-            $qb->andWhere('e.brand = :brand')
-                ->setParameter('brand', $criteria['brand']);
+        if (!empty($criteria['category'])) {
+            $qb->andWhere('c.id = :category')
+                ->setParameter('category', $criteria['category']);
         }
 
         if (!empty($criteria['status'])) {
@@ -33,26 +58,33 @@ class EquipmentRepository extends ServiceEntityRepository
                 ->setParameter('status', $criteria['status']);
         }
 
-        if (!empty($criteria['category'])) {
-            $qb->andWhere('e.category = :category')
-                ->setParameter('category', $criteria['category']);
+        if (isset($criteria['lowStock']) && $criteria['lowStock']) {
+            $qb->andWhere('e.stockQuantity <= e.minThreshold');
         }
 
         return $qb->getQuery()->getResult();
     }
 
-    public function getAvailableStock(Equipment $equipment): int
+    public function getStockValueReport(): array
     {
-        // Example: Return available stock by calculating stock minus sales/reservations
-        $totalStock = $equipment->getQuantity(); // Assume this exists
-        $soldStock = $this->calculateSoldStock($equipment);
-
-        return $totalStock - $soldStock;
+        return $this->createQueryBuilder('e')
+            ->select('e.name', 'e.stockQuantity', 'e.price', 
+                    '(e.stockQuantity * e.price) as totalValue')
+            ->where('e.status = :status')
+            ->setParameter('status', 'active')
+            ->getQuery()
+            ->getResult();
     }
 
-    private function calculateSoldStock(Equipment $equipment): int
+    public function getMovementHistory(Equipment $equipment): array
     {
-        // Logic to calculate sold/reserved stock
-        return 0; // Example: Replace with real calculation logic
+        return $this->createQueryBuilder('e')
+            ->select('m')
+            ->join('e.movements', 'm')
+            ->where('e.id = :equipmentId')
+            ->setParameter('equipmentId', $equipment->getId())
+            ->orderBy('m.movementDate', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 }

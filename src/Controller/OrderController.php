@@ -226,6 +226,8 @@ class OrderController extends AbstractController
     #[Route('/list', name: 'order_list')]
     public function list(Request $request): Response
     {
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 10);
         $criteria = [];
         
         if ($status = $request->query->get('status')) {
@@ -239,20 +241,39 @@ class OrderController extends AbstractController
         $startDate = $request->query->get('start_date');
         $endDate = $request->query->get('end_date');
 
+        $orderRepository = $this->entityManager->getRepository(OrderRequest::class);
+        
         if ($startDate && $endDate) {
-            $orders = $this->entityManager->getRepository(OrderRequest::class)
-                ->findByDateRange(
-                    new \DateTime($startDate),
-                    new \DateTime($endDate),
-                    $criteria
-                );
+            $orders = $orderRepository->findByDateRange(
+                new \DateTime($startDate),
+                new \DateTime($endDate),
+                $criteria
+            );
         } else {
-            $orders = $this->entityManager->getRepository(OrderRequest::class)
-                ->findBy($criteria, ['orderDate' => 'DESC']);
+            $qb = $orderRepository->createQueryBuilder('o')
+                ->orderBy('o.orderDate', 'DESC');
+
+            foreach ($criteria as $field => $value) {
+                $qb->andWhere("o.$field = :$field")
+                   ->setParameter($field, $value);
+            }
+
+            $totalItems = count($qb->getQuery()->getResult());
+            
+            $qb->setFirstResult(($page - 1) * $limit)
+               ->setMaxResults($limit);
+
+            $orders = $qb->getQuery()->getResult();
         }
 
         return $this->render('order/index.html.twig', [
             'orders' => $orders,
+            'pagination' => [
+                'currentPage' => $page,
+                'itemsPerPage' => $limit,
+                'totalItems' => $totalItems ?? count($orders),
+                'pageCount' => ceil(($totalItems ?? count($orders)) / $limit)
+            ]
         ]);
     }
 

@@ -16,6 +16,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 
 class MovementType extends AbstractType
 {
@@ -72,6 +73,22 @@ class MovementType extends AbstractType
             ])
             ->add('reference', TextType::class, [
                 'label' => 'Reference',
+                'required' => false,
+                'attr' => ['class' => 'form-input']
+            ])
+            ->add('location', TextType::class, [
+                'label' => 'Location',
+                'required' => false,
+                'attr' => ['class' => 'form-input']
+            ])
+            ->add('batchNumber', TextType::class, [
+                'label' => 'Batch Number',
+                'required' => false,
+                'attr' => ['class' => 'form-input']
+            ])
+            ->add('expiryDate', DateTimeType::class, [
+                'label' => 'Expiry Date',
+                'widget' => 'single_text',
                 'required' => false,
                 'attr' => ['class' => 'form-input']
             ]);

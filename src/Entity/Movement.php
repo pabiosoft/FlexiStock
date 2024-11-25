@@ -25,7 +25,7 @@ class Movement
     private ?User $user;
 
     #[ORM\Column(type: 'string', length: 20)]
-    #[Assert\Choice(callback: [MovementChoice::class, 'getAllTypes'], message: 'Invalid movement type')]
+    // #[Assert\Choice(callback: [MovementChoice::class, 'getAllTypes'], message: 'Invalid movement type')]
     private string $type;
 
     #[ORM\Column(type: 'integer')]
@@ -50,6 +50,15 @@ class Movement
 
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $details = [];
+
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $location;
+
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $batchNumber;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $expiryDate;
 
     public function __construct()
     {
@@ -147,12 +156,6 @@ class Movement
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
-    {
-        $this->createdAt = $createdAt;
-        return $this;
-    }
-
     public function getCategory(): ?Category
     {
         return $this->category;
@@ -183,6 +186,39 @@ class Movement
     public function setDetails(?array $details): self
     {
         $this->details = $details;
+        return $this;
+    }
+
+    public function getLocation(): ?string
+    {
+        return $this->location;
+    }
+
+    public function setLocation(?string $location): self
+    {
+        $this->location = $location;
+        return $this;
+    }
+
+    public function getBatchNumber(): ?string
+    {
+        return $this->batchNumber;
+    }
+
+    public function setBatchNumber(?string $batchNumber): self
+    {
+        $this->batchNumber = $batchNumber;
+        return $this;
+    }
+
+    public function getExpiryDate(): ?\DateTimeInterface
+    {
+        return $this->expiryDate;
+    }
+
+    public function setExpiryDate(?\DateTimeInterface $expiryDate): self
+    {
+        $this->expiryDate = $expiryDate;
         return $this;
     }
 

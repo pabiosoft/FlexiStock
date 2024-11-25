@@ -56,7 +56,7 @@ class StockAlertService
     private function sendLowStockEmail(Equipment $equipment): void
     {
         $email = (new Email())
-            ->from('stock@flexistock.com')
+            ->from('reply@mailtrap.club')
             ->to($this->adminEmail)
             ->subject('Low Stock Alert - ' . $equipment->getName())
             ->html(sprintf(

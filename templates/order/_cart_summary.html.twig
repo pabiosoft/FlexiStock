@@ -1,0 +1,88 @@
+{% if cart|length > 0 %}
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Cart Summary</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% set cartTotal = 0 %}
+                    {% for equipmentId, item in cart %}
+                        {% set cartTotal = cartTotal + item.totalPrice %}
+                        <tr>
+                            <td class="px-2 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    {# {% if item.equipment.images|length > 0 %}
+                                        <img class="h-10 w-10 rounded-lg object-cover" 
+                                            src="{{ asset('uploads/equipments/mini/300x300-' ~ item.equipment.images[0].name) }}" 
+                                            alt="{{ item.equipment.name }}">
+                                    {% else %}
+                                        <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
+                                            <i class="fas fa-box text-gray-400"></i>
+                                        </div>
+                                    {% endif %} #}
+                                    <div class="">
+                                        <div class="text-sm font-medium text-gray-900">{{ item.equipment.name|striptags|slice(0, 11) ~ '...' }}</div>
+                                        <div class="text-sm text-gray-500">Stock: {{ item.equipment.stockQuantity }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <form action="{{ path('order_update_cart_quantity', {'equipmentId': equipmentId}) }}" method="post" class="flex items-center space-x-2">
+                                    <input type="number" 
+                                           name="quantity" 
+                                           value="{{ item.quantity }}" 
+                                           min="1" 
+                                           max="{{ item.equipment.stockQuantity }}"
+                                           class="w-20 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <button type="submit" class="text-blue-600 hover:text-blue-900">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ${{ item.unitPrice|number_format(2) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ${{ item.totalPrice|number_format(2) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <a href="{{ path('order_remove_from_cart', {'equipmentId': equipmentId}) }}" 
+                                   class="text-red-600 hover:text-red-900"
+                                   onclick="return confirm('Are you sure you want to remove this item?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="bg-gray-50">
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 text-right text-sm font-medium text-gray-900">Subtotal:</td>
+                        <td colspan="2" class="px-6 py-4 text-left text-sm font-medium text-gray-900">${{ cartTotal|number_format(2) }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 text-right text-sm font-medium text-gray-900">Tax (10%):</td>
+                        <td colspan="2" class="px-6 py-4 text-left text-sm font-medium text-gray-900">${{ (cartTotal * 0.1)|number_format(2) }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 text-right text-sm font-bold text-gray-900">Total:</td>
+                        <td colspan="2" class="px-6 py-4 text-left text-sm font-bold text-gray-900">${{ (cartTotal * 1.1)|number_format(2) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6 text-center">
+        <i class="fas fa-shopping-cart text-gray-400 text-4xl mb-4"></i>
+        <p class="text-gray-500">Your cart is empty</p>
+    </div>
+{% endif %}

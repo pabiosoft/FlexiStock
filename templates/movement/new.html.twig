@@ -1,61 +1,157 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Create Movement
-{% endblock %}
+{% block title %}Create Movement{% endblock %}
 
 {% block body %}
-	{% include '_partials/_flush.html.twig' %}
-
-	{% include '_partials/_adminav.html.twig' %}
-	 <main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5">
+    {% include '_partials/_flush.html.twig' %}
+    {% include '_partials/_adminav.html.twig' %}
+    
+    <main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5">
         <div class="px-6 py-8 lg:px-8">
+            <div class="max-w-3xl mx-auto">
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Create Movement</h1>
 
-			<h1 class="text-2xl font-bold text-center">Create Movement</h1>
-			{{ form_start(form) }}
-			<div class="space-y-4 max-w-sm">
-				{{ form_row(form.quantity, { 'label': 'Quantity' }) }}
-				{{ form_row(form.reason, { 'label': 'Reason' }) }}
-				{{ form_row(form.movementDate, { 'label': 'Movement Date' }) }}
-				{{ form_row(form.category, { 'label': 'Category' }) }}
-				{{ form_row(form.equipment, { 'label': 'Equipment' }) }}
-				{# {{ form_row(form.user, { 'label': 'User' }) }} #}
-				{{ form_row(form.type, { 'label': 'Movement Type' }) }}
-			</div>
+                    {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                {{ form_row(form.type, {
+                                    'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
+                                    'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                }) }}
+                            </div>
+                            <div>
+                                {{ form_row(form.quantity, {
+                                    'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
+                                    'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                }) }}
+                            </div>
+                        </div>
 
-			<div class="mt-6">
-				<button type="submit" class="w-full py-2 px-4 bg-blue-500 text-white font-bold rounded-md hover:bg-blue-600">
-					Create Movement
-				</button>
-			</div>
-			{{ form_end(form) }}
-		</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                {{ form_row(form.category, {
+                                    'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
+                                    'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                }) }}
+                            </div>
+                            <div>
+                                {{ form_row(form.equipment, {
+                                    'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
+                                    'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                }) }}
+                            </div>
+                        </div>
 
-		 <script>
-		        document.addEventListener('DOMContentLoaded', function () {
-		            const categoryField = document.querySelector('[data-category-target]');
-		            const equipmentField = document.querySelector('[data-equipment-target]');
-		
-		            categoryField.addEventListener('change', function () {
-		                const categoryId = this.value;
-		
-		                fetch('/equipments/by-category/' + categoryId)
-		                    .then(response => response.json())
-		                    .then(data => {
-		                        // Clear existing options
-		                        equipmentField.innerHTML = '<option value="">Select Equipment</option>';
-		
-		                        // Populate new options
-		                        data.forEach(equipment => {
-		                            const option = document.createElement('option');
-		                            option.value = equipment.id;
-		                            option.textContent = equipment.name;
-		                            equipmentField.appendChild(option);
-		                        });
-		                    })
-		                    .catch(error => console.error('Error fetching equipment:', error));
-		            });
-		        });
-		    </script>
-	</div>
-</main>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                {{ form_row(form.location, {
+                                    'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
+                                    'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                }) }}
+                            </div>
+                            <div>
+                                {{ form_row(form.batchNumber, {
+                                    'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
+                                    'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                }) }}
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                {{ form_row(form.movementDate, {
+                                    'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
+                                    'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                }) }}
+                            </div>
+                            <div>
+                                {{ form_row(form.expiryDate, {
+                                    'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
+                                    'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                }) }}
+                            </div>
+                        </div>
+
+                        <div>
+                            {{ form_row(form.reference, {
+                                'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
+                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                            }) }}
+                        </div>
+
+                        <div>
+                            {{ form_row(form.reason, {
+                                'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
+                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500', 'rows': 3}
+                            }) }}
+                        </div>
+
+                        <div class="flex justify-end space-x-3">
+                            <a href="{{ path('movement_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Cancel
+                            </a>
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Create Movement
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const categoryField = document.querySelector('[data-category-target]');
+                const equipmentField = document.querySelector('[data-equipment-target]');
+                const typeField = document.querySelector('#movement_type');
+                const quantityField = document.querySelector('#movement_quantity');
+
+                categoryField.addEventListener('change', function () {
+                    const categoryId = this.value;
+
+                    fetch('/equipments/by-category/' + categoryId)
+                        .then(response => response.json())
+                        .then(data => {
+                            equipmentField.innerHTML = '<option value="">Select Equipment</option>';
+                            data.forEach(equipment => {
+                                const option = document.createElement('option');
+                                option.value = equipment.id;
+                                option.textContent = equipment.name;
+                                equipmentField.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Error fetching equipment:', error));
+                });
+
+                // Add validation for movement type and quantity
+                typeField.addEventListener('change', validateMovement);
+                quantityField.addEventListener('change', validateMovement);
+                quantityField.addEventListener('input', validateMovement);
+
+                function validateMovement() {
+                    const type = typeField.value;
+                    const quantity = parseInt(quantityField.value);
+                    const submitButton = document.querySelector('button[type="submit"]');
+
+                    if (type === '') {
+                        submitButton.disabled = true;
+                        return;
+                    }
+
+                    if (isNaN(quantity) || quantity <= 0) {
+                        submitButton.disabled = true;
+                        quantityField.setCustomValidity('Quantity must be greater than 0');
+                    } else {
+                        submitButton.disabled = false;
+                        quantityField.setCustomValidity('');
+                    }
+                    quantityField.reportValidity();
+                }
+
+                // Initial validation
+                validateMovement();
+            });
+        </script>
+    </main>
 {% endblock %}

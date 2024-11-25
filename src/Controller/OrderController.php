@@ -95,7 +95,7 @@ class OrderController extends AbstractController
         EquipmentRepository $equipmentRepository,
         CategoryRepository $categoryRepository
     ): Response {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_MANAGER');
 
         $orderRequest = new OrderRequest();
         $cart = $session->get('cart', []);

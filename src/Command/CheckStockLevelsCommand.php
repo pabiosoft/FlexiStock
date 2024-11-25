@@ -21,7 +21,9 @@ class CheckStockLevelsCommand extends Command
 
     protected function configure(): void
     {
-        $this->setDescription('Checks stock levels and creates alerts for low stock items');
+        $this
+            ->setName('app:check-stock-levels') // Explicitly set the name
+            ->setDescription('Checks stock levels and creates alerts for low stock items.');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

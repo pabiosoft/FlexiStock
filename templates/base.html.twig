@@ -1,67 +1,59 @@
 <!DOCTYPE html>
 <html class="h-full bg-gray-100">
-	<head>
-		<meta charset="UTF-8">
-		<title>
-			{% block title %}Welcome!
-			{% endblock %}
-		</title>
-		<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-		<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><text y='1.2em' font-size='96'>⚫️</text><text y='1.3em' x='0.2em' font-size='76' fill='#fff'>sf</text></svg>">
-		<link
-		rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-		<!-- Tailwind CSS -->
-		<link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css"/>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Welcome!{% endblock %}</title>
 
-		<link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet"/>
+    <!-- Tailwind CSS and other libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><text y='1.2em' font-size='96'>⚫️</text><text y='1.3em' x='0.2em' font-size='76' fill='#fff'>sf</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet"/>
 
+    <!-- JavaScript libraries -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-		{#  #}
+<!-- Include Counter-Up -->
+<script src="https://cdn.rawgit.com/bfintal/Counter-Up/master/dist/jquery.counterup.min.js"></script>
 
-		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-		 <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
-		 <script src="https://kit.fontawesome.com/your-fontawesome-kit.js"></script>
-		 <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Initialize WOW.js for animations -->
+    <script>
+        new WOW().init();
+    </script>
 
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+    {% endblock %}
+</head>
 
+<body class="h-full">
+    {% block body %}
+        {% if app.session.flashBag.has('error') %}
+            <div class="alert alert-danger">
+                {% for msg in app.session.flashBag.get('error') %}
+                    {{ msg }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endblock %}
 
-		  <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
-		 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-		<!-- Flowbite Js -->
-		 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
-		<!-- Apex Chart JS -->
-		 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
-		<!-- Flowbite Js -->
-		 <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
-		<!-- Apex Chart JS -->
-		<!-- Custome JS -->
-		 <script src='https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.js'></script>
-
-		{#  #}
-
-			{% block stylesheets %}
-		{{ encore_entry_link_tags('app') }}
-	{% endblock %}
-	</head>
-		<body class="h-full"> {% block body %}
-			{% if app.session.flashBag.has('error') %}
-				<div class="alert alert-danger">
-					{% for msg in app.session.flashBag.get('error') %}
-						{{ msg }}
-					{% endfor %}
-				</div>
-			{% endif %}
-		{% endblock %}
-
-		{% block javascripts %}
-			{{ encore_entry_script_tags('app') }}
-			{% block importmap %}
-				{{ importmap('app') }}
-			{% endblock %}
-		{% endblock %}
-
-		
-
-	</body>
+    {% block javascripts %}
+        {{ encore_entry_script_tags('app') }}
+        {% block importmap %}
+            {{ importmap('app') }}
+        {% endblock %}
+    {% endblock %}
+    {# {% block footer %}
+    {% include '_partials/_footer.html.twig' %}
+    {% endblock %} #}
+</body>
 </html>

@@ -5,7 +5,7 @@ parameters:
     invoice_directory: '%kernel.project_dir%/var/invoices'
     
     # Admin email and email sender
-    admin_email: 'reply@mailtrap.club'
+    admin_email: 'info@sofixeplus.com'
     from_email: 'reply@mailtrap.club'
 
 services:
@@ -26,19 +26,20 @@ services:
     # Service configuration for StockAlertService
     App\Service\StockAlertService:
         arguments:
-            $entityManager: '@doctrine.orm.entity_manager'  # Injecting Doctrine's Entity Manager
-            $mailer: '@mailer.mailer'  # Injecting Symfony's Mailer service
-            $adminEmail: '%admin_email%'  # Injecting the admin email parameter
+            $entityManager: '@doctrine.orm.entity_manager'
+            $mailer: '@mailer.mailer'
+            $adminEmail: '%admin_email%'
 
     # Service configuration for OrderNotificationService
     App\Service\OrderNotificationService:
         arguments:
-            $mailer: '@mailer.mailer'  # Injecting the Mailer service
-            $twig: '@twig'  # Injecting the Twig service
-            $urlGenerator: '@router'  # Injecting the URL Generator service
-            $adminEmail: '%admin_email%'  # Injecting the admin email parameter
+            $mailer: '@mailer.mailer'
+            $twig: '@twig'
+            $urlGenerator: '@router'
+            $adminEmail: '%admin_email%'
+            $fromEmail: '%from_email%'
 
     # Service configuration for InvoiceService
     App\Service\InvoiceService:
         arguments:
-            $invoiceDirectory: '%invoice_directory%'  # Injecting the invoice directory path
+            $invoiceDirectory: '%invoice_directory%'

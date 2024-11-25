@@ -31,7 +31,7 @@ class EquipmentController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
         $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 6);
+        $limit = $request->query->getInt('limit', 5);
         
         $criteria = [
             'name' => $request->query->get('name'),

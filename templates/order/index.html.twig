@@ -194,11 +194,6 @@
                                         <a href="{{ path('order_show', {'id': order.id}) }}" class="text-blue-600 hover:text-blue-900" title="View">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        {# {% if order.status == 'pending' %}
-                                            <a href="{{ path('order_edit', {'id': order.id}) }}" class="text-yellow-600 hover:text-yellow-900" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        {% endif %} #}
                                         <a href="{{ path('order_invoice', {'id': order.id}) }}" class="text-green-600 hover:text-green-900" title="Download Invoice">
                                             <i class="fas fa-file-invoice"></i>
                                         </a>
@@ -223,6 +218,16 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Pagination -->
+            {% include '_partials/_pagination.html.twig' with {
+                'currentPage': pagination.currentPage,
+                'pageCount': pagination.pageCount,
+                'totalItems': pagination.totalItems,
+                'itemsPerPage': pagination.itemsPerPage,
+                'route': 'order_list',
+                'params': app.request.query.all|merge({'page': null})
+            } %}
         </div>
     </main>
 {% endblock %}

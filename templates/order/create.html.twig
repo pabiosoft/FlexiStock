@@ -100,7 +100,17 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                         {# {% include '_partials/_pagination.html.twig' with {
+                'currentPage': pagination.currentPage,
+                'pageCount': pagination.pageCount,
+                'totalItems': pagination.totalItems,
+                'itemsPerPage': pagination.itemsPerPage,
+                'route': 'order_list',
+                'params': app.request.query.all|merge({'page': null})
+            } %} #}
                     </div>
+                     <!-- Pagination -->
+           
                 </div>
 
                 <!-- Order Summary Panel -->
@@ -121,7 +131,7 @@
                                     <div>
                                         {{ form_row(form.supplier, {
                                             'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
-                                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'}
+                                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500' }
                                         }) }}
                                     </div>
                                 </div>
@@ -142,6 +152,7 @@
                     {% endif %}
                 </div>
             </div>
+           
         </div>
     </main>
 {% endblock %}

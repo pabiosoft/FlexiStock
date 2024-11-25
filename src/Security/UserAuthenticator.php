@@ -28,15 +28,15 @@ class UserAuthenticator extends AbstractLoginFormAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        $email = $request->getPayload()->getString('email');
+        $email = $request->request->get('email');
 
         $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
 
         return new Passport(
             new UserBadge($email),
-            new PasswordCredentials($request->getPayload()->getString('password')),
+            new PasswordCredentials($request->request->get('password')),
             [
-                new CsrfTokenBadge('authenticate', $request->getPayload()->getString('_csrf_token')),
+                new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),
                 new RememberMeBadge(),
             ]
         );
@@ -48,9 +48,16 @@ class UserAuthenticator extends AbstractLoginFormAuthenticator
             return new RedirectResponse($targetPath);
         }
 
-        // For example:
-        return new RedirectResponse($this->urlGenerator->generate('app_home'));
-        // throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
+        // Redirect based on roles
+        $roles = $token->getRoleNames();
+        if (in_array('ROLE_ADMIN', $roles)) {
+            return new RedirectResponse($this->urlGenerator->generate('admin_dashboard'));
+        } elseif (in_array('ROLE_MANAGER', $roles)) {
+            return new RedirectResponse($this->urlGenerator->generate('equipment_index'));
+        }
+
+        // Default redirection
+        return new RedirectResponse($this->urlGenerator->generate('order_create'));
     }
 
     protected function getLoginUrl(Request $request): string

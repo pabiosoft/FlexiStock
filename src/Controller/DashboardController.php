@@ -21,6 +21,8 @@ class DashboardController extends AbstractController
         OrderRequestRepository $orderRepository,
         AlertRepository $alertRepository
     ): Response {
+        $this->denyAccessUnlessGranted('ROLE_MANAGER');
+
         // Calculate dashboard statistics
         $stats = [
             'totalEquipment' => $equipmentRepository->count([]),

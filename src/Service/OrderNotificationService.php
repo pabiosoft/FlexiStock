@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Service;
 
 use App\Entity\OrderRequest;
@@ -14,23 +15,26 @@ class OrderNotificationService
     private Environment $twig;
     private UrlGeneratorInterface $urlGenerator;
     private string $adminEmail;
+    private string $fromEmail;
 
     public function __construct(
         MailerInterface $mailer,
         Environment $twig,
         UrlGeneratorInterface $urlGenerator,
-        string $adminEmail
+        string $adminEmail,
+        string $fromEmail  // Add fromEmail as a parameter
     ) {
         $this->mailer = $mailer;
         $this->twig = $twig;
         $this->urlGenerator = $urlGenerator;
         $this->adminEmail = $adminEmail;
+        $this->fromEmail = $fromEmail; // Store fromEmail in the service
     }
 
     public function sendOrderConfirmation(OrderRequest $order): void
     {
         $email = (new Email())
-            ->from('noreply@flexistock.com')
+            ->from($this->fromEmail)  // Use injected from email
             ->to($order->getCustomer()->getEmail())
             ->subject('Order Confirmation - #' . $order->getId())
             ->html(
@@ -42,13 +46,17 @@ class OrderNotificationService
                 ])
             );
 
-        $this->mailer->send($email);
+        try {
+            $this->mailer->send($email);
+        } catch (\Exception $e) {
+            // Log the error or handle it as per your requirements
+        }
     }
 
     public function sendStatusUpdate(OrderRequest $order): void
     {
         $email = (new Email())
-            ->from('noreply@flexistock.com')
+            ->from($this->fromEmail)  // Use injected from email
             ->to($order->getCustomer()->getEmail())
             ->subject('Order Status Update - #' . $order->getId())
             ->html(
@@ -60,7 +68,11 @@ class OrderNotificationService
                 ])
             );
 
-        $this->mailer->send($email);
+        try {
+            $this->mailer->send($email);
+        } catch (\Exception $e) {
+            // Log the error or handle it as per your requirements
+        }
     }
 
     public function notifyLowStock(OrderRequest $order): void
@@ -79,7 +91,7 @@ class OrderNotificationService
 
         if (!empty($lowStockItems)) {
             $email = (new Email())
-                ->from('noreply@flexistock.com')
+                ->from($this->fromEmail)  // Use injected from email
                 ->to($this->adminEmail)
                 ->subject('Low Stock Alert - Order #' . $order->getId())
                 ->html(
@@ -88,7 +100,11 @@ class OrderNotificationService
                     ])
                 );
 
-            $this->mailer->send($email);
+            try {
+                $this->mailer->send($email);
+            } catch (\Exception $e) {
+                // Log the error or handle it as per your requirements
+            }
         }
     }
 }

@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class MovementController extends AbstractController
 {
@@ -33,22 +34,17 @@ class MovementController extends AbstractController
     
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                // If the quantity becomes negative, add a flash message
-                if ($movement->getType() === 'OUT' && $movement->getQuantity() < 0) {
-                    $this->addFlash('error', 'Quantity must be greater than or equal to 0.');
+                // Check if quantity is valid before processing
+                if ($movement->getType() === 'OUT' && $movement->getQuantity() <= 0) {
+                    $this->addFlash('error', 'Quantity must be greater than 0 for an OUT movement.');
                 } else {
                     // Create the movement using the service
                     $this->movementService->createMovement($movement);
-    
-                    // Add a flash message for success
                     $this->addFlash('success', 'Movement created successfully!');
-    
-                    // Redirect to the movement index or detail page
                     return $this->redirectToRoute('movement_index');
                 }
             } catch (\Exception $e) {
-                // Add a form error in case of an invalid movement type
-                $form->get('type')->addError(new FormError('Invalid movement type.'));
+                $form->get('type')->addError(new FormError('An error occurred: ' . $e->getMessage()));
                 $this->addFlash('error', 'An error occurred: ' . $e->getMessage());
             }
         }
@@ -91,14 +87,11 @@ class MovementController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $this->movementService->updateMovement($movement);
-
                 $this->addFlash('success', 'Movement updated successfully!');
-
                 return $this->redirectToRoute('movement_index');
             } catch (\Exception $e) {
                 $this->addFlash('error', 'An error occurred: ' . $e->getMessage());
             }
-
         }
 
         return $this->render('movement/edit.html.twig', [
@@ -122,22 +115,17 @@ class MovementController extends AbstractController
         return new JsonResponse($data);
     }
 
-
     #[Route('/movement/{id}/delete', name: 'movement_delete')]
-    public function delete(Movement $movement): Response
+    public function delete(Movement $movement): RedirectResponse
     {
         try {
             // Delete the movement using the service
             $this->movementService->deleteMovement($movement);
-
-            // Add a flash message for success
             $this->addFlash('success', 'Movement deleted successfully!');
         } catch (\Exception $e) {
-            // Add a flash message for error
             $this->addFlash('error', 'An error occurred: ' . $e->getMessage());
         }
 
-        // Redirect to the movement index page
         return $this->redirectToRoute('movement_index');
     }
 }

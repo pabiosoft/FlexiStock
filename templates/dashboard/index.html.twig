@@ -12,7 +12,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Total Equipment</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ stats.totalEquipment }}</p>
+                        <p class="text-2xl font-semibold text-gray-900 counter" data-target="{{ stats.totalEquipment }}">0</p>
                     </div>
                     <div class="p-3 bg-blue-50 rounded-full">
                         <i class="fas fa-box text-blue-500 text-xl"></i>
@@ -21,7 +21,7 @@
                 <div class="mt-4">
                     <div class="flex items-center">
                         <span class="text-sm font-medium text-gray-600">Active Items:</span>
-                        <span class="ml-2 text-sm text-gray-900">{{ stats.activeEquipment }}</span>
+                        <span class="ml-2 text-sm text-gray-900 counter" data-target="{{ stats.activeEquipment }}">0</span>
                     </div>
                 </div>
             </div>
@@ -30,7 +30,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Low Stock Items</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ stats.lowStockCount }}</p>
+                        <p class="text-2xl font-semibold text-gray-900 counter" data-target="{{ stats.lowStockCount }}">0</p>
                     </div>
                     <div class="p-3 bg-red-50 rounded-full">
                         <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
@@ -45,7 +45,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Pending Orders</p>
-                        <p class="text-2xl font-semibold text-gray-900">{{ stats.pendingOrders }}</p>
+                        <p class="text-2xl font-semibold text-gray-900 counter" data-target="{{ stats.pendingOrders }}">0</p>
                     </div>
                     <div class="p-3 bg-yellow-50 rounded-full">
                         <i class="fas fa-clock text-yellow-500 text-xl"></i>
@@ -60,9 +60,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600">Total Stock Value</p>
-                        <p class="text-2xl font-semibold text-gray-900">${{ stats.totalStockValue|number_format(2) }}</p>
-                <dd id="counter" class="text-4xl font-semibold tracking-tight text-blue-900" data-target="300">0</dd>
-
+                        <p class="text-2xl font-semibold text-gray-900">$<span class="counter" data-target="{{ stats.totalStockValue }}">0</span></p>
                     </div>
                     <div class="p-3 bg-green-50 rounded-full">
                         <i class="fas fa-dollar-sign text-green-500 text-xl"></i>
@@ -75,7 +73,6 @@
                     </div>
                 </div>
             </div>
-            
         </div>
 
         <!-- Charts and Tables -->
@@ -96,7 +93,6 @@
                 </div>
             </div>
         </div>
-        
 
         <!-- Recent Activities -->
         <div class="bg-white rounded-lg shadow">
@@ -159,6 +155,28 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize CounterUp
+    const counters = document.querySelectorAll('.counter');
+    counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const duration = 2000; // Animation duration in milliseconds
+        const steps = 50; // Number of steps in the animation
+        const stepValue = target / steps;
+        let current = 0;
+        
+        const updateCounter = () => {
+            current += stepValue;
+            if (current <= target) {
+                counter.textContent = Math.round(current).toLocaleString();
+                setTimeout(updateCounter, duration / steps);
+            } else {
+                counter.textContent = target.toLocaleString();
+            }
+        };
+        
+        updateCounter();
+    });
+
     // Stock Movement Chart
     const stockCtx = document.getElementById('stockMovementChart').getContext('2d');
     new Chart(stockCtx, {
@@ -226,23 +244,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-
-    // Counter
-    const counter = document.getElementById("counter");
-        const target = +counter.getAttribute("data-target");
-        const increment = target / 200;
-
-        const updateCounter = () => {
-            const current = +counter.innerText;
-            if (current < target) {
-                counter.innerText = Math.ceil(current + increment);
-                setTimeout(updateCounter, );
-            } else {
-                counter.innerText = target;
-            }
-        };
-
-        updateCounter();
 });
 </script>
 {% endblock %}

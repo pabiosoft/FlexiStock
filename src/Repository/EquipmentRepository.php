@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Equipment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 
 class EquipmentRepository extends ServiceEntityRepository
 {
@@ -37,7 +38,7 @@ class EquipmentRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function searchEquipments(array $criteria): array
+    public function getPaginatedEquipment(int $page = 1, int $limit = 10, array $criteria = []): array
     {
         $qb = $this->createQueryBuilder('e')
             ->leftJoin('e.category', 'c')
@@ -62,7 +63,19 @@ class EquipmentRepository extends ServiceEntityRepository
             $qb->andWhere('e.stockQuantity <= e.minThreshold');
         }
 
-        return $qb->getQuery()->getResult();
+        $qb->orderBy('e.name', 'ASC')
+           ->setFirstResult(($page - 1) * $limit)
+           ->setMaxResults($limit);
+
+        $paginator = new Paginator($qb);
+
+        return [
+            'items' => iterator_to_array($paginator->getIterator()),
+            'totalItems' => $paginator->count(),
+            'itemsPerPage' => $limit,
+            'currentPage' => $page,
+            'pageCount' => ceil($paginator->count() / $limit)
+        ];
     }
 
     public function getStockValueReport(): array

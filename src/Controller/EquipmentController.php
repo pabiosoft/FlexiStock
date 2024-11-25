@@ -26,15 +26,32 @@ class EquipmentController extends AbstractController
     }
 
     #[Route('/', name: 'equipment_index', methods: ['GET'])]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        $equipments = $entityManager->getRepository(Equipment::class)->findAll();
+        
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 6);
+        
+        $criteria = [
+            'name' => $request->query->get('name'),
+            'category' => $request->query->get('category'),
+            'status' => $request->query->get('status'),
+            'lowStock' => $request->query->getBoolean('lowStock')
+        ];
+
+        $paginatedData = $entityManager->getRepository(Equipment::class)->getPaginatedEquipment($page, $limit, $criteria);
         $categories = $entityManager->getRepository(Category::class)->findAll();
 
         return $this->render('equipment/index.html.twig', [
-            'equipments' => $equipments,
+            'equipments' => $paginatedData['items'],
             'categories' => $categories,
+            'pagination' => [
+                'currentPage' => $paginatedData['currentPage'],
+                'pageCount' => $paginatedData['pageCount'],
+                'totalItems' => $paginatedData['totalItems'],
+                'itemsPerPage' => $paginatedData['itemsPerPage']
+            ]
         ]);
     }
 
@@ -204,3 +221,4 @@ class EquipmentController extends AbstractController
         return !$existingEquipment || $existingEquipment->getId() === $equipment->getId();
     }
 }
+

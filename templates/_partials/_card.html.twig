@@ -1,0 +1,13 @@
+{# templates/_partials/_card.html.twig #}
+
+<div class="bg-{{ bgColor }}-50 rounded-lg p-4">
+    <div class="flex items-center">
+        <div class="flex-shrink-0">
+            <i class="fas fa-{{ icon }} text-{{ color }}-500 text-2xl"></i>
+        </div>
+        <div class="ml-4">
+            <h3 class="text-sm font-medium text-{{ color }}-800">{{ title }}</h3>
+            <p class="text-2xl font-semibold text-{{ color }}-900">{{ value }}</p>
+        </div>
+    </div>
+</div>

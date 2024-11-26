@@ -31,7 +31,21 @@
 		{{ form_errors(equipmentForm.category) }}
 		{{ form_widget(equipmentForm.category, {'attr': {'class': 'form-input w-full'}}) }}
 	</div>
-
+	<div>
+		{{ form_label(equipmentForm.price) }}
+		{{ form_errors(equipmentForm.price) }}
+		{{ form_widget(equipmentForm.price, {'attr': {'class': 'form-input w-full'}}) }}
+	</div>
+	<div>
+		{{ form_label(equipmentForm.brand) }}
+		{{ form_errors(equipmentForm.brand) }}
+		{{ form_widget(equipmentForm.brand, {'attr': {'class': 'form-input w-full'}}) }}
+	</div>
+	<div>
+		{{ form_label(equipmentForm.salePrice) }}
+		{{ form_errors(equipmentForm.salePrice) }}
+		{{ form_widget(equipmentForm.salePrice, {'attr': {'class': 'form-input w-full'}}) }}
+	</div>
 
 </div>
 

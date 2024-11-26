@@ -3,11 +3,12 @@
 {% block title %}Create Order - FlexiStock{% endblock %}
 
 {% block body %}
-    {% include '_partials/_adminav.html.twig' %}
+    {# {% include '_partials/_adminav.html.twig' %} #}
     {% include '_partials/_flush.html.twig' %}
 
-    <main class="flex flex-col gap-4 md:gap-2 px-2 lg:px-2 lg:ml-60 h-auto pt-20 pb-5">
-        <div class="px-6 py-8 lg:px-8">
+	<main class="flex flex-col gap-2 md:gap-5 h-auto pb-5">
+
+        {# <div class="px-6 py-8 lg:px-8"> #}
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-2xl font-bold text-gray-900">Create New Order</h1>
                 <nav class="flex items-center space-x-2">
@@ -153,7 +154,7 @@
                 </div>
             </div>
            
-        </div>
+        {# </div> #}
     </main>
 {% endblock %}
 

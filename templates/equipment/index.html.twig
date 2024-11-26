@@ -3,32 +3,39 @@
 {% block title %}Equipment Inventory - FlexiStock{% endblock %}
 
 {% block body %}
-    {% include '_partials/_adminav.html.twig' %}
     {% include '_partials/_flush.html.twig' %}
 
-    <main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-64 h-auto pt-20 pb-5">
-        <div class="bg-white rounded-lg shadow-sm p-6">
+    <main class="flex flex-col gap-4 md:gap-5 h-auto pb-5">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
-                <h1 class="text-2xl font-bold text-gray-900">Equipment Inventory</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Equipment Inventory</h1>
                 <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
                     <a href="{{ path('equipment_new') }}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         <i class="fas fa-plus mr-2"></i>
                         Add Equipment
                     </a>
-                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="filterButton">
+                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="filterButton">
                         <i class="fas fa-filter mr-2"></i>
                         Filters
+                    </button>
+                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="exportButton">
+                        <i class="fas fa-download mr-2"></i>
+                        Export
+                    </button>
+                    <button id="theme-toggle" class="p-2 text-gray-500 dark:text-gray-300 focus:outline-none">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:block"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Filters Panel -->
-            <div class="hidden mb-6 p-4 bg-gray-50 rounded-lg" id="filterPanel">
+            <div class="hidden mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg" id="filterPanel">
                 <form action="{{ path('equipment_index') }}" method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Category</label>
-                        <select name="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                        <select name="category" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">All Categories</option>
                             {% for category in categories %}
                                 <option value="{{ category.id }}">{{ category.name }}</option>
@@ -36,8 +43,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Status</label>
-                        <select name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                        <select name="status" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">All Statuses</option>
                             <option value="active">Active</option>
                             <option value="expired">Expired</option>
@@ -45,8 +52,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Stock Level</label>
-                        <select name="stock" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Stock Level</label>
+                        <select name="stock" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">All Levels</option>
                             <option value="low">Low Stock</option>
                             <option value="out">Out of Stock</option>
@@ -61,24 +68,78 @@
                 </form>
             </div>
 
+            <!-- Equipment Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-boxes text-blue-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Total Items</h3>
+                            <p class="text-2xl font-semibold text-blue-900 dark:text-blue-100">{{ equipments|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-red-50 dark:bg-red-900 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Low Stock</h3>
+                            <p class="text-2xl font-semibold text-red-900 dark:text-red-100">
+                                {{ equipments|filter(e => e.stockQuantity <= e.minThreshold)|length }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-green-50 dark:bg-green-900 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Active</h3>
+                            <p class="text-2xl font-semibold text-green-900 dark:text-green-100">
+                                {{ equipments|filter(e => e.status == 'active')|length }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-yellow-50 dark:bg-yellow-900 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-clock text-yellow-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Expiring Soon</h3>
+                            <p class="text-2xl font-semibold text-yellow-900 dark:text-yellow-100">
+                                {{ equipments|filter(e => e.warrantyDate and e.warrantyDate|date('U') < ('+30 days'|date('U')))|length }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Equipment Table -->
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipment</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">images</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Equipment</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Stock</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                         {% for equipment in equipments %}
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
+                            <tr>
+                              <td class="px-6 py-4 whitespace-nowrap">
                                         {% if equipment.images|length > 0 %}
                                             <img class="h-10 w-10 rounded-lg object-cover" 
                                                 src="{{ asset('uploads/equipments/mini/300x300-' ~ equipment.images[0].name) }}" 
@@ -88,48 +149,16 @@
                                                 <i class="fas fa-box text-gray-400"></i>
                                             </div>
                                         {% endif %}
-                                        <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ equipment.name }}</div>
-                                            <div class="text-sm text-gray-500">{{ equipment.serialNumber }}</div>
-                                        </div>
-                                    </div>
+                                        
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                        {{ equipment.category.name }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex flex-col">
-                                        <div class="text-sm text-gray-900">{{ equipment.stockQuantity }} units</div>
-                                        {% if equipment.stockQuantity <= equipment.minThreshold %}
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                Low Stock
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                        {% if equipment.status == 'active' %}
-                                            bg-green-100 text-green-800
-                                        {% elseif equipment.status == 'expired' %}
-                                            bg-red-100 text-red-800
-                                        {% else %}
-                                            bg-gray-100 text-gray-800
-                                        {% endif %}">
-                                        {{ equipment.status|capitalize }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    ${{ equipment.price|number_format(2) }}
-                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ equipment.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ equipment.category.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ equipment.stockQuantity }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ equipment.status|capitalize }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${{ equipment.price|number_format(2) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div class="flex justify-end space-x-2">
-                                        <a href="{{ path('equipment_show', {'id': equipment.id}) }}" class="text-blue-600 hover:text-blue-900" title="View">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ path('equipment_edit', {'id': equipment.id}) }}" class="text-yellow-600 hover:text-yellow-900" title="Edit">
+                                    <a href="{{ path('equipment_show', {'id': equipment.id}) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"><i class="fas fa-eye"></i></a>
+                                     <a href="{{ path('equipment_edit', {'id': equipment.id}) }}" class="text-yellow-600 hover:text-yellow-900" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <form method="post" action="{{ path('equipment_delete', {'id': equipment.id}) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this item?');">
@@ -138,20 +167,12 @@
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% else %}
-                            <tr>
-                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                    No equipment found
                                 </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-
             <!-- Pagination -->
             {% include '_partials/_pagination.html.twig' with {
                 'currentPage': pagination.currentPage,
@@ -169,13 +190,42 @@
 {{ parent() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const themeToggleButton = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'light';
+
+    // Set initial theme based on localStorage
+    if (currentTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+    }
+
+    // Toggle theme on button click
+    themeToggleButton.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        const newTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        localStorage.setItem('theme', newTheme);
+    });
+
     // Filter panel toggle
     const filterButton = document.getElementById('filterButton');
     const filterPanel = document.getElementById('filterPanel');
     
     filterButton.addEventListener('click', function() {
         filterPanel.classList.toggle('hidden');
-        
+    });
+
+    // Export menu toggle
+    const exportButton = document.getElementById('exportButton');
+    const exportMenu = document.getElementById('exportMenu');
+    
+    exportButton.addEventListener('click', function() {
+        exportMenu.classList.toggle('hidden');
+    });
+
+    // Close export menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!exportButton.contains(event.target) && !exportMenu.contains(event.target)) {
+            exportMenu.classList.add('hidden');
+        }
     });
 });
 </script>

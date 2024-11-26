@@ -1,9 +1,7 @@
 import './styles/app.css';
+import { initializeTheme } from './js/theme';
 
-// import { registerReactControllerComponents } from '@symfony/ux-react';
-
-// Register React components
-// registerReactControllerComponents(require.context('./react/controllers', true, /\.(j|t)sx?$/));
-
-// Initialize any other JavaScript functionality
-console.log('Welcome to FlexiStock!');
+// Initialize theme functionality
+document.addEventListener('DOMContentLoaded', () => {
+    initializeTheme();
+});

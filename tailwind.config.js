@@ -2,8 +2,10 @@
 module.exports = {
   content: [
     "./assets/**/*.js",
-    "./templates/**/*.html.twig"
+    "./templates/**/*.html.twig",
+    "./node_modules/flowbite/**/*.js"
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -55,5 +57,8 @@ module.exports = {
       },
     },
   },
-  plugins: [require("@tailwindcss/forms")],
+  plugins: [
+    require("@tailwindcss/forms"),
+    require('flowbite/plugin')
+  ],
 }

@@ -1,59 +1,69 @@
 <!DOCTYPE html>
-<html class="h-full bg-gray-100">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Welcome!{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Welcome!{% endblock %} - FlexiStock</title>
 
-    <!-- Tailwind CSS and other libraries -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    {# <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> #}
+
+    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><text y='1.2em' font-size='96'>⚫️</text><text y='1.3em' x='0.2em' font-size='76' fill='#fff'>sf</text></svg>">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet" type="text/css"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet"/>
 
-    <!-- JavaScript libraries -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- External CSS Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.24/dist/full.min.css" rel="stylesheet">
+    {# <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet"> #}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 
-<!-- Include Counter-Up -->
-<script src="https://cdn.rawgit.com/bfintal/Counter-Up/master/dist/jquery.counterup.min.js"></script>
-
-    <!-- Initialize WOW.js for animations -->
-    <script>
-        new WOW().init();
-    </script>
-
+    <!-- Stylesheets -->
     {% block stylesheets %}
         {{ encore_entry_link_tags('app') }}
     {% endblock %}
 </head>
+<body class="bg-gray-50 dark:bg-gray-900">
+    <!-- Navbar -->
+    {% include '_partials/_navbar.html.twig' %}
+    
+    <!-- Sidebar -->
+    {% include '_partials/_sidebar.html.twig' %}
 
-<body class="h-full">
-    {% block body %}
-        {% if app.session.flashBag.has('error') %}
-            <div class="alert alert-danger">
-                {% for msg in app.session.flashBag.get('error') %}
-                    {{ msg }}
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endblock %}
+    <!-- Flash Messages -->
+    {% include '_partials/_flush.html.twig' %}
 
+    <!-- Main Content -->
+    <div class="p-4 lg:ml-64 mt-14">
+        <div class="p-4 mb-16">
+            {% block body %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {% include '_partials/_footer.html.twig' %}
+
+    <!-- External JavaScript Libraries -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js" defer></script>
+    {# <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js" defer></script> #}
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" defer></script>
+    <script src="https://cdn.rawgit.com/bfintal/Counter-Up/master/dist/jquery.counterup.min.js" defer></script>
+
+    <!-- Initialize WOW.js for animations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            new WOW().init();
+        });
+    </script>
+
+    <!-- Custom JavaScript -->
     {% block javascripts %}
         {{ encore_entry_script_tags('app') }}
-        {% block importmap %}
-            {{ importmap('app') }}
-        {% endblock %}
     {% endblock %}
-    {# {% block footer %}
-    {% include '_partials/_footer.html.twig' %}
-    {% endblock %} #}
 </body>
 </html>

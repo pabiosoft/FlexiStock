@@ -227,7 +227,7 @@ class OrderController extends AbstractController
     public function list(Request $request): Response
     {
         $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 10);
+        $limit = $request->query->getInt('limit', 5);
         $criteria = [];
         
         if ($status = $request->query->get('status')) {

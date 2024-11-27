@@ -3,151 +3,149 @@
 {% block title %}Dashboard - FlexiStock{% endblock %}
 
 {% block body %}
-    {% include '_partials/_adminav.html.twig' %}
-
-    <main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-64 h-auto pt-20 pb-5">
-        <!-- Overview Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Total Equipment</p>
-                        <p class="text-2xl font-semibold text-gray-900 counter" data-target="{{ stats.totalEquipment }}">0</p>
-                    </div>
-                    <div class="p-3 bg-blue-50 rounded-full">
-                        <i class="fas fa-box text-blue-500 text-xl"></i>
-                    </div>
+<main class="flex flex-col gap-4 md:gap-5 h-auto pb-5 dark:bg-gray-900">
+    <!-- Overview Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium">Total Equipment</p>
+                    <p class="text-2xl font-semibold counter" data-target="{{ stats.totalEquipment }}">0</p>
                 </div>
-                <div class="mt-4">
-                    <div class="flex items-center">
-                        <span class="text-sm font-medium text-gray-600">Active Items:</span>
-                        <span class="ml-2 text-sm text-gray-900 counter" data-target="{{ stats.activeEquipment }}">0</span>
-                    </div>
+                <div class="p-3 bg-blue-50 dark:bg-blue-900 rounded-full">
+                    <i class="fas fa-box text-blue-500 text-xl"></i>
                 </div>
             </div>
-
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Low Stock Items</p>
-                        <p class="text-2xl font-semibold text-gray-900 counter" data-target="{{ stats.lowStockCount }}">0</p>
-                    </div>
-                    <div class="p-3 bg-red-50 rounded-full">
-                        <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <a href="{{ path('equipment_index', {'filter': 'low_stock'}) }}" class="text-sm text-red-600 hover:text-red-800">View all low stock items →</a>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Pending Orders</p>
-                        <p class="text-2xl font-semibold text-gray-900 counter" data-target="{{ stats.pendingOrders }}">0</p>
-                    </div>
-                    <div class="p-3 bg-yellow-50 rounded-full">
-                        <i class="fas fa-clock text-yellow-500 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <a href="{{ path('order_list') }}" class="text-sm text-yellow-600 hover:text-yellow-800">View pending orders →</a>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600">Total Stock Value</p>
-                        <p class="text-2xl font-semibold text-gray-900">$<span class="counter" data-target="{{ stats.totalStockValue }}">0</span></p>
-                    </div>
-                    <div class="p-3 bg-green-50 rounded-full">
-                        <i class="fas fa-dollar-sign text-green-500 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <div class="flex items-center">
-                        <span class="text-sm font-medium text-gray-600">Last updated:</span>
-                        <span class="ml-2 text-sm text-gray-900">{{ "now"|date("d M Y H:i") }}</span>
-                    </div>
+            <div class="mt-4">
+                <div class="flex items-center">
+                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Items:</span>
+                    <span class="ml-2 text-sm text-gray-900 dark:text-gray-200 counter" data-target="{{ stats.activeEquipment }}">0</span>
                 </div>
             </div>
         </div>
 
-        <!-- Charts and Tables -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <!-- Stock Movement Chart -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Stock Movements (Last 7 Days)</h3>
-                <div class="h-80">
-                    <canvas id="stockMovementChart"></canvas>
+        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Low Stock Items</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200 counter" data-target="{{ stats.lowStockCount }}">0</p>
+                </div>
+                <div class="p-3 bg-red-50 dark:bg-red-900 rounded-full">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
                 </div>
             </div>
-
-            <!-- Category Distribution -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Stock par catégorie</h3>
-                <div class="h-80">
-                    <canvas id="categoryDistributionChart"></canvas>
-                </div>
+            <div class="mt-4">
+                <a href="{{ path('equipment_index', {'filter': 'low_stock'}) }}" class="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-600">View all low stock items →</a>
             </div>
         </div>
 
-        <!-- Recent Activities -->
-        <div class="bg-white rounded-lg shadow">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">Activités récentes</h3>
+        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Orders</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200 counter" data-target="{{ stats.pendingOrders }}">0</p>
+                </div>
+                <div class="p-3 bg-yellow-50 dark:bg-yellow-900 rounded-full">
+                    <i class="fas fa-clock text-yellow-500 text-xl"></i>
+                </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+            <div class="mt-4">
+                <a href="{{ path('order_list') }}" class="text-sm text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-600">View pending orders →</a>
+            </div>
+        </div>
+
+        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Stock Value</p>
+                    <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200">$<span class="counter" data-target="{{ stats.totalStockValue }}">0</span></p>
+                </div>
+                <div class="p-3 bg-green-50 dark:bg-green-900 rounded-full">
+                    <i class="fas fa-dollar-sign text-green-500 text-xl"></i>
+                </div>
+            </div>
+            <div class="mt-4">
+                <div class="flex items-center">
+                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Last updated:</span>
+                    <span class="ml-2 text-sm text-gray-900 dark:text-gray-200">{{ "now"|date("d M Y H:i") }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Tables -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Stock Movement Chart -->
+        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
+            <h3 class="text-lg font-semibold mb-4">Stock Movements (Last 7 Days)</h3>
+            <div class="h-80">
+                <canvas id="stockMovementChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Category Distribution -->
+        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
+            <h3 class="text-lg font-semibold mb-4">Stock par catégorie</h3>
+            <div class="h-80">
+                <canvas id="categoryDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="text-lg font-semibold">Activités récentes</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Equipment</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Quantity</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reason</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for activity in recentActivities %}
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Equipment</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {{ activity.createdAt|date('d M Y H:i') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {% if activity.type == 'IN' %}
+                                        bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200
+                                    {% elseif activity.type == 'OUT' %}
+                                        bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200
+                                    {% else %}
+                                        bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200
+                                    {% endif %}">
+                                    {{ activity.type }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                                {{ activity.equipment.name }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {{ activity.user ? activity.user.name : 'System' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {{ activity.quantity }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {{ activity.reason }}
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for activity in recentActivities %}
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ activity.createdAt|date('d M Y H:i') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        {% if activity.type == 'IN' %}
-                                            bg-green-100 text-green-800
-                                        {% elseif activity.type == 'OUT' %}
-                                            bg-red-100 text-red-800
-                                        {% else %}
-                                            bg-blue-100 text-blue-800
-                                        {% endif %}">
-                                        {{ activity.type }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ activity.equipment.name }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ activity.user ? activity.user.name : 'System' }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ activity.quantity }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ activity.reason }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-    </main>
+    </div>
+</main>
 {% endblock %}
 
 {% block javascripts %}

@@ -48,6 +48,9 @@ class Equipment
     #[Assert\GreaterThanOrEqual(0)]
     private int $stockQuantity;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description;
+
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     #[Assert\GreaterThanOrEqual(0)]
     private int $reservedQuantity = 0;
@@ -522,6 +525,17 @@ class Equipment
                 $movement->setEquipment(null);
             }
         }
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
         return $this;
     }
 

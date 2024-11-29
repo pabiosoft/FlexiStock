@@ -14,7 +14,6 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 
-
 #[Route('/equipment')]
 class EquipmentController extends AbstractController
 {
@@ -31,7 +30,7 @@ class EquipmentController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
         $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 10);
+        $limit = $request->query->getInt('limit', 4);
         
         $criteria = [
             'name' => $request->query->get('name'),
@@ -58,8 +57,6 @@ class EquipmentController extends AbstractController
     #[Route('/new', name: 'equipment_new', methods: ['GET', 'POST'])]
     public function add(Request $request, EntityManagerInterface $entityManager, PictureService $pictureService): Response
     {
-
-
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $equipment = new Equipment();
         $form = $this->createForm(EquipmentType::class, $equipment);
@@ -70,15 +67,10 @@ class EquipmentController extends AbstractController
             if (!$this->isCsrfTokenValid('new_equipment', $token)) {
                 throw $this->createAccessDeniedException('CSRF token is invalid.');
             }
-            // Automatically assign the current user
             $equipment->setAssignedUser($this->security->getUser());
 
             $this->handleImages($form->get('images')->getData(), $equipment, $entityManager, $pictureService);
             $equipment->setCreatedAt(new \DateTimeImmutable());
-
-            // On arrondit le prix 
-            // $prix = $equipment->getPrice() * $equipment->getQuantity();
-            // $equipment->setPrice($prix);
 
             if ($this->isSlugUnique($equipment, $entityManager)) {
                 $entityManager->persist($equipment);
@@ -90,7 +82,6 @@ class EquipmentController extends AbstractController
                 $this->addFlash('error', 'Cet équipement existe déjà.');
             }
         }
-        // $this->addFlash('error', 'Veuillez remplir tous les champs.');
 
         return $this->render('equipment/new.html.twig', [
             'equipmentForm' => $form->createView(),
@@ -114,7 +105,6 @@ class EquipmentController extends AbstractController
             $this->handleExistingImages($equipment, $entityManager, $pictureService, $form->get('images')->getData());
             $this->handleImages($form->get('images')->getData(), $equipment, $entityManager, $pictureService);
 
-
             if ($this->isSlugUnique($equipment, $entityManager)) {
                 $entityManager->persist($equipment);
                 $entityManager->flush();
@@ -136,21 +126,19 @@ class EquipmentController extends AbstractController
     public function delete(Request $request, Equipment $equipment, EntityManagerInterface $entityManager, PictureService $pictureService): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        $token = $request->request->get('_token');
-        if (!$this->isCsrfTokenValid('equipment_delete_' . $equipment->getId(), $token)) {
-            throw $this->createAccessDeniedException('CSRF token is invalid.');
+        
+        if ($this->isCsrfTokenValid('equipment_delete_' . $equipment->getId(), $request->request->get('_token'))) {
+            // Delete associated images first
+            foreach ($equipment->getImages() as $image) {
+                $pictureService->delete($image->getName(), 'equipments', 300, 300);
+                $entityManager->remove($image);
+            }
+
+            $entityManager->remove($equipment);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'L\'équipement et ses images ont bien été supprimés.');
         }
-
-        foreach ($equipment->getImages() as $image) {
-            $pictureService->delete($image->getName(), 'equipments', 300, 300);
-        }
-
-
-
-        $entityManager->remove($equipment);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'L\'équipement et son image ont bien été supprimés.');
 
         return $this->redirectToRoute('equipment_index');
     }
@@ -164,31 +152,13 @@ class EquipmentController extends AbstractController
             'equipment' => $equipment,
         ]);
     }
-    // filtrage AND SEARCH
 
-    #[Route('/search', name: 'equipment_search', methods: ['GET'])]
-    public function search(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $categories = $entityManager->getRepository(Category::class)->findAll();
-
-        $criteria = [
-            'name' => $request->query->get('name'),
-            'brand' => $request->query->get('brand'),
-            'status' => $request->query->get('status'),
-            'category' => $request->query->get('category'),
-        ];
-
-        $equipments = $entityManager->getRepository(Equipment::class)->searchEquipments($criteria);
-
-        return $this->render('equipment/index.html.twig', [
-            'equipments' => $equipments,
-            'categories' => $categories,
-        ]);
-    }
-
-    // GESTION DES IMAGES
     private function handleImages(?array $images, Equipment $equipment, EntityManagerInterface $entityManager, PictureService $pictureService): void
     {
+        if (!$images) {
+            return;
+        }
+
         foreach ($images as $image) {
             try {
                 $fileName = $pictureService->add($image, 'equipments', 300, 300);
@@ -221,4 +191,3 @@ class EquipmentController extends AbstractController
         return !$existingEquipment || $existingEquipment->getId() === $equipment->getId();
     }
 }
-

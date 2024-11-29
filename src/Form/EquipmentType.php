@@ -41,6 +41,10 @@ class EquipmentType extends AbstractType
             ->add('serialNumber', null, [
                 'label' => 'Numéro de Série',
             ])
+            ->add('description', null, [
+                'label' => 'Description',
+                'required' => false,
+            ])
             ->add('price', NumberType::class, [
                 'required' => true,
                 'scale' => 2,

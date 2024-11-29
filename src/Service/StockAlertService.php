@@ -8,21 +8,22 @@ use App\Enum\AlertLevel;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 class StockAlertService
 {
-    private EntityManagerInterface $entityManager;
-    private MailerInterface $mailer;
-    private string $adminEmail;
+    private $entityManager;
+    private $mailer;
+    private $params;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         MailerInterface $mailer,
-        string $adminEmail
+        ParameterBagInterface $params
     ) {
         $this->entityManager = $entityManager;
         $this->mailer = $mailer;
-        $this->adminEmail = $adminEmail;
+        $this->params = $params;
     }
 
     public function checkLowStockLevels(): void
@@ -56,8 +57,8 @@ class StockAlertService
     private function sendLowStockEmail(Equipment $equipment): void
     {
         $email = (new Email())
-            ->from('reply@mailtrap.club')
-            ->to($this->adminEmail)
+            ->from($this->params->get('app.mail_from'))
+            ->to($this->params->get('app.maintenance_notification_email'))
             ->subject('Low Stock Alert - ' . $equipment->getName())
             ->html(sprintf(
                 '<p>Low stock alert for %s</p>
@@ -100,5 +101,30 @@ class StockAlertService
 
         $this->entityManager->persist($alert);
         $this->entityManager->flush();
+
+        $this->sendExpirationEmail($equipment);
+    }
+
+    private function sendExpirationEmail(Equipment $equipment): void
+    {
+        $email = (new Email())
+            ->from($this->params->get('app.mail_from'))
+            ->to($this->params->get('app.maintenance_notification_email'))
+            ->subject('Warranty Expiration Alert - ' . $equipment->getName())
+            ->html(sprintf(
+                '<p>Warranty expiration alert for %s</p>
+                <ul>
+                    <li>Equipment Name: %s</li>
+                    <li>Serial Number: %s</li>
+                    <li>Warranty Expiration Date: %s</li>
+                </ul>
+                <p>Please review and take necessary action.</p>',
+                $equipment->getName(),
+                $equipment->getName(),
+                $equipment->getSerialNumber(),
+                $equipment->getWarrantyDate()->format('Y-m-d')
+            ));
+
+        $this->mailer->send($email);
     }
 }

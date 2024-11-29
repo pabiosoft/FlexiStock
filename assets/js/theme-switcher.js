@@ -1,5 +1,5 @@
 // Theme Switcher functionality
-export const initializeThemeSwitcher = () => {
+export const initializeTheme = () => {
     const themeToggleBtn = document.getElementById('theme-toggle');
     const htmlElement = document.documentElement;
 

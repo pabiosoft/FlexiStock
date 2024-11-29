@@ -7,7 +7,9 @@
     {% include '_partials/_flush.html.twig' %}
 
     {# <main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-64 h-auto pt-20 pb-5"> #}
-         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+    <main class="flex flex-col gap-4 md:gap-5 h-screen pb-5">
+         
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 ">
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
               <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Orders</h1>
@@ -229,7 +231,7 @@
                 'params': app.request.query.all|merge({'page': null})
             } %}
         </div>
-    {# </main> #}
+    </main>
 {% endblock %}
 
 {% block javascripts %}

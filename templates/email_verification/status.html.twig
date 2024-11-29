@@ -1,0 +1,6 @@
+{% if app.user and not app.user.isVerified %}
+    <div class="alert alert-warning" role="alert">
+        Your email is not verified. 
+        <a href="{{ path('app_resend_verification') }}" class="alert-link">Click here to resend verification email</a>.
+    </div>
+{% endif %}

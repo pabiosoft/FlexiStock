@@ -139,6 +139,9 @@
                                             </button>
                                         </form>
                                     </div>
+                                    <!-- Pagination -->
+                                    
+
                                 </td>
                             </tr>
                         {% else %}
@@ -151,6 +154,15 @@
                     </tbody>
                 </table>
             </div>
+            // Pagination
+            {% include '_partials/_pagination.html.twig' with {
+                'currentPage': pagination.currentPage,
+                'pageCount': pagination.pageCount,
+                'totalItems': pagination.totalItems,
+                'itemsPerPage': pagination.itemsPerPage,
+                'route': 'movement_index',
+                'params': app.request.query.all|merge({'page': null})
+            } %}
         </div>
     </main>
 {% endblock %}

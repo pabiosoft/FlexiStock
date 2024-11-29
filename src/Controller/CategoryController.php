@@ -22,13 +22,29 @@ class CategoryController extends AbstractController
         $this->entityManager = $entityManager;
         $this->categoryRepository = $categoryRepository;
     }
+
     #[Route('/', name: 'category_index', methods: ['GET'])]
-    public function index(CategoryRepository $categoryRepository): Response
+    public function index(Request $request, CategoryRepository $categoryRepository): Response
     {
-        $categories = $categoryRepository->findBy([], ['name' => 'ASC']); // Sorted alphabetically
+        $search = $request->query->get('search');
+        $sortBy = $request->query->get('sort', 'name');
+        $direction = $request->query->get('direction', 'ASC');
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = $request->query->getInt('limit', 3);
+
+        $result = $categoryRepository->findBySearch($search, $sortBy, $direction, $page, $limit);
 
         return $this->render('category/index.html.twig', [
-            'categories' => $categories,
+            'categories' => $result['items'],
+            'currentSort' => $sortBy,
+            'currentDirection' => $direction,
+            'search' => $search,
+            'pagination' => [
+                'currentPage' => $result['currentPage'],
+                'totalPages' => $result['totalPages'],
+                'itemsPerPage' => $result['itemsPerPage'],
+                'totalItems' => $result['totalItems']
+            ]
         ]);
     }
 

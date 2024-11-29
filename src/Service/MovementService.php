@@ -131,4 +131,14 @@ class MovementService
             throw new \RuntimeException('An error occurred while deleting the movement.', 0, $e);
         }
     }
+
+    public function getPaginatedMovements(int $page, int $limit): array
+    {
+        return $this->movementRepository->findPaginatedMovements($page, $limit);
+    }
+
+    public function getTotalMovements(): int
+    {
+        return $this->movementRepository->countMovements();
+    }
 }

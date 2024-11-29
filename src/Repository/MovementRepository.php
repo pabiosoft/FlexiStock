@@ -50,17 +50,15 @@ class MovementRepository extends ServiceEntityRepository
      */
     public function findByEquipmentAndDateRange(Equipment $equipment, \DateTime $startDate, \DateTime $endDate): ArrayCollection
     {
-        $movements = $this->createQueryBuilder('m')
+        $qb = $this->createQueryBuilder('m')
             ->where('m.equipment = :equipment')
+            ->setParameter('equipment', $equipment)
             ->andWhere('m.movementDate BETWEEN :startDate AND :endDate')
-            ->setParameters([
-                'equipment' => $equipment,
-                'startDate' => $startDate,
-                'endDate' => $endDate
-            ])
-            ->orderBy('m.movementDate', 'DESC')
-            ->getQuery()
-            ->getResult();
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->orderBy('m.movementDate', 'DESC');
+
+        $movements = $qb->getQuery()->getResult();
 
         return new ArrayCollection($movements);
     }
@@ -75,27 +73,45 @@ class MovementRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+            
     }
 
-    public function getMovementStatistics(\DateTime $startDate, \DateTime $endDate): array
+    public function getMovementStatistics(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
     {
         $qb = $this->createQueryBuilder('m')
-            ->select('m.type')
-            ->addSelect('SUM(m.quantity) as total_quantity')
+            ->select('m.type', 'SUM(m.quantity) as totalQuantity')
             ->where('m.movementDate BETWEEN :startDate AND :endDate')
-            ->setParameters([
-                'startDate' => $startDate,
-                'endDate' => $endDate
-            ])
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
             ->groupBy('m.type');
 
         $results = $qb->getQuery()->getResult();
 
         $stats = ['IN' => 0, 'OUT' => 0];
         foreach ($results as $result) {
-            $stats[$result['type']] = (int)$result['total_quantity'];
+            $stats[$result['type']] = (int)$result['totalQuantity'];
         }
 
         return $stats;
+    }
+
+    public function findPaginatedMovements(int $page, int $limit): array
+    {
+        $offset = ($page - 1) * $limit;
+
+        return $this->createQueryBuilder('m')
+            ->orderBy('m.movementDate', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countMovements(): int
+    {
+        return $this->createQueryBuilder('m')
+            ->select('count(m.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

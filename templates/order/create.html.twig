@@ -3,16 +3,14 @@
 {% block title %}Create Order - FlexiStock{% endblock %}
 
 {% block body %}
-    {# {% include '_partials/_adminav.html.twig' %} #}
     {% include '_partials/_flush.html.twig' %}
 
-	<main class="flex flex-col gap-2 md:gap-5 h-auto pb-5">
-
-        {# <div class="px-6 py-8 lg:px-8"> #}
+     <main class="flex flex-col gap-4 md:gap-5 h-auto pb-5 dark:bg-gray-900">
+        <div class="px-6 py-4 lg:px-4 bg-white dark:bg-gray-800 dark:text-gray-300">
             <div class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-bold text-gray-900">Create New Order</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-200">Create New Order</h1>
                 <nav class="flex items-center space-x-2">
-                    <a href="{{ path('order_list') }}" class="text-gray-600 hover:text-blue-600 transition-colors">
+                    <a href="{{ path('order_list') }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Back to Orders
                     </a>
@@ -21,18 +19,18 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Product Selection Panel -->
-                <div class="bg-white rounded-lg shadow-sm">
-                    <div class="p-6 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Product Catalog</h2>
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-200">Product Catalog</h2>
                         <div class="mt-4 flex flex-col sm:flex-row gap-4">
                             <div class="flex-1">
                                 <input type="text" 
                                     id="searchProducts" 
                                     placeholder="Search products..." 
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-200">
                             </div>
                             <div>
-                                <select id="categoryFilter" class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <select id="categoryFilter" class="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-200">
                                     <option value="">All Categories</option>
                                     {% for category in categories %}
                                         <option value="{{ category.id }}">{{ category.name }}</option>
@@ -43,18 +41,18 @@
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-800">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stock</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Product</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Stock</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Price</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Action</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200" id="productList">
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700" id="productList">
                                 {% for equipment in equipmentList %}
-                                    <tr class="hover:bg-gray-50" data-category="{{ equipment.category.id }}">
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700" data-category="{{ equipment.category.id }}">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
                                                 {% if equipment.images|length > 0 %}
@@ -62,37 +60,37 @@
                                                         src="{{ asset('uploads/equipments/mini/300x300-' ~ equipment.images[0].name) }}" 
                                                         alt="{{ equipment.name }}">
                                                 {% else %}
-                                                    <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
-                                                        <i class="fas fa-box text-gray-400"></i>
+                                                    <div class="h-10 w-10 rounded-lg bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                                        <i class="fas fa-box text-gray-400 dark:text-gray-200"></i>
                                                     </div>
                                                 {% endif %}
                                                 <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">{{ equipment.name|striptags|slice(0, 11) ~ '...' }}</div>
-                                                    <div class="text-sm text-gray-500">{{ equipment.category.name|striptags|slice(0, 11) ~ '...' }}</div>
+                                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-200">{{ equipment.name|striptags|slice(0, 11) ~ '...' }}</div>
+                                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ equipment.category.name|striptags|slice(0, 11) ~ '...' }}</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                                 {% if equipment.stockQuantity > equipment.minThreshold %}
-                                                    bg-green-100 text-green-800
+                                                    bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200
                                                 {% else %}
-                                                    bg-red-100 text-red-800
+                                                    bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200
                                                 {% endif %}">
                                                 {{ equipment.stockQuantity }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             ${{ equipment.price|number_format(2) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right">
                                             {% if equipment.stockQuantity > 0 %}
                                                 <a href="{{ path('order_add_to_cart', {'equipmentId': equipment.id}) }}" 
-                                                   class="text-blue-600 hover:text-blue-900">
+                                                   class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-500">
                                                     <i class="fas fa-plus-circle text-xl"></i>
                                                 </a>
                                             {% else %}
-                                                <span class="text-gray-400 cursor-not-allowed">
+                                                <span class="text-gray-400 dark:text-gray-200 cursor-not-allowed">
                                                     <i class="fas fa-plus-circle text-xl"></i>
                                                 </span>
                                             {% endif %}
@@ -111,28 +109,36 @@
             } %} #}
                     </div>
                      <!-- Pagination -->
+                    {% include '_partials/_pagination.html.twig' with {
+                        'currentPage': pagination.currentPage,
+                        'pageCount': pagination.pageCount,
+                        'totalItems': pagination.totalItems,
+                        'itemsPerPage': pagination.itemsPerPage,
+                        'route': 'order_create',
+                        'params': app.request.query.all|merge({'page': null})
+                    } %}
            
                 </div>
 
                 <!-- Order Summary Panel -->
-                <div>
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
                     {% include 'order/_cart_summary.html.twig' %}
 
                     {% if cart|length > 0 %}
-                        <div class="bg-white rounded-lg shadow-sm p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4">Order Details</h3>
+                        <div class="bg-white dark:bg-gray-800 p-6">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-200 mb-4">Order Details</h3>
                             {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         {{ form_row(form.customer, {
-                                            'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
-                                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500' }
+                                            'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-200' }
                                         }) }}
                                     </div>
                                     <div>
                                         {{ form_row(form.supplier, {
-                                            'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
-                                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500' }
+                                            'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-200' }
                                         }) }}
                                     </div>
                                 </div>
@@ -140,11 +146,11 @@
                                 <div class="flex justify-end space-x-3 pt-6">
                                     <button type="button" 
                                             onclick="window.location.href='{{ path('order_list') }}'"
-                                            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400">
                                         Cancel
                                     </button>
                                     <button type="submit" 
-                                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400">
                                         Create Order
                                     </button>
                                 </div>
@@ -154,7 +160,7 @@
                 </div>
             </div>
            
-        {# </div> #}
+        </div>
     </main>
 {% endblock %}
 

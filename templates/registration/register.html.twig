@@ -1,22 +1,40 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Register{% endblock %}
+{% set hide_navigation = true %}
 
 {% block body %}
-<div class="container max-w-sm mx-auto">
-    <h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">Register</h1>
+<div class="container max-w-sm mx-auto mt-10 h-screen">
+    <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">Register</h1>
 
     {{ form_errors(registrationForm) }}
 
     {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.name) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Password'
-        }) }}
-        {{ form_row(registrationForm.agreeTerms) }}
-
-        <button type="submit" class="btn">Register</button>
+        <div class="mb-4">
+            {{ form_label(registrationForm.email, 'Email', {'label_attr': {'class': 'block text-gray-700 dark:text-gray-300 font-bold mb-2'}}) }}
+            {{ form_widget(registrationForm.email, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
+            {{ form_errors(registrationForm.email) }}
+        </div>
+        <div class="mb-4">
+            {{ form_label(registrationForm.name, 'Name', {'label_attr': {'class': 'block text-gray-700 dark:text-gray-300 font-bold mb-2'}}) }}
+            {{ form_widget(registrationForm.name, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
+            {{ form_errors(registrationForm.name) }}
+        </div>
+        <div class="mb-4">
+            {{ form_label(registrationForm.plainPassword, 'Password', {'label_attr': {'class': 'block text-gray-700 dark:text-gray-300 font-bold mb-2'}}) }}
+            {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
+            {{ form_errors(registrationForm.plainPassword) }}
+        </div>
+        <div class="mb-6">
+            {{ form_row(registrationForm.agreeTerms, {'attr': {'class': 'mr-2 leading-tight'}}) }}
+            <label for="agreeTerms" class="text-gray-700 dark:text-gray-300 font-bold">{{ form_label(registrationForm.agreeTerms) }}</label>
+            {# {{ form_errors(registrationForm.agreeTerms) }} #}
+        </div>
+        <div class="flex items-center justify-between">
+            <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:shadow-outline">
+                Register
+            </button>
+        </div>
     {{ form_end(registrationForm) }}
-    </div>
+</div>
 {% endblock %}

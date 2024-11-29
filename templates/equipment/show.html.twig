@@ -1,57 +1,156 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Equipment
-{% endblock %}
+{% block title %}Détails de l'Équipement{% endblock %}
 
 {% block body %}
-	{# {{ include('_partials/_adminav.html.twig') }} #}
-		<main class="flex flex-col gap-4 md:gap-5 h-auto pb-5">
+{% include '_partials/_flush.html.twig' %}
+<main class="flex flex-col gap-4 md:gap-5 h-auto pb-5 bg-gray-50 dark:bg-gray-900">
+    <div class="px-6 py-8 lg:px-8">
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-200">{{ equipment.name }}</h1>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    Catégorie: {{ equipment.category ? equipment.category.name : 'Non catégorisé' }}
+                </p>
+            </div>
+            <div class="flex space-x-4">
+                <a href="{{ path('app_maintenance_equipment_show', {'id': equipment.id}) }}" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <i class="fas fa-tools mr-2"></i> View Maintenance History
+                </a>
+                <a href="{{ path('equipment_edit', {'id': equipment.id}) }}" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                    <i class="fas fa-edit mr-2"></i> Modifier
+                </a>
+                <form method="post" action="{{ path('equipment_delete', {'id': equipment.id}) }}" class="inline-block">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipment.id) }}">
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet équipement ?');">
+                        <i class="fas fa-trash mr-2"></i> Supprimer
+                    </button>
+                </form>
+                <a href="{{ path('equipment_index') }}" 
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">
+                    <i class="fas fa-arrow-left mr-2"></i> Retour à la liste
+                </a>
+            </div>
+        </div>
 
-		<div class="px-6 py-8 lg:px-8">
-			<h1>Equipment</h1>
+        <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200">Informations de l'Équipement</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">Détails et spécifications</p>
+            </div>
+            <div class="border-t border-gray-200 dark:border-gray-700">
+                <dl>
+                    <div class="bg-gray-50 dark:bg-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nom</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-200 sm:mt-0 sm:col-span-2">{{ equipment.name }}</dd>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Description</dt>
+                        {# <dd class="mt-1 text-sm text-gray-900 dark:text-gray-200 sm:mt-0 sm:col-span-2">{{ equipment.description }}</dd> #}
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Catégorie</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-200 sm:mt-0 sm:col-span-2">
+                            {{ equipment.category ? equipment.category.name : 'Non catégorisé' }}
+                        </dd>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Prix</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-200 sm:mt-0 sm:col-span-2">
+                            {{ equipment.price|number_format(2, ',', ' ') }} €
+                        </dd>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Stock Actuel</dt>
+                        <dd class="mt-1 text-sm sm:mt-0 sm:col-span-2">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                {% if equipment.stockQuantity == 0 %}
+                                    bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                {% elseif equipment.stockQuantity <= equipment.lowStockThreshold %}
+                                    bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                                {% else %}
+                                    bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                {% endif %}">
+                                {{ equipment.stockQuantity }}
+                            </span>
+                        </dd>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Seuil de Stock Faible</dt>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-gray-200 sm:mt-0 sm:col-span-2">{{ equipment.lowStockThreshold }}</dd>
+                    </div>
+                    {% if equipment.images|length > 0 %}
+                        <div class="bg-gray-50 dark:bg-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Image</dt>
+                            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-200 sm:mt-0 sm:col-span-2">
+                                <img src="{{ asset('uploads/equipments/mini/300x300-' ~ equipment.images[0].name) }}" 
+                                     alt="Image de {{ equipment.name }}" 
+                                     class="h-48 w-auto object-cover rounded-lg">
+                            </dd>
+                        </div>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
 
-			<table>
-				<tr>
-					<th>ID</th>
-					<td>{{ equipment.id }}</td>
-				</tr>
-				<tr>
-					<th>Name</th>
-					<td>{{ equipment.name }}</td>
-
-				</tr>
-				<tr>
-					<th>brand</th>
-					<td>{{ equipment.brand }}</td>
-				</tr>
-				<tr>
-					<th>PRICE</th>
-					<td>{{ equipment.price }}</td>
-				</tr>
-				<tr>
-					<th>salePrice</th>
-					<td>{{ equipment.salePrice }}</td>
-				</tr>
-				{# <tr>
-					<th>quantity</th>
-					<td>{{ equipment.quantity }}</td>
-				</tr> #}
-				<tr>
-					<th>category</th>
-					<td>{{ equipment.category }}</td>
-				</tr>
-				<tr>
-					<th>status</th>
-					<td>{{ equipment.status }}</td>
-				</tr>
-			</table>
-
-			<a href="{{ path('equipment_index') }}">Back to list</a>
-			<a href="{{ path('equipment_edit', {'id': equipment.id}) }}">Edit</a>
-			<form method="post" action="{{ path('equipment_delete', {'id': equipment.id}) }}" style="display:inline-block;">
-				<input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipment.id) }}">
-				<button type="submit">Delete</button>
-			</form>
-		</div>
-	</main>
+        {# Stock Movement History #}
+        <div class="mt-8 bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-200">Historique des Mouvements</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">Derniers mouvements de stock</p>
+            </div>
+            <div class="border-t border-gray-200 dark:border-gray-700">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-900">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantité</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Utilisateur</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Raison</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {% for movement in equipment.movements|slice(0, 10) %}
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                                    {{ movement.createdAt|date('d/m/Y H:i') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if movement.type == 'IN' %}
+                                            bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                        {% else %}
+                                            bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                        {% endif %}">
+                                        {{ movement.type == 'OUT' ? 'Entrée' : 'Sortie' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                                    {{ movement.quantity }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    {{ movement.user ? movement.user.name : 'Système' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    {{ movement.reason }}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">
+                                    Aucun mouvement de stock enregistré.
+                                </td>
+                            </tr>
+                         {% endfor %} 
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
 {% endblock %}

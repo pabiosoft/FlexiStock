@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Maintenance Records{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3">Maintenance Records</h1>
+            <div>
+                <a href="{{ path('equipment_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-tools"></i> Equipment List
+                </a>
+                <a href="{{ path('app_maintenance_dashboard') }}" class="btn btn-primary">
+                    <i class="fas fa-tachometer-alt"></i> Maintenance Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">All Maintenance Records</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Equipment</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th>Next Due</th>
+                                <th>Cost</th>
+                                <th>Status</th>
+                                <th>Performed By</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in maintenance_records %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ path('app_maintenance_equipment_show', {'id': record.equipment.id}) }}">
+                                            {{ record.equipment.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ record.maintenanceType }}</td>
+                                    <td>{{ record.maintenanceDate|date('Y-m-d') }}</td>
+                                    <td>{{ record.nextMaintenanceDate|date('Y-m-d') }}</td>
+                                    <td>${{ record.cost|number_format(2) }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ record.status == 'completed' ? 'success' : 'warning' }}">
+                                            {{ record.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ record.performedBy.name }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ path('app_maintenance_edit', {'id': record.id}) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {{ include('maintenance/_delete_form.html.twig') }}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center">No maintenance records found</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

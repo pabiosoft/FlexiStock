@@ -65,6 +65,12 @@ class Equipment
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $lastMaintenanceDate;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $nextMaintenanceDate;
+
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'equipmentItems')]
     #[ORM\JoinColumn(nullable: false)]
     private Category $category;
@@ -82,11 +88,22 @@ class Equipment
     #[ORM\OneToMany(mappedBy: 'equipment', targetEntity: Movement::class, cascade: ['remove'])]
     private Collection $movements;
 
+    #[ORM\OneToMany(mappedBy: 'equipment', targetEntity: MaintenanceRecord::class, cascade: ['remove'])]
+    private Collection $maintenanceRecords;
+
+    #[ORM\OneToMany(mappedBy: 'equipment', targetEntity: Movement::class)]
+    private Collection $stockMovements;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $lowStockThreshold = 0;
+
     public function __construct()
     {
         $this->images = new ArrayCollection();
         $this->subcategories = new ArrayCollection();
         $this->movements = new ArrayCollection();
+        $this->maintenanceRecords = new ArrayCollection();
+        $this->stockMovements = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->stockQuantity = 0;
         $this->reservedQuantity = 0;
@@ -404,6 +421,103 @@ class Equipment
     public function removeMovement(Movement $movement): self
     {
         if ($this->movements->removeElement($movement)) {
+            if ($movement->getEquipment() === $this) {
+                $movement->setEquipment(null);
+            }
+        }
+        return $this;
+    }
+
+    public function getMaintenanceRecords(): Collection
+    {
+        return $this->maintenanceRecords;
+    }
+
+    public function addMaintenanceRecord(MaintenanceRecord $maintenanceRecord): self
+    {
+        if (!$this->maintenanceRecords->contains($maintenanceRecord)) {
+            $this->maintenanceRecords[] = $maintenanceRecord;
+            $maintenanceRecord->setEquipment($this);
+            $this->lastMaintenanceDate = $maintenanceRecord->getMaintenanceDate();
+            $this->nextMaintenanceDate = $maintenanceRecord->getNextMaintenanceDate();
+        }
+
+        return $this;
+    }
+
+    public function removeMaintenanceRecord(MaintenanceRecord $maintenanceRecord): self
+    {
+        if ($this->maintenanceRecords->removeElement($maintenanceRecord)) {
+            if ($maintenanceRecord->getEquipment() === $this) {
+                $maintenanceRecord->setEquipment(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getLastMaintenanceDate(): ?\DateTimeInterface
+    {
+        return $this->lastMaintenanceDate;
+    }
+
+    public function setLastMaintenanceDate(?\DateTimeInterface $lastMaintenanceDate): self
+    {
+        $this->lastMaintenanceDate = $lastMaintenanceDate;
+        return $this;
+    }
+
+    public function getNextMaintenanceDate(): ?\DateTimeInterface
+    {
+        return $this->nextMaintenanceDate;
+    }
+
+    public function setNextMaintenanceDate(?\DateTimeInterface $nextMaintenanceDate): self
+    {
+        $this->nextMaintenanceDate = $nextMaintenanceDate;
+        return $this;
+    }
+
+    public function isMaintenanceNeeded(): bool
+    {
+        if ($this->nextMaintenanceDate === null) {
+            return false;
+        }
+        return $this->nextMaintenanceDate <= new \DateTime();
+    }
+
+    public function getLowStockThreshold(): ?int
+    {
+        return $this->lowStockThreshold;
+    }
+
+    public function setLowStockThreshold(?int $lowStockThreshold): self
+    {
+        $this->lowStockThreshold = $lowStockThreshold;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Movement>
+     */
+    public function getStockMovements(): Collection
+    {
+        return $this->stockMovements;
+    }
+
+    public function addStockMovement(Movement $movement): self
+    {
+        if (!$this->stockMovements->contains($movement)) {
+            $this->stockMovements[] = $movement;
+            $movement->setEquipment($this);
+        }
+        return $this;
+    }
+
+    public function removeStockMovement(Movement $movement): self
+    {
+        if ($this->stockMovements->removeElement($movement)) {
+            // set the owning side to null (unless already changed)
             if ($movement->getEquipment() === $this) {
                 $movement->setEquipment(null);
             }

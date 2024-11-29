@@ -3,180 +3,252 @@
 {% block title %}Reservations - FlexiStock{% endblock %}
 
 {% block body %}
-
     {% include '_partials/_flush.html.twig' %}
 
-    <main class="flex flex-col gap-4 md:gap-5 h-auto pb-5">
-        <div class="bg-white rounded-lg shadow-sm p-6">
+    <main class="flex flex-col gap-4 md:gap-5 h-auto pb-5 bg-gray-50 dark:bg-gray-900">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
-                <h1 class="text-2xl font-bold text-gray-900">Reservations</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Reservations</h1>
                 <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
-                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="filterButton">
+                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="filterButton">
                         <i class="fas fa-filter mr-2"></i>
                         Filters
                     </button>
+                    <a href="{{ path('app_reservation_create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-plus mr-2"></i>
+                        New Reservation
+                    </a>
                 </div>
             </div>
 
             <!-- Filters Panel (Hidden by default) -->
-            <div class="hidden mb-6 p-4 bg-gray-50 rounded-lg" id="filterPanel">
-                <form action="{{ path('app_reservation') }}" method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="hidden mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg" id="filterPanel">
+                <form action="{{ path('app_reservation') }}" method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Status</label>
-                        <select name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                        <select name="status" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300">
                             <option value="">All Status</option>
-                            <option value="reserved">Reserved</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
+                            <option value="active" {{ app.request.query.get('status') == 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="completed" {{ app.request.query.get('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                            <option value="cancelled" {{ app.request.query.get('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Date Range</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                        <select name="category" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {{ app.request.query.get('category') == category.id ? 'selected' : '' }}>
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date Range</label>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="date" name="start_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <input type="date" name="end_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <input type="date" name="start_date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300" value="{{ app.request.query.get('start_date') }}">
+                            <input type="date" name="end_date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300" value="{{ app.request.query.get('end_date') }}">
                         </div>
                     </div>
                     <div class="flex items-end">
-                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:ring-offset-gray-800">
                             Apply Filters
                         </button>
+                        <a href="{{ path('app_reservation') }}" class="ml-2 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 dark:border-gray-600">
+                            Reset
+                        </a>
                     </div>
                 </form>
             </div>
 
             <!-- Reservation Summary Cards -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-blue-50 rounded-lg p-4">
+                <div class="bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-calendar-check text-blue-500 text-2xl"></i>
+                            <i class="fas fa-calendar-check text-blue-500 dark:text-blue-400 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-blue-800">Total Reservations</h3>
-                            <p class="text-2xl font-semibold text-blue-900">{{ reservations|length }}</p>
+                            <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Total Reservations</h3>
+                            <p class="text-2xl font-semibold text-blue-900 dark:text-blue-100">{{ active_count + completed_count + cancelled_count }}</p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-yellow-50 rounded-lg p-4">
+                <div class="bg-yellow-50 dark:bg-yellow-900 rounded-lg p-4">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-clock text-yellow-500 text-2xl"></i>
+                            <i class="fas fa-clock text-yellow-500 dark:text-yellow-400 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-yellow-800">Active</h3>
-                            <p class="text-2xl font-semibold text-yellow-900">
-                                {{ reservations|filter(r => r.status == 'reserved')|length }}
+                            <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Active</h3>
+                            <p class="text-2xl font-semibold text-yellow-900 dark:text-yellow-100">
+                                {{ active_count|default(0) }}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-green-50 rounded-lg p-4">
+                <div class="bg-green-50 dark:bg-green-900 rounded-lg p-4">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                            <i class="fas fa-check-circle text-green-500 dark:text-green-400 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-green-800">Completed</h3>
-                            <p class="text-2xl font-semibold text-green-900">
-                                {{ reservations|filter(r => r.status == 'completed')|length }}
+                            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Completed</h3>
+                            <p class="text-2xl font-semibold text-green-900 dark:text-green-100">
+                                {{ completed_count|default(0) }}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-red-50 rounded-lg p-4">
+                <div class="bg-red-50 dark:bg-red-900 rounded-lg p-4">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-times-circle text-red-500 text-2xl"></i>
+                            <i class="fas fa-times-circle text-red-500 dark:text-red-400 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-red-800">Cancelled</h3>
-                            <p class="text-2xl font-semibold text-red-900">
-                                {{ reservations|filter(r => r.status == 'cancelled')|length }}
+                            <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Cancelled</h3>
+                            <p class="text-2xl font-semibold text-red-900 dark:text-red-100">
+                                {{ cancelled_count|default(0) }}
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Category Statistics -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Reservations by Category</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for stat in category_stats %}
+                        <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-4">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-folder text-indigo-500 dark:text-indigo-400 text-2xl"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ stat.category_name }}</h4>
+                                    <p class="text-lg font-semibold text-indigo-600 dark:text-indigo-400">
+                                        {{ stat.reservation_count }} reservations
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
             <!-- Reservations Table -->
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Equipment</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reserved Quantity</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reserved Date</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Return Date</th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Id</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Equipment</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Reserved Quantity</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Reserved Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Return Date</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for reservation in reservations %}
-                            <tr class="hover:bg-gray-50">
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {% for reservation in reservations.items %}
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ reservation.id }}</div>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
-                                        {% if reservation.equipment.images|length > 0 %}
+                                        {% if reservation.equipment.images is defined and reservation.equipment.images|length > 0 %}
                                             <img class="h-10 w-10 rounded-lg object-cover" 
                                                 src="{{ asset('uploads/equipments/mini/300x300-' ~ reservation.equipment.images[0].name) }}" 
                                                 alt="{{ reservation.equipment.name }}">
                                         {% else %}
-                                            <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
-                                                <i class="fas fa-box text-gray-400"></i>
+                                            <div class="h-10 w-10 rounded-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                                                <i class="fas fa-box text-gray-400 dark:text-gray-500"></i>
                                             </div>
                                         {% endif %}
                                         <div class="ml-4">
-                                            <div class="text-sm font-medium text-gray-900">{{ reservation.equipment.name }}</div>
-                                            <div class="text-sm text-gray-500">{{ reservation.equipment.serialNumber }}</div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                {{ reservation.equipment.name }}
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-gray-100">
+                                        {{ reservation.equipment.category.name }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                     {{ reservation.reservedQuantity }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                        {% if reservation.status == 'reserved' %}
-                                            bg-yellow-100 text-yellow-800
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if reservation.status == 'active' %}
+                                            bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
                                         {% elseif reservation.status == 'completed' %}
-                                            bg-green-100 text-green-800
+                                            bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
                                         {% else %}
-                                            bg-red-100 text-red-800
+                                            bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
                                         {% endif %}">
                                         {{ reservation.status|capitalize }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ reservation.reservationDate|date('d M Y H:i') }}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    {{ reservation.reservationDate|date('d/m/Y') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ reservation.returnDate ? reservation.returnDate|date('d M Y H:i') : 'N/A' }}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    {{ reservation.returnDate ? reservation.returnDate|date('d/m/Y') : '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div class="flex justify-end space-x-2">
-                                        {% if reservation.status == 'reserved' %}
-                                            <button type="button" class="text-green-600 hover:text-green-900" title="Complete">
+                                    <a href="{{ path('app_reservation_show', {'id': reservation.id}) }}" 
+                                       class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    
+                                    {% if reservation.status == 'active' %}
+                                        <form method="post" action="{{ path('reservation_complete', {'id': reservation.id}) }}" class="inline-block mr-3">
+                                            <button type="submit" 
+                                                    class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                                    onclick="return confirm('Are you sure you want to complete this reservation?');">
                                                 <i class="fas fa-check"></i>
                                             </button>
-                                            <button type="button" class="text-red-600 hover:text-red-900" title="Cancel">
+                                        </form>
+                                        <form method="post" action="{{ path('reservation_cancel', {'id': reservation.id}) }}" class="inline-block">
+                                            <button type="submit" 
+                                                    class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                                    onclick="return confirm('Are you sure you want to cancel this reservation?');">
                                                 <i class="fas fa-times"></i>
                                             </button>
-                                        {% endif %}
-                                    </div>
+                                        </form>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                    No reservations found
+                                <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    <i class="fas fa-inbox fa-3x mb-3 text-muted d-block"></i>
+                                    No reservations found.
                                 </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+
+            <!-- Pagination -->
+            {% if reservations.pageCount is defined and reservations.pageCount > 1 %}
+                {% include '_partials/_pagination.html.twig' with {
+                    'currentPage': page,
+                    'pageCount': reservations.pageCount,
+                    'route': 'app_reservation',
+                    'params': app.request.query.all
+                } %}
+            {% endif %}
         </div>
     </main>
 {% endblock %}
@@ -185,10 +257,9 @@
 {{ parent() }}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Filter panel toggle
     const filterButton = document.getElementById('filterButton');
     const filterPanel = document.getElementById('filterPanel');
-    
+
     filterButton.addEventListener('click', function() {
         filterPanel.classList.toggle('hidden');
     });

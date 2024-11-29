@@ -8,13 +8,19 @@ use App\Repository\EquipmentRepository;
 use App\Repository\MovementRepository;
 use App\Repository\OrderRequestRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class DashboardController
+ * @package App\Controller
+ */
 class DashboardController extends AbstractController
 {
-    #[Route('/', name: 'app_dashboard')]
+    #[Route('/dashboard', name: 'app_dashboard')]
     public function index(
+        Request $request,
         EquipmentRepository $equipmentRepository,
         CategoryRepository $categoryRepository,
         MovementRepository $movementRepository,
@@ -55,11 +61,19 @@ class DashboardController extends AbstractController
         }
 
         // Get recent activities
-        $recentActivities = $movementRepository->findBy(
-            [],
-            ['movementDate' => 'DESC'],
-            10
-        );
+        $page = $request->query->getInt('page', 1);
+        $limit = 3; // Number of items per page
+
+        $recentActivities = $movementRepository->findPaginatedMovements($page, $limit);
+        $totalActivities = $movementRepository->countMovements();
+        $totalPages = ceil($totalActivities / $limit);
+
+        $pagination = [
+            'currentPage' => $page,
+            'pageCount' => $totalPages,
+            'totalItems' => $totalActivities,
+            'itemsPerPage' => $limit,
+        ];
 
         // Get active alerts
         $alerts = $alertRepository->findBy(
@@ -76,6 +90,7 @@ class DashboardController extends AbstractController
             'categoryLabels' => $categoryLabels,
             'categoryData' => $categoryData,
             'recentActivities' => $recentActivities,
+            'pagination' => $pagination,
             'alerts' => $alerts,
         ]);
     }

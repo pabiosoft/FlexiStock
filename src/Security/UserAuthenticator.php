@@ -2,11 +2,16 @@
 
 namespace App\Security;
 
+use App\Entity\User;
+use App\Enum\UserRole;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractLoginFormAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\CsrfTokenBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
@@ -22,19 +27,35 @@ class UserAuthenticator extends AbstractLoginFormAuthenticator
 
     public const LOGIN_ROUTE = 'app_login';
 
-    public function __construct(private UrlGeneratorInterface $urlGenerator)
-    {
-    }
+    public function __construct(
+        private UrlGeneratorInterface $urlGenerator,
+        private UserRepository $userRepository,
+        private EntityManagerInterface $entityManager
+    ) {}
 
     public function authenticate(Request $request): Passport
     {
-        $email = $request->request->get('email');
-
+        $email = $request->request->get('email', '');
         $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
 
         return new Passport(
-            new UserBadge($email),
-            new PasswordCredentials($request->request->get('password')),
+            new UserBadge($email, function($userIdentifier) {
+                $user = $this->userRepository->findOneBy(['email' => $userIdentifier]);
+                
+                if (!$user) {
+                    throw new CustomUserMessageAuthenticationException('Email could not be found.');
+                }
+
+                if (!$user->isVerified()) {
+                    $resendUrl = $this->urlGenerator->generate('app_resend_verification', ['email' => $userIdentifier]);
+                    throw new CustomUserMessageAuthenticationException(
+                        'Your email is not verified. <a href="'.$resendUrl.'" class="text-blue-500 hover:underline">Click here to resend the verification email</a>'
+                    );
+                }
+
+                return $user;
+            }),
+            new PasswordCredentials($request->request->get('password', '')),
             [
                 new CsrfTokenBadge('authenticate', $request->request->get('_csrf_token')),
                 new RememberMeBadge(),
@@ -48,16 +69,18 @@ class UserAuthenticator extends AbstractLoginFormAuthenticator
             return new RedirectResponse($targetPath);
         }
 
-        // Redirect based on roles
-        $roles = $token->getRoleNames();
-        if (in_array('ROLE_ADMIN', $roles)) {
-            return new RedirectResponse($this->urlGenerator->generate('admin_dashboard'));
-        } elseif (in_array('ROLE_MANAGER', $roles)) {
-            return new RedirectResponse($this->urlGenerator->generate('equipment_index'));
+        /** @var User $user */
+        $user = $token->getUser();
+        
+        if ($user->getRole() === UserRole::ADMIN) {
+            return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));
+        }
+        
+        if ($user->getRole() === UserRole::MANAGER) {
+            return new RedirectResponse($this->urlGenerator->generate('app_inventory'));
         }
 
-        // Default redirection
-        return new RedirectResponse($this->urlGenerator->generate('order_create'));
+        return new RedirectResponse($this->urlGenerator->generate('app_home'));
     }
 
     protected function getLoginUrl(Request $request): string

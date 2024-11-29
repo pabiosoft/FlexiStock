@@ -17,6 +17,10 @@ class Reservation
     #[ORM\JoinColumn(nullable: false)]
     private Equipment $equipment;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $user = null;
+
     #[ORM\Column(type: 'integer')]
     private int $reservedQuantity;
 
@@ -49,6 +53,18 @@ class Reservation
     public function setEquipment(Equipment $equipment): self
     {
         $this->equipment = $equipment;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }

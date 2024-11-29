@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Access Denied{% endblock %}
+
+{# Hide navigation and sidebar for error pages #}
+{% set hide_navigation = true %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 text-center">
+        <!-- Error Icon -->
+        <div class="mx-auto">
+            <i class="fas fa-exclamation-circle text-red-500 text-7xl mb-4"></i>
+        </div>
+
+        <!-- Error Message -->
+        <div>
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">Access Denied</h1>
+            <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
+                Sorry, you don't have permission to access this page.
+            </p>
+            <p class="text-gray-500 dark:text-gray-400 mb-8">
+                If you believe this is an error, please contact your administrator.
+            </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-center space-x-4">
+            <a href="{{ path('app_home') }}" 
+               class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i class="fas fa-home mr-2"></i> Go Home
+            </a>
+            {% if app.user %}
+                <a href="{{ path('app_logout') }}" 
+                   class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-gray-700 bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

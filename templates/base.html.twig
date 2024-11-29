@@ -23,25 +23,53 @@
     {% endblock %}
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
+
     <!-- Navbar -->
-    {% include '_partials/_navbar.html.twig' %}
+    {% if not hide_navigation is defined or not hide_navigation %}
+        {% if app.request.get('_route') in ['app_home', 'order_equipment'] %}
+            {% include '_partials/_user_navbar.html.twig' %}
+        {% else %}
+            {% include '_partials/_navbar.html.twig' %}
+        {% endif %}
+    {% endif %}
     
     <!-- Sidebar -->
-    {% include '_partials/_sidebar.html.twig' %}
+    {% if (not hide_navigation is defined or not hide_navigation) and app.request.get('_route') not in ['app_home', 'order_equipment', 'app_login'] %}
+        {% include '_partials/_sidebar.html.twig' %}
+    {% endif %}
 
     <!-- Flash Messages -->
     {% include '_partials/_flush.html.twig' %}
 
     <!-- Main Content -->
-    <div class="p-4 lg:ml-64 mt-14">
-        <div class="p-4 mb-16">
+    <div class="{% if (not hide_navigation is defined or not hide_navigation) and app.request.get('_route') not in ['app_home', 'order_equipment', 'app_login'] %}p-4 lg:ml-64 mt-14{% endif %}">
+        <div class="{% if (not hide_navigation is defined or not hide_navigation) and app.request.get('_route') not in ['app_home', 'order_equipment', 'app_login'] %}p-4{% endif %} mb-16">
             {% block body %}
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+
+                {% if app.user and not app.user.isVerified %}
+                    <div class="alert alert-warning" role="alert">
+                        Your email is not verified. Some features will be limited. 
+                        <a href="{{ path('app_resend_verification') }}" class="alert-link">Click here to resend verification email</a>.
+                    </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
             {% endblock %}
         </div>
     </div>
 
     <!-- Footer -->
-    {% include '_partials/_footer.html.twig' %}
+    {% if (not hide_navigation is defined or not hide_navigation) and app.request.get('_route') not in ['app_home', 'order_equipment', 'app_login'] %}
+        {% include '_partials/_footer.html.twig' %}
+    {% endif %}
 
     <!-- External JavaScript Libraries -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>

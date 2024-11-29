@@ -173,6 +173,12 @@ class OrderRequest
         return $this->totalPrice;
     }
 
+    public function setTotalPrice(float $totalPrice): self
+    {
+        $this->totalPrice = $totalPrice;
+        return $this;
+    }
+
     public function recalculateTotalPrice(): self
     {
         $this->totalPrice = array_reduce($this->items->toArray(), function ($total, OrderItem $item) {

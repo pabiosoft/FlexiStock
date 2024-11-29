@@ -3,11 +3,19 @@ parameters:
     app.jwtsecret: '%env(JWT_SECRET)%'
     images_directory: '%kernel.project_dir%/public/uploads/'
     invoice_directory: '%kernel.project_dir%/var/invoices'
+    avatars_directory: '%kernel.project_dir%/public/uploads/avatars'
     
     # Admin email and email sender
-    admin_email: 'info@sofixeplus.com'
-    from_email: 'reply@mailtrap.club'
-
+    admin_email: '%env(APP_MAINTENANCE_NOTIFICATION_EMAIL)%'
+    from_email: '%env(APP_MAIL_FROM)%'
+    
+    # Maintenance notification settings
+    app.mail_from: '%env(APP_MAIL_FROM)%'
+    app.maintenance_notification_email: '%env(APP_MAINTENANCE_NOTIFICATION_EMAIL)%'
+    # Email verification settings
+    app.email_verification.from_email: '%env(APP_MAIL_FROM)%'
+    # ... email verification settings
+    
 services:
     # Default configuration for services in *this* file
     _defaults:
@@ -28,7 +36,14 @@ services:
         arguments:
             $entityManager: '@doctrine.orm.entity_manager'
             $mailer: '@mailer.mailer'
-            $adminEmail: '%admin_email%'
+            $params: '@parameter_bag'
+
+    # Service configuration for ReservationAlertService
+    App\Service\ReservationAlertService:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $mailer: '@mailer.mailer'
+            $params: '@parameter_bag'
 
     # Service configuration for OrderNotificationService
     App\Service\OrderNotificationService:
@@ -43,3 +58,8 @@ services:
     App\Service\InvoiceService:
         arguments:
             $invoiceDirectory: '%invoice_directory%'
+
+    # Service configuration for EmailVerificationService
+    App\Service\EmailVerificationService:
+        arguments:
+            $fromEmail: '%app.email_verification.from_email%'

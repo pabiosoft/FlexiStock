@@ -22,7 +22,7 @@ security:
             logout:
                 path: app_logout
                 # where to redirect after logout
-                # target: app_any_route
+                target: app_home
 
             remember_me:
                 secret: '%kernel.secret%'
@@ -32,34 +32,31 @@ security:
                 # login form, uncomment the following line to always enable it.
                 #always_remember_me: true
 
-            # activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+            # Configure the access denied handler
+            access_denied_handler: App\Security\AccessDeniedHandler
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-         - { path: ^/admin, roles: ROLE_ADMIN }
-         - { path: ^/admin/user, roles: ROLE_ADMIN }
-         - { path: ^/inventory, roles: ROLE_MANAGER }
-         - { path: ^/reports, roles: ROLE_MANAGER }
-         - { path: ^/tasks, roles: ROLE_EMPLOYEE }
-         - { path: ^/dashboard, roles: ROLE_EMPLOYEE }
-         - { path: ^/home, roles: ROLE_USER }
-         - { path: ^/profile, roles: ROLE_USER }
+        # Public routes
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/verify, roles: PUBLIC_ACCESS }
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        
+        # Secured routes requiring verification
+        - { path: ^/admin, roles: [ROLE_ADMIN, IS_VERIFIED] }
+        - { path: ^/admin/user, roles: [ROLE_ADMIN, IS_VERIFIED] }
+        - { path: ^/inventory, roles: [ROLE_MANAGER, IS_VERIFIED] }
+        - { path: ^/reports, roles: [ROLE_MANAGER, IS_VERIFIED] }
+        - { path: ^/tasks, roles: [ROLE_EMPLOYEE, IS_VERIFIED] }
+        - { path: ^/order, roles: [IS_AUTHENTICATED_FULLY, IS_VERIFIED] }
+        - { path: ^/profile, roles: [IS_AUTHENTICATED_FULLY, IS_VERIFIED] }
 
-
-
-    # Role Hierarchy
-    # https://symfony.com/doc/current/security/role_hierarchy.html
     role_hierarchy:
-        ROLE_USER: ROLE_USER
-        ROLE_EMPLOYEE: ROLE_USER
-        ROLE_MANAGER: ROLE_EMPLOYEE
-        ROLE_ADMIN: ROLE_MANAGER
-
+        ROLE_ADMIN: [ROLE_MANAGER]
+        ROLE_MANAGER: [ROLE_EMPLOYEE]
+        ROLE_EMPLOYEE: [ROLE_USER]
 
 when@test:
     security:

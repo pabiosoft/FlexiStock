@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la Réservation{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h1 class="h3 mb-0">Détails de la Réservation</h1>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-4">Équipement</dt>
+                            <dd class="col-sm-8">{{ reservation.equipment.name }}</dd>
+
+                            <dt class="col-sm-4">Utilisateur</dt>
+                            <dd class="col-sm-8">{{ reservation.user ? reservation.user.email : 'N/A' }}</dd>
+
+                            <dt class="col-sm-4">Quantité réservée</dt>
+                            <dd class="col-sm-8">{{ reservation.reservedQuantity }}</dd>
+
+                            <dt class="col-sm-4">Date de réservation</dt>
+                            <dd class="col-sm-8">{{ reservation.reservationDate|date('d/m/Y H:i') }}</dd>
+
+                            <dt class="col-sm-4">Date de retour prévue</dt>
+                            <dd class="col-sm-8">{{ reservation.returnDate ? reservation.returnDate|date('d/m/Y H:i') : 'Non définie' }}</dd>
+
+                            <dt class="col-sm-4">Statut</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge {% if reservation.status == 'active' %}bg-success{% elseif reservation.status == 'completed' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ reservation.status|capitalize }}
+                                </span>
+                            </dd>
+                        </dl>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{{ path('app_reservation') }}" class="btn btn-secondary me-md-2">Retour à la liste</a>
+                            
+                            {% if reservation.status == 'active' %}
+                                <form method="post" action="{{ path('reservation_complete', {'id': reservation.id}) }}" class="d-inline me-md-2">
+                                    <button type="submit" class="btn btn-success">Marquer comme terminée</button>
+                                </form>
+
+                                <form method="post" action="{{ path('reservation_cancel', {'id': reservation.id}) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-danger">Annuler la réservation</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

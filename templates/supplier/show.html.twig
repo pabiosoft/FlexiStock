@@ -1,138 +1,48 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Supplier Details - FlexiStock{% endblock %}
+{% block title %}Supplier Details{% endblock %}
 
 {% block body %}
-    {% include '_partials/_adminav.html.twig' %}
-    {% include '_partials/_flush.html.twig' %}
-
-    <main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-64 h-auto pt-20 pb-5">
-        <div class="max-w-3xl mx-auto">
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <!-- Header -->
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <div class="flex justify-between items-center">
-                        <h1 class="text-2xl font-bold text-gray-900">Supplier Details</h1>
-                        <div class="flex space-x-2">
-                            <a href="#" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                <i class="fas fa-edit mr-2"></i>
-                                Edit
-                            </a>
-                            {# <form method="post" action="{{ path('supplier_delete', {'id': supplier.id}) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this supplier?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ supplier.id) }}">
-                                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                    <i class="fas fa-trash mr-2"></i>
-                                    Delete
-                                </button>
-                            </form> #}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Supplier Information -->
-                <div class="px-6 py-4">
-                    <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Name</dt>
-                            {# <dd class="mt-1 text-sm text-gray-900">{{ supplier.name }}</dd> #}
-                        </div>
-
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Contact Person</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ supplier.contact|default('Not specified') }}</dd>
-                        </div>
-
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Email</dt>
-                            {# <dd class="mt-1 text-sm text-gray-900">
-                                {% if supplier.email %}
-                                    <a href="mailto:{{ supplier.email }}" class="text-blue-600 hover:text-blue-900">
-                                        {{ supplier.email }}
-                                    </a>
-                                {% else %}
-                                    Not specified
-                                {% endif %}
-                            </dd> #}
-                        </div>
-
-                        <div>
-                            <dt class="text-sm font-medium text-gray-500">Phone</dt>
-                            <dd class="mt-1 text-sm text-gray-900">
-                                {% if supplier.phone %}
-                                    <a href="tel:{{ supplier.phone }}" class="text-blue-600 hover:text-blue-900">
-                                        {{ supplier.phone }}
-                                    </a>
-                                {% else %}
-                                    Not specified
-                                {% endif %}
-                            </dd>
-                        </div>
-
-                        <div class="sm:col-span-2">
-                            <dt class="text-sm font-medium text-gray-500">Address</dt>
-                            {# <dd class="mt-1 text-sm text-gray-900">{{ supplier.address|default('Not specified')|nl2br }}</dd> #}
-                        </div>
-                    </dl>
-                </div>
-
-                <!-- Orders History -->
-                <div class="px-6 py-4 border-t border-gray-200">
-                    <h2 class="text-lg font-medium text-gray-900">Order History</h2>
-                    <div class="mt-4 overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                {% if orders is defined and orders|length > 0 %}
-                                    {% for order in orders %}
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{{ order.id }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.orderDate|date('d M Y') }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                    {% if order.status == 'completed' %}
-                                                        bg-green-100 text-green-800
-                                                    {% elseif order.status == 'pending' %}
-                                                        bg-yellow-100 text-yellow-800
-                                                    {% else %}
-                                                        bg-gray-100 text-gray-800
-                                                    {% endif %}">
-                                                    {{ order.status|capitalize }}
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ order.totalPrice|number_format(2) }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <a href="{{ path('order_show', {'id': order.id}) }}" class="text-blue-600 hover:text-blue-900">View</a>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                {% else %}
-                                    <tr>
-                                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
-                                            No orders found for this supplier
-                                        </td>
-                                    </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Back Button -->
-                <div class="px-6 py-4 border-t border-gray-200">
-                    <a href="{{ path('supplier_index') }}" class="text-blue-600 hover:text-blue-900">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Back to Suppliers
-                    </a>
-                </div>
+    <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Supplier Details</h1>
+            <div class="space-x-2">
+                <a href="{{ path('supplier_index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg dark:bg-gray-600 dark:hover:bg-gray-700">
+                    Back to List
+                </a>
+                <a href="{{ path('supplier_edit', {'id': supplier.id}) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg dark:bg-blue-500 dark:hover:bg-blue-600">
+                    Edit
+                </a>
             </div>
         </div>
-    </main>
+
+        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+            <table class="min-w-full">
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-300">ID</th>
+                        <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">{{ supplier.id }}</td>
+                    </tr>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-300">Name</th>
+                        <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">{{ supplier.name }}</td>
+                    </tr>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-300">Email</th>
+                        <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">{{ supplier.email }}</td>
+                    </tr>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-300">Phone</th>
+                        <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">{{ supplier.phone }}</td>
+                    </tr>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-sm font-medium text-gray-500 dark:text-gray-300">Address</th>
+                        <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">{{ supplier.address }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        {{ include('supplier/_delete_form.html.twig') }}
+    </div>
 {% endblock %}

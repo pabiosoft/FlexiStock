@@ -25,28 +25,55 @@
 		{{ form_widget(equipmentForm.status, {'attr': {'class': 'form-input w-full'}}) }}
 	</div>
 
-
-	<div>
+<div>
 		{{ form_label(equipmentForm.category) }}
 		{{ form_errors(equipmentForm.category) }}
 		{{ form_widget(equipmentForm.category, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
-	<div>
-		{{ form_label(equipmentForm.price) }}
-		{{ form_errors(equipmentForm.price) }}
-		{{ form_widget(equipmentForm.price, {'attr': {'class': 'form-input w-full'}}) }}
 	</div>
 	<div>
 		{{ form_label(equipmentForm.brand) }}
 		{{ form_errors(equipmentForm.brand) }}
 		{{ form_widget(equipmentForm.brand, {'attr': {'class': 'form-input w-full'}}) }}
 	</div>
+	
 	<div>
 		{{ form_label(equipmentForm.salePrice) }}
 		{{ form_errors(equipmentForm.salePrice) }}
 		{{ form_widget(equipmentForm.salePrice, {'attr': {'class': 'form-input w-full'}}) }}
 	</div>
+	
+	<div>
+		{{ form_label(equipmentForm.price) }}
+		{{ form_errors(equipmentForm.price) }}
+		{{ form_widget(equipmentForm.price, {'attr': {'class': 'form-input w-full'}}) }}
+	</div>
+
+	<div>
+		{{ form_label(equipmentForm.stockQuantity) }}
+		{{ form_errors(equipmentForm.stockQuantity) }}
+		{{ form_widget(equipmentForm.stockQuantity, {'attr': {'class': 'form-input w-full'}}) }}
+	</div>
+	<div>
+		{{ form_label(equipmentForm.minThreshold) }}
+		{{ form_errors(equipmentForm.minThreshold) }}
+		{{ form_widget(equipmentForm.minThreshold, {'attr': {'class': 'form-input w-full'}}) }}
+	</div>
+		
+	<div>
+		{{ form_label(equipmentForm.warrantyDate) }}
+		{{ form_errors(equipmentForm.warrantyDate) }}
+		{{ form_widget(equipmentForm.warrantyDate, {'attr': {'class': 'form-input w-full'}}) }}
+	</div>
+	<div>
+		{{ form_label(equipmentForm.purchaseDate) }}
+		{{ form_errors(equipmentForm.purchaseDate) }}
+		{{ form_widget(equipmentForm.purchaseDate, {'attr': {'class': 'form-input w-full'}}) }}
+	</div>
+	
+	
+	
+   <button type="submit" class="btn btn-primary">Ajouter</button>
 
 </div>
 
-{{ form_end(equipmentForm) }}</div></div></div></div></div></div>
+{{ form_end(equipmentForm) }}

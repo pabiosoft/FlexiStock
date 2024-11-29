@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Maintenance Dashboard{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <h1 class="h3 mb-4">Maintenance Dashboard</h1>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="card-title mb-0">Overdue Maintenance ({{ overdue_maintenance|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if overdue_maintenance is empty %}
+                            <p class="text-muted">No overdue maintenance</p>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Equipment</th>
+                                            <th>Type</th>
+                                            <th>Due Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for record in overdue_maintenance %}
+                                            <tr>
+                                                <td>{{ record.equipment.name }}</td>
+                                                <td>{{ record.maintenanceType }}</td>
+                                                <td>{{ record.nextMaintenanceDate|date('Y-m-d') }}</td>
+                                                <td>
+                                                    <a href="{{ path('app_maintenance_edit', {'id': record.id}) }}" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">Upcoming Maintenance ({{ upcoming_maintenance|length }})</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if upcoming_maintenance is empty %}
+                            <p class="text-muted">No upcoming maintenance in the next 7 days</p>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Equipment</th>
+                                            <th>Type</th>
+                                            <th>Due Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for record in upcoming_maintenance %}
+                                            <tr>
+                                                <td>{{ record.equipment.name }}</td>
+                                                <td>{{ record.maintenanceType }}</td>
+                                                <td>{{ record.nextMaintenanceDate|date('Y-m-d') }}</td>
+                                                <td>
+                                                    <a href="{{ path('app_maintenance_edit', {'id': record.id}) }}" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

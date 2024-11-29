@@ -54,6 +54,7 @@ class MovementController extends AbstractController
         ]);
     }
 
+    
     #[Route('/movement/{id}', name: 'movement_show')]
     public function show(Movement $movement): Response
     {
@@ -63,13 +64,27 @@ class MovementController extends AbstractController
     }
 
     #[Route('/movement', name: 'movement_index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        // Get all movements using the service
-        $movements = $this->movementService->getAllMovements();
+        $page = $request->query->getInt('page', 1);
+        $limit = 2; // Number of items per page
+
+        // Get paginated movements using the service
+        $movements = $this->movementService->getPaginatedMovements($page, $limit);
+
+        $totalMovements = $this->movementService->getTotalMovements();
+        $totalPages = ceil($totalMovements / $limit);
+
+        $pagination = [
+            'currentPage' => $page,
+            'pageCount' => $totalPages,
+            'totalItems' => $totalMovements,
+            'itemsPerPage' => $limit,
+        ];
 
         return $this->render('movement/index.html.twig', [
             'movements' => $movements,
+            'pagination' => $pagination,
         ]);
     }
 

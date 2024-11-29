@@ -12,6 +12,7 @@ use App\Service\StockService;
 use App\Service\InvoiceService;
 use App\Repository\CategoryRepository;
 use App\Repository\EquipmentRepository;
+use App\Repository\OrderRequestRepository;
 use App\Service\OrderValidationService;
 use App\Service\OrderNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -93,9 +94,13 @@ class OrderController extends AbstractController
         SessionInterface $session,
         StockService $stockService,
         EquipmentRepository $equipmentRepository,
-        CategoryRepository $categoryRepository
+        CategoryRepository $categoryRepository,
+        OrderRequestRepository $orderRepository
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_MANAGER');
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 5);
+        
 
         $orderRequest = new OrderRequest();
         $cart = $session->get('cart', []);
@@ -135,13 +140,7 @@ class OrderController extends AbstractController
                 foreach ($orderRequest->getItems() as $item) {
                     $stockService->reserveStock($item);
 
-                    $reservation = new Reservation();
-                    $reservation->setEquipment($item->getEquipment());
-                    $reservation->setStatus('reserved');
-                    $reservation->setReservationDate(new \DateTime());
-                    $reservation->setReservedQuantity($item->getQuantity());
-
-                    $this->entityManager->persist($reservation);
+                   
                 }
 
                 $orderRequest->setStatus('pending');
@@ -161,11 +160,30 @@ class OrderController extends AbstractController
             }
         }
 
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 5);
+
+        $criteria = [];
+        if ($request->query->has('category')) {
+            $criteria['category'] = $request->query->get('category');
+        }
+
+        $equipmentData = $equipmentRepository->getPaginatedEquipment($page, $limit, $criteria);
+        $equipmentList = $equipmentData['items'];
+        $totalItems = $equipmentData['totalItems'];
+        $totalPages = $equipmentData['pageCount'];
+
         return $this->render('order/create.html.twig', [
             'form' => $form->createView(),
             'cart' => $cart,
-            'equipmentList' => $equipmentRepository->findAll(),
+            'equipmentList' => $equipmentList,
             'categories' => $categoryRepository->findAll(),
+            'pagination' => [
+                'currentPage' => $page,
+                'itemsPerPage' => $limit,
+                'totalItems' => $totalItems,
+                'pageCount' => $totalPages
+            ]
         ]);
     }
 
@@ -238,32 +256,20 @@ class OrderController extends AbstractController
             $criteria['paymentStatus'] = $paymentStatus;
         }
 
-        $startDate = $request->query->get('start_date');
-        $endDate = $request->query->get('end_date');
+        $startDate = $request->query->get('startDate', (new \DateTime('-30 days'))->format('Y-m-d'));
+        $endDate = $request->query->get('endDate', (new \DateTime())->format('Y-m-d'));
 
         $orderRepository = $this->entityManager->getRepository(OrderRequest::class);
         
-        if ($startDate && $endDate) {
+        $orders = [];
+        try {
             $orders = $orderRepository->findByDateRange(
                 new \DateTime($startDate),
                 new \DateTime($endDate),
                 $criteria
             );
-        } else {
-            $qb = $orderRepository->createQueryBuilder('o')
-                ->orderBy('o.orderDate', 'DESC');
-
-            foreach ($criteria as $field => $value) {
-                $qb->andWhere("o.$field = :$field")
-                   ->setParameter($field, $value);
-            }
-
-            $totalItems = count($qb->getQuery()->getResult());
-            
-            $qb->setFirstResult(($page - 1) * $limit)
-               ->setMaxResults($limit);
-
-            $orders = $qb->getQuery()->getResult();
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'An error occurred while fetching orders: ' . $e->getMessage());
         }
 
         return $this->render('order/index.html.twig', [
@@ -271,8 +277,8 @@ class OrderController extends AbstractController
             'pagination' => [
                 'currentPage' => $page,
                 'itemsPerPage' => $limit,
-                'totalItems' => $totalItems ?? count($orders),
-                'pageCount' => ceil(($totalItems ?? count($orders)) / $limit)
+                'totalItems' => count($orders),
+                'pageCount' => ceil(count($orders) / $limit)
             ]
         ]);
     }

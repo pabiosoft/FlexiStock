@@ -1,24 +1,44 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Ajouter un utilisateur
-{% endblock %}
+{% block title %}Ajouter un utilisateur{% endblock %}
 
 {% block body %}
-	{% include "_partials/_flush.html.twig" %}
-	{% include '_partials/_adminav.html.twig' %}
-	<main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5">
-		<div class="px-6 py-8 lg:px-8">
-			<h1 class="text-3xl font-bold mb-4">Ajouter un utilisateur</h1>
+    {% include "_partials/_flush.html.twig" %}
+    <main class="flex flex-col gap-4 md:gap-5 h-screen pb-5 max-w-3xl items-center mx-auto">
+        <h1 class="text-3xl font-bold mb-4">Ajouter un utilisateur</h1>
+        
+        {{ form_start(form, {'attr': {'class': 'w-full max-w-2xl'}}) }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    {{ form_label(form.name, null, {'label_attr': {'class': 'block text-gray-700 dark:text-gray-300 font-bold mb-2'}}) }}
+                    {{ form_errors(form.name) }}
+                    {{ form_widget(form.name, {'attr': {'class': 'form-input w-full shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
+                </div>
+                <div>
+                    {{ form_label(form.plainPassword, null, {'label_attr': {'class': 'block text-gray-700 dark:text-gray-300 font-bold mb-2'}}) }}
+                    {{ form_errors(form.plainPassword) }}
+                    {{ form_widget(form.plainPassword, {'attr': {'class': 'form-input w-full shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
+                </div>
+                <div>
+                    {{ form_label(form.role, null, {'label_attr': {'class': 'block text-gray-700 dark:text-gray-300 font-bold mb-2'}}) }}
+                    {{ form_errors(form.role) }}
+                    {{ form_widget(form.role, {'attr': {'class': 'form-input w-full shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
+                </div>
+                <div>
+                    {{ form_label(form.email, null, {'label_attr': {'class': 'block text-gray-700 dark:text-gray-300 font-bold mb-2'}}) }}
+                    {{ form_errors(form.email) }}
+                    {{ form_widget(form.email, {'attr': {'class': 'form-input w-full shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
+                </div>
+            </div>
 
-			{{ form_start(form) }}
-			{{ form_row(form.name) }}
-			{{ form_row(form.email) }}
-			{{ form_row(form.plainPassword) }}
-			{{ form_row(form.role) }}
-
-			<button type="submit" class="w-full inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto">Ajouter</button>
-			{{ form_end(form) }}
-			<a href="{{ path('admin_user_index') }}" type="button">Back to list</a>
-		</div>
-	</main>
+            <div class="flex justify-end gap-4">
+                <a href="{{ path('admin_user_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Back to list
+                </a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Ajouter
+                </button>
+            </div>
+        {{ form_end(form) }}
+    </main>
 {% endblock %}

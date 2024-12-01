@@ -6,23 +6,51 @@
     {# {% include '_partials/_adminav.html.twig' %} #}
     {% include '_partials/_flush.html.twig' %}
 
-    {# <main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-64 h-auto pt-20 pb-5"> #}
-    <main class="flex flex-col gap-4 md:gap-5 h-screen pb-5">
+    <main class="flex flex-col gap-4 md:gap-5 pb-12 mb-5">
          
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 ">
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Orders</h1>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Commandes</h1>
                 <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
                     <a href="{{ path('order_create') }}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         <i class="fas fa-plus mr-2"></i>
-                        New Order
+                        Nouvelle Commande  
                     </a>
-                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="filterButton">
-                        <i class="fas fa-filter mr-2"></i>
-                        Filters
-                    </button>
                 </div>
+            </div>
+
+            <!-- Search and Filter Form -->
+            <div class="mb-6">
+                <form method="get" class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rechercher des commandes</label>
+                        <input type="text" name="search" id="search" value="{{ app.request.query.get('search') }}"
+                               class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                               placeholder="Rechercher...">
+                    </div>
+                    <div class="md:w-48">
+                        <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Statut</label>
+                        <select name="status" id="status" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option value="">Tous les statuts</option>
+                            <option value="pending" {{ app.request.query.get('status') == 'pending' ? 'selected' : '' }}>En attente</option>
+                            <option value="validated" {{ app.request.query.get('status') == 'validated' ? 'selected' : '' }}>Validée</option>
+                            <option value="completed" {{ app.request.query.get('status') == 'completed' ? 'selected' : '' }}>Terminée</option>
+                            <option value="cancelled" {{ app.request.query.get('status') == 'cancelled' ? 'selected' : '' }}>Annulée</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full md:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <i class="fas fa-search mr-2"></i>
+                            Rechercher
+                        </button>
+                        {% if app.request.query.has('search') or app.request.query.has('status') %}
+                            <a href="{{ path('order_list') }}" class="ml-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Réinitialiser
+                            </a>
+                        {% endif %}
+                    </div>
+                </form>
             </div>
 
             <!-- Filters Panel (Hidden by default) -->
@@ -31,28 +59,28 @@
                     <div>
                          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                         <select name="status" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">All Statuses</option>
-                            <option value="pending">Pending</option>
-                            <option value="validated">Validated</option>
-                            <option value="processed">Processed</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
+                            <option value="">Tous les Statuts</option>
+                            <option value="pending">En Attente</option>
+                            <option value="validated">Valide</option>
+                            <option value="processed">Traite</option>
+                            <option value="shipped">Expedé</option>
+                            <option value="completed">Termine</option>
+                            <option value="cancelled">Annulé</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Payment Status</label>
                         <select name="payment_status" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">All Payment Statuses</option>
-                            <option value="pending">Pending</option>
-                            <option value="processing">Processing</option>
-                            <option value="successful">Successful</option>
-                            <option value="failed">Failed</option>
-                            <option value="refunded">Refunded</option>
+                            <option value="">Tous les Statuts de Paiement</option>
+                            <option value="pending">En Attente</option>
+                            <option value="processing">Traitement</option>
+                            <option value="successful">Succès</option>
+                            <option value="failed">Echec</option>
+                            <option value="refunded">Remboursement</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Date Range</label>
+                        <label class="block text-sm font-medium text-gray-700">Date  Range</label>
                         <div class="grid grid-cols-2 gap-2">
                             <input type="date" name="start_date" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <input type="date" name="end_date" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -74,7 +102,7 @@
                             <i class="fas fa-shopping-cart text-blue-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Total Orders</h3>
+                            <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Total</h3>
                             <p class="text-2xl font-semibold text-blue-900 dark:text-blue-100">{{ orders|length }}</p>
                         </div>
                     </div>
@@ -85,7 +113,7 @@
                             <i class="fas fa-clock text-yellow-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Pending</h3>
+                            <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">En Attente</h3>
                             <p class="text-2xl font-semibold text-yellow-900 dark:text-yellow-100">
                                 {{ orders|filter(o => o.status == 'pending')|length }}
                             </p>
@@ -98,7 +126,7 @@
                             <i class="fas fa-check-circle text-green-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                         <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Completed</h3>
+                         <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Completé</h3>
                                <p class="text-2xl font-semibold text-green-900 dark:text-green-100">
                                 {{ orders|filter(o => o.status == 'completed')|length }}
                             </p>
@@ -111,7 +139,7 @@
                             <i class="fas fa-times-circle  text-red-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                           <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Cancelled</h3>
+                           <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Annulé</h3>
                              <p class="text-2xl font-semibold text-red-900 dark:text-red-100">
                                 {{ orders|filter(o => o.status == 'cancelled')|length }}
                             </p>
@@ -125,11 +153,11 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Order ID</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customer</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Client</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Statut</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Payment</th>
                             <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -199,7 +227,7 @@
                                         <a href="{{ path('order_invoice', {'id': order.id}) }}" class="text-green-600 hover:text-green-900" title="Download Invoice">
                                             <i class="fas fa-file-invoice"></i>
                                         </a>
-                                        {% if order.status == 'pending' %}
+                                        {% if order.status == 'cancelled' or order.status == 'completed' %}
                                             <form method="post" action="{{ path('order_delete', {'id': order.id}) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this order?');">
                                                 <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ order.id) }}">
                                                 <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">

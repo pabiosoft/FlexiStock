@@ -186,8 +186,6 @@ class StockService
 
             $equipment->setReservedQuantity($equipment->getReservedQuantity() - $quantity);
 
-            $this->entityManager->flush();
-
             $this->logger->info(sprintf(
                 'Réservation annulée pour %s: %d unités',
                 $equipment->getName(),

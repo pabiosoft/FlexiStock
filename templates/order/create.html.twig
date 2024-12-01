@@ -8,11 +8,11 @@
      <main class="flex flex-col gap-4 md:gap-5 h-auto pb-5 dark:bg-gray-900">
         <div class="px-6 py-4 lg:px-4 bg-white dark:bg-gray-800 dark:text-gray-300">
             <div class="flex justify-between items-center mb-6">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-200">Create New Order</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-200">Créer une nouvelle commande</h1>
                 <nav class="flex items-center space-x-2">
                     <a href="{{ path('order_list') }}" class="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                         <i class="fas fa-arrow-left mr-2"></i>
-                        Back to Orders
+                        Retour aux commandes
                     </a>
                 </nav>
             </div>
@@ -21,17 +21,17 @@
                 <!-- Product Selection Panel -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
                     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-200">Product Catalog</h2>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-200">Catalogue des produits</h2>
                         <div class="mt-4 flex flex-col sm:flex-row gap-4">
                             <div class="flex-1">
                                 <input type="text" 
                                     id="searchProducts" 
-                                    placeholder="Search products..." 
+                                    placeholder="Rechercher des produits..." 
                                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-200">
                             </div>
                             <div>
                                 <select id="categoryFilter" class="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-200">
-                                    <option value="">All Categories</option>
+                                    <option value="">Tous les catégories</option>
                                     {% for category in categories %}
                                         <option value="{{ category.id }}">{{ category.name }}</option>
                                     {% endfor %}
@@ -44,9 +44,9 @@
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-800">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Product</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Produit</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Stock</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Price</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Prix</th>
                                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Action</th>
                                 </tr>
                             </thead>
@@ -147,11 +147,11 @@
                                     <button type="button" 
                                             onclick="window.location.href='{{ path('order_list') }}'"
                                             class="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400">
-                                        Cancel
+                                        Annuler
                                     </button>
                                     <button type="submit" 
                                             class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400">
-                                        Create Order
+                                        Créer la Commande
                                     </button>
                                 </div>
                             {{ form_end(form) }}

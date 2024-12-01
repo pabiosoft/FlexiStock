@@ -4,18 +4,28 @@ namespace App\Enum;
 
 enum MovementChoice: string
 {
+    // le label de in entre guillemets
     case IN = 'IN';
     case OUT = 'OUT';
 
     public static function getAllTypes(): array
     {
-        return [
-            self::IN,
-            self::OUT,
-        ];
+        return array_column(self::cases(), 'value');
     }
-     public function toString(): string
+
+    public function getLabel(): string
     {
-        return $this->value;
+        return match($this) {
+            self::IN => 'Entrée',
+            self::OUT => 'Sortie',
+        };
+    }
+
+    public static function getChoices(): array
+    {
+        return [
+            'Entrée' => self::IN->value,
+            'Sortie' => self::OUT->value,
+        ];
     }
 }

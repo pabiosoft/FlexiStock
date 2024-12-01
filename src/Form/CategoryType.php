@@ -15,22 +15,23 @@ class CategoryType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'label' => 'Category Name',
+                'label' => 'Nom',
+                'required' => true,
             ])
             // ->add('description', TextType::class, [
             //     'label' => 'Description',
             //     'required' => false,
             // ])
             ->add('categoryOrder', TextType::class, [
-                'label' => 'Order',
+                'label' => 'Ordre',
                 'required' => false,
             ])
             ->add('parent', EntityType::class, [
                 'class' => Category::class,
                 'choices' => $options['categories'],
                 'choice_label' => 'name',
-                'placeholder' => 'None (Root Category)',
-                'label' => 'Parent Category',
+                'placeholder' => 'Aucune (Catégorie Racine)',
+                'label' => 'Catégorie Parente',
                 'required' => false,
             ]);
     }

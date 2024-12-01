@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Enum\OrderStatus;
 
 #[Route('/payment')]
 class PaymentController extends AbstractController
@@ -56,15 +57,34 @@ class PaymentController extends AbstractController
     }
 
     #[Route('/validate-cash/{id}', name: 'validate_cash_payment', methods: ['POST'])]
-    public function validateCashPayment(OrderRequest $order): Response
+    public function validateCashPayment(Request $request, OrderRequest $order): Response
     {
-        // Vérifier si le paiement peut être validé
-        if ($order->getPaymentStatus() === PaymentStatus::PROCESSING->value) {
-            $this->paymentService->markPaymentSuccessful($order);
+        if ($this->isCsrfTokenValid('validate-cash'.$order->getId(), $request->request->get('_token'))) {
+            try {
+                // Check if order status allows payment validation
+                if (!in_array($order->getStatus(), [OrderStatus::PENDING->value, OrderStatus::VALIDATED->value])) {
+                    throw new \LogicException('Order is not in a valid state for payment validation.');
+                }
 
-            $this->addFlash('success', 'Cash payment validated successfully.');
+                // Check if payment method is cash
+                if ($order->getPaymentMethod() !== 'cash_on_delivery') {
+                    throw new \LogicException('This order is not marked for cash payment.');
+                }
+
+                // Check if payment is in processing state
+                if ($order->getPaymentStatus() !== PaymentStatus::PROCESSING->value) {
+                    throw new \LogicException('Payment cannot be validated at this stage.');
+                }
+
+                $this->paymentService->markPaymentSuccessful($order);
+                $this->addFlash('success', 'Cash payment validated successfully.');
+            } catch (\LogicException $e) {
+                $this->addFlash('error', $e->getMessage());
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'An unexpected error occurred while validating the payment.');
+            }
         } else {
-            $this->addFlash('error', 'Payment cannot be validated at this stage.');
+            $this->addFlash('error', 'Invalid token.');
         }
 
         return $this->redirectToRoute('order_show', ['id' => $order->getId()]);

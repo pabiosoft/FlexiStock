@@ -67,7 +67,7 @@ class MovementController extends AbstractController
     public function index(Request $request): Response
     {
         $page = $request->query->getInt('page', 1);
-        $limit = 2; // Number of items per page
+        $limit = 10; // Number of items per page
 
         // Get paginated movements using the service
         $movements = $this->movementService->getPaginatedMovements($page, $limit);

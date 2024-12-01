@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\OrderRequest;
 use App\Entity\OrderItem;
 use App\Entity\Equipment;
+use App\Entity\Reservation;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -71,13 +72,56 @@ class OrderService
 
     public function deleteOrder(OrderRequest $orderRequest): void
     {
-        foreach ($orderRequest->getItems() as $orderItem) {
-            $this->stockService->cancelReservation($orderItem);
+        // Check if order can be deleted
+        if (!in_array($orderRequest->getStatus(), ['cancelled', 'completed'])) {
+            throw new \LogicException(
+                sprintf('Cannot delete order #%d. Only cancelled or completed orders can be deleted.', 
+                $orderRequest->getId())
+            );
         }
 
-        $this->entityManager->remove($orderRequest);
-        $this->entityManager->flush();
+        $this->entityManager->beginTransaction();
+        
+        try {
+            // Cancel all reservations and update equipment quantities
+            foreach ($orderRequest->getItems() as $orderItem) {
+                $equipment = $orderItem->getEquipment();
+                
+                // Find and update the reservation
+                $reservation = $this->entityManager->getRepository(Reservation::class)
+                    ->findOneBy([
+                        'equipment' => $equipment,
+                        'status' => 'reserved'
+                    ]);
 
-        $this->logger->info('Order deleted successfully', ['order_id' => $orderRequest->getId()]);
+                if ($reservation) {
+                    $reservation->setStatus('cancelled');
+                    $reservation->setReturnDate(new \DateTime());
+                    
+                    // Update equipment reserved quantity
+                    $equipment->setReservedQuantity(
+                        $equipment->getReservedQuantity() - $orderItem->getQuantity()
+                    );
+                }
+            }
+
+            // Remove the order and all its items (cascade delete)
+            $this->entityManager->remove($orderRequest);
+            $this->entityManager->flush();
+            $this->entityManager->commit();
+
+            $this->logger->info('Order deleted successfully', [
+                'order_id' => $orderRequest->getId(),
+                'status' => $orderRequest->getStatus(),
+                'items_count' => count($orderRequest->getItems())
+            ]);
+        } catch (\Exception $e) {
+            $this->entityManager->rollback();
+            $this->logger->error('Order deletion failed: ' . $e->getMessage(), [
+                'order_id' => $orderRequest->getId(),
+                'error' => $e->getMessage()
+            ]);
+            throw new \RuntimeException('Failed to delete order: ' . $e->getMessage(), 0, $e);
+        }
     }
 }

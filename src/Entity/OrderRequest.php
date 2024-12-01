@@ -16,7 +16,7 @@ class OrderRequest
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $orderDate;
@@ -40,6 +40,15 @@ class OrderRequest
 
     #[ORM\Column(type: 'float')]
     private float $totalPrice = 0.0;
+
+    #[ORM\Column(type: 'float')]
+    private float $vatRate = 20.0;
+
+    #[ORM\Column(type: 'float')]
+    private float $vatAmount = 0.0;
+
+    #[ORM\Column(type: 'float')]
+    private float $subtotal = 0.0;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $receivedAt = null;
@@ -181,11 +190,40 @@ class OrderRequest
 
     public function recalculateTotalPrice(): self
     {
-        $this->totalPrice = array_reduce($this->items->toArray(), function ($total, OrderItem $item) {
+        // Calculate subtotal
+        $this->subtotal = array_reduce($this->items->toArray(), function ($total, OrderItem $item) {
             return $total + $item->getTotalPrice();
         }, 0.0);
 
+        // Calculate VAT amount
+        $this->vatAmount = $this->subtotal * ($this->vatRate / 100);
+
+        // Calculate total price including VAT
+        $this->totalPrice = $this->subtotal + $this->vatAmount;
+
         return $this;
+    }
+
+    public function getVatRate(): float
+    {
+        return $this->vatRate;
+    }
+
+    public function setVatRate(float $vatRate): self
+    {
+        $this->vatRate = $vatRate;
+        $this->recalculateTotalPrice();
+        return $this;
+    }
+
+    public function getVatAmount(): float
+    {
+        return $this->vatAmount;
+    }
+
+    public function getSubtotal(): float
+    {
+        return $this->subtotal;
     }
 
     public function getReceivedAt(): ?\DateTimeInterface

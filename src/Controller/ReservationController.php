@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/reservation')]
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_MANAGER')]
 class ReservationController extends AbstractController
 {
     private $entityManager;
@@ -120,49 +120,135 @@ class ReservationController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}/complete', name: 'reservation_complete', methods: ['POST'])]
-    public function complete(Reservation $reservation): Response
+    #[Route('/{id}/cancel', name: 'app_reservation_cancel', methods: ['POST'])]
+    public function cancel(Request $request, Reservation $reservation): Response
     {
-        if ($reservation->getStatus() !== 'active') {
-            $this->addFlash('error', 'Only active reservations can be completed.');
-            return $this->redirectToRoute('app_reservation');
+        if ($this->isCsrfTokenValid('cancel'.$reservation->getId(), $request->request->get('_token'))) {
+            try {
+                if ($reservation->getStatus() !== 'reserved') {
+                    throw new \LogicException('Only reserved reservations can be cancelled.');
+                }
+
+                $this->entityManager->beginTransaction();
+                try {
+                    // Update equipment reserved quantity
+                    $equipment = $reservation->getEquipment();
+                    $equipment->setReservedQuantity(
+                        $equipment->getReservedQuantity() - $reservation->getReservedQuantity()
+                    );
+
+                    // Update reservation status
+                    $reservation->setStatus('cancelled');
+                    $reservation->setReturnDate(new \DateTime());
+
+                    $this->entityManager->flush();
+                    $this->entityManager->commit();
+
+                    $this->addFlash('success', 'Reservation cancelled successfully.');
+                } catch (\Exception $e) {
+                    $this->entityManager->rollback();
+                    throw $e;
+                }
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Error cancelling reservation: ' . $e->getMessage());
+            }
         }
 
-        $reservation->setStatus('completed');
-        $reservation->setReturnDate(new \DateTime());
-
-        // Update equipment reserved quantity
-        $equipment = $reservation->getEquipment();
-        $equipment->setReservedQuantity(
-            $equipment->getReservedQuantity() - $reservation->getReservedQuantity()
-        );
-
-        $this->entityManager->flush();
-        $this->addFlash('success', 'Reservation completed successfully.');
-
-        return $this->redirectToRoute('app_reservation');
+        return $this->redirectToRoute('app_reservation', [], Response::HTTP_SEE_OTHER);
     }
 
-    #[Route('/{id}/cancel', name: 'reservation_cancel', methods: ['POST'])]
-    public function cancel(Reservation $reservation): Response
+    #[Route('/{id}/complete', name: 'app_reservation_complete', methods: ['POST'])]
+    public function complete(Request $request, Reservation $reservation): Response
     {
-        if ($reservation->getStatus() !== 'active') {
-            $this->addFlash('error', 'Only active reservations can be cancelled.');
-            return $this->redirectToRoute('app_reservation');
+        if ($this->isCsrfTokenValid('complete'.$reservation->getId(), $request->request->get('_token'))) {
+            try {
+                if ($reservation->getStatus() !== 'reserved') {
+                    throw new \LogicException('Only reserved reservations can be completed.');
+                }
+
+                $this->entityManager->beginTransaction();
+                try {
+                    // Update equipment reserved quantity
+                    $equipment = $reservation->getEquipment();
+                    $equipment->setReservedQuantity(
+                        $equipment->getReservedQuantity() - $reservation->getReservedQuantity()
+                    );
+
+                    // Update reservation status
+                    $reservation->setStatus('completed');
+                    $reservation->setReturnDate(new \DateTime());
+
+                    $this->entityManager->flush();
+                    $this->entityManager->commit();
+
+                    $this->addFlash('success', 'Reservation marked as completed successfully.');
+                } catch (\Exception $e) {
+                    $this->entityManager->rollback();
+                    throw $e;
+                }
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Error completing reservation: ' . $e->getMessage());
+            }
         }
 
-        $reservation->setStatus('cancelled');
-        $reservation->setReturnDate(new \DateTime());
+        return $this->redirectToRoute('app_reservation', [], Response::HTTP_SEE_OTHER);
+    }
 
-        // Update equipment reserved quantity
-        $equipment = $reservation->getEquipment();
-        $equipment->setReservedQuantity(
-            $equipment->getReservedQuantity() - $reservation->getReservedQuantity()
-        );
+    #[Route('/{id}/edit', name: 'app_reservation_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Reservation $reservation): Response
+    {    // UPDATE THE QUANTITY OF THE EQUIPMENT
+        $form = $this->createForm(ReservationType::class, $reservation);
+        $form->handleRequest($request);
 
-        $this->entityManager->flush();
-        $this->addFlash('success', 'Reservation cancelled successfully.');
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->flush();
 
-        return $this->redirectToRoute('app_reservation');
+            $this->addFlash('success', 'Reservation updated successfully.');
+            return $this->redirectToRoute('app_reservation', [], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('reservation/edit.html.twig', [
+            'reservation' => $reservation,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/{id}', name: 'app_reservation_delete', methods: ['POST'])]
+    public function delete(Request $request, Reservation $reservation): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$reservation->getId(), $request->request->get('_token'))) {
+            try {
+                // Check if reservation can be deleted (only allow deleting non-active reservations)
+                if ($reservation->getStatus() === 'active') {
+                    throw new \LogicException('Cannot delete an active reservation. Please cancel or complete it first.');
+                }
+
+                $this->entityManager->beginTransaction();
+                try {
+                    // Update equipment reserved quantity
+                    $equipment = $reservation->getEquipment();
+                    
+                    // Only reduce reserved quantity if the reservation is still in 'reserved' status
+                    if ($reservation->getStatus() === 'reserved') {
+                        $equipment->setReservedQuantity(
+                            $equipment->getReservedQuantity() - $reservation->getReservedQuantity()
+                        );
+                    }
+
+                    $this->entityManager->remove($reservation);
+                    $this->entityManager->flush();
+                    $this->entityManager->commit();
+
+                    $this->addFlash('success', 'Reservation deleted successfully.');
+                } catch (\Exception $e) {
+                    $this->entityManager->rollback();
+                    throw $e;
+                }
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Error deleting reservation: ' . $e->getMessage());
+            }
+        }
+
+        return $this->redirectToRoute('app_reservation', [], Response::HTTP_SEE_OTHER);
     }
 }

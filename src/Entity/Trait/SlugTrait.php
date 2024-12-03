@@ -27,6 +27,8 @@ trait SlugTrait
 
     public function initializeSlug(string $text): void
     {
-        $this->slug = strtolower(preg_replace('/[^a-z0-9]+/', '-', trim($text)));
+        $baseSlug = strtolower(preg_replace('/[^a-z0-9]+/', '-', trim($text)));
+        $baseSlug = trim($baseSlug, '-'); // Remove trailing hyphens
+        $this->slug = $baseSlug . '-' . uniqid();
     }
 }

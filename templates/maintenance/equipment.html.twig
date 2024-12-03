@@ -60,7 +60,7 @@
                         </thead>
                         <tbody>
                             {% for record in maintenance_records %}
-                                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200">
                                     <td class="px-6 py-4">{{ record.maintenanceDate|date('Y-m-d') }}</td>
                                     <td class="px-6 py-4">{{ record.maintenanceType }}</td>
                                     <td class="px-6 py-4">{{ record.description }}</td>

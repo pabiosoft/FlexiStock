@@ -6,23 +6,23 @@
     {% include '_partials/_flush.html.twig' %}
 
     <main class="flex flex-col gap-4 md:gap-5 h-auto pb-5">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Equipment Inventory</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Inventaire de l'équipement</h1>
                 <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
                     <a href="{{ path('equipment_new') }}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         <i class="fas fa-plus mr-2"></i>
-                        Add Equipment
+                        Ajouter un nouvel équipement
                     </a>
                     <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="filterButton">
                         <i class="fas fa-filter mr-2"></i>
-                        Filters
+                        Filtres
                     </button>
-                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="exportButton">
-                        <i class="fas fa-download mr-2"></i>
-                        Export
-                    </button>
+                    <a href="{{ path('equipment_export') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <i class="fas fa-file-export mr-2"></i>
+                        Exporter
+                    </a>
                     <button id="theme-toggle" class="p-2 text-gray-500 dark:text-gray-300 focus:outline-none">
                         <i class="fas fa-moon dark:hidden"></i>
                         <i class="fas fa-sun hidden dark:block"></i>
@@ -30,39 +30,45 @@
                 </div>
             </div>
 
-            <!-- Filters Panel -->
-            <div class="hidden mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg" id="filterPanel">
-                <form action="{{ path('equipment_index') }}" method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Search and Filter Form -->
+            <div id="filterForm" class="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg {% if not app.request.query.get('name') and not app.request.query.get('category') and not app.request.query.get('status') and not app.request.query.get('lowStock') %}hidden{% endif %}">
+                <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
-                        <select name="category" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">All Categories</option>
+                        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom</label>
+                        <input type="text" name="name" id="name" value="{{ app.request.query.get('name') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Catégorie</label>
+                        <select name="category" id="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white sm:text-sm">
+                            <option value="">Toutes les catégories</option>
                             {% for category in categories %}
-                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                <option value="{{ category.id }}" {% if app.request.query.get('category') is not empty and app.request.query.get('category') == category.id %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
                             {% endfor %}
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                        <select name="status" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">All Statuses</option>
-                            <option value="active">Active</option>
-                            <option value="expired">Expired</option>
-                            <option value="obsolete">Obsolete</option>
+                        <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Statut</label>
+                        <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white sm:text-sm">
+                            <option value="">Tous les statuts</option>
+                            <option value="{{ constant('App\\Enum\\EquipmentStatus::ACTIVE') }}" {% if app.request.query.get('status') == constant('App\\Enum\\EquipmentStatus::ACTIVE') %}selected{% endif %}>Actif</option>
+                            <option value="{{ constant('App\\Enum\\EquipmentStatus::EXPIRED') }}" {% if app.request.query.get('status') == constant('App\\Enum\\EquipmentStatus::EXPIRED') %}selected{% endif %}>Expiré</option>
+                            <option value="{{ constant('App\\Enum\\EquipmentStatus::OBSOLETE') }}" {% if app.request.query.get('status') == constant('App\\Enum\\EquipmentStatus::OBSOLETE') %}selected{% endif %}>Obsolète</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Stock Level</label>
-                        <select name="stock" class="mt-1 block w-full rounded-md border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">All Levels</option>
-                            <option value="low">Low Stock</option>
-                            <option value="out">Out of Stock</option>
-                            <option value="normal">Normal</option>
-                        </select>
+                    <div class="flex items-center mt-6">
+                        <input type="checkbox" name="lowStock" id="lowStock" value="1" {% if app.request.query.get('lowStock') %}checked{% endif %} class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="lowStock" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">Stock faible uniquement</label>
                     </div>
-                    <div class="flex items-end">
-                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Apply Filters
+                    <div class="col-span-full flex justify-end space-x-3">
+                        <a href="{{ path('equipment_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <i class="fas fa-times mr-2"></i>
+                            Réinitialiser
+                        </a>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            <i class="fas fa-search mr-2"></i>
+                            Rechercher
                         </button>
                     </div>
                 </form>
@@ -76,7 +82,7 @@
                             <i class="fas fa-boxes text-blue-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Total Items</h3>
+                            <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Nombre total d'équipements</h3>
                             <p class="text-2xl font-semibold text-blue-900 dark:text-blue-100">{{ equipments|length }}</p>
                         </div>
                     </div>
@@ -87,7 +93,7 @@
                             <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Low Stock</h3>
+                            <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Faible stock</h3>
                             <p class="text-2xl font-semibold text-red-900 dark:text-red-100">
                                 {{ equipments|filter(e => e.stockQuantity <= e.minThreshold)|length }}
                             </p>
@@ -100,7 +106,7 @@
                             <i class="fas fa-check-circle text-green-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Active</h3>
+                            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Actif</h3>
                             <p class="text-2xl font-semibold text-green-900 dark:text-green-100">
                                 {{ equipments|filter(e => e.status == 'active')|length }}
                             </p>
@@ -113,7 +119,7 @@
                             <i class="fas fa-clock text-yellow-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Expiring Soon</h3>
+                            <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Expiré dans 30 jours</h3>
                             <p class="text-2xl font-semibold text-yellow-900 dark:text-yellow-100">
                                 {{ equipments|filter(e => e.warrantyDate and e.warrantyDate|date('U') < ('+30 days'|date('U')))|length }}
                             </p>
@@ -128,41 +134,63 @@
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">images</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Equipment</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nom</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Catégorie</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Prix</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Emplacement</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Stock</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Statut</th>
                             <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {% for equipment in equipments %}
                             <tr>
-                              <td class="px-6 py-4 whitespace-nowrap">
-                                        {% if equipment.images|length > 0 %}
-                                            <img class="h-10 w-10 rounded-lg object-cover" 
-                                                src="{{ asset('uploads/equipments/mini/300x300-' ~ equipment.images[0].name) }}" 
-                                                alt="{{ equipment.name }}">
-                                        {% else %}
-                                            <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
-                                                <i class="fas fa-box text-gray-400"></i>
-                                            </div>
-                                        {% endif %}
-                                        
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if equipment.images|length > 0 %}
+                                        <img src="{{ asset('uploads/equipments/mini/300x300-' ~ equipment.images[0].name) }}" alt="{{ equipment.name }}" class="h-10 w-10 rounded-full">
+                                    {% else %}
+                                        <div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                            <i class="fas fa-camera text-gray-400"></i>
+                                        </div>
+                                    {% endif %}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{{ equipment.name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ equipment.category.name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ equipment.stockQuantity }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-gray-200">{{ equipment.name|striptags|slice(0, 22) ~ '...' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-gray-200">{{ equipment.category.name|striptags|slice(0, 11) ~ '...' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-gray-200">{{ equipment.price|number_format(2, ',', ' ') }} €</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-gray-200">{{ equipment.location ?? 'Non spécifié' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ equipment.stockQuantity }}
+                                    {# reservedQuantity #}
+                                    <div class="text-sm text-gray-500 dark:text-gray-300">Reserved: {{ equipment.reservedQuantity }}</div>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ equipment.status|capitalize }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">${{ equipment.price|number_format(2) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{{ path('equipment_show', {'id': equipment.id}) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3"><i class="fas fa-eye"></i></a>
-                                    <a href="{{ path('app_maintenance_equipment_show', {'id': equipment.id}) }}" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-3" title="Maintenance History">
-                                        <i class="fas fa-tools"></i>
-                                    </a>
-                                    <a href="{{ path('equipment_edit', {'id': equipment.id}) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-3"><i class="fas fa-edit"></i></a>
-                                    {{ include('equipment/_delete_form.html.twig') }}
+                                    <div class="flex items-center justify-end space-x-3">
+                                        <a href="{{ path('equipment_show', {'id': equipment.id}) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300" title="Voir les détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('equipment_edit', {'id': equipment.id}) }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('equipment_delete', {'id': equipment.id}) }}" class="inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet équipement ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete-equipment-' ~ equipment.id) }}">
+                                            <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                        <a href="{{ path('app_maintenance_equipment_show', {'id': equipment.id}) }}" class="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300" title="Maintenance">
+                                            <i class="fas fa-tools"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -203,25 +231,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Filter panel toggle
     const filterButton = document.getElementById('filterButton');
-    const filterPanel = document.getElementById('filterPanel');
+    const filterPanel = document.getElementById('filterForm');
     
     filterButton.addEventListener('click', function() {
         filterPanel.classList.toggle('hidden');
-    });
-
-    // Export menu toggle
-    const exportButton = document.getElementById('exportButton');
-    const exportMenu = document.getElementById('exportMenu');
-    
-    exportButton.addEventListener('click', function() {
-        exportMenu.classList.toggle('hidden');
-    });
-
-    // Close export menu when clicking outside
-    document.addEventListener('click', function(event) {
-        if (!exportButton.contains(event.target) && !exportMenu.contains(event.target)) {
-            exportMenu.classList.add('hidden');
-        }
     });
 });
 </script>

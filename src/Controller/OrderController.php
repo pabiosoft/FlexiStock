@@ -248,37 +248,76 @@ class OrderController extends AbstractController
         $limit = $request->query->getInt('limit', 5);
         $criteria = [];
         
+        // Add status filter
         if ($status = $request->query->get('status')) {
             $criteria['status'] = $status;
         }
 
-        if ($paymentStatus = $request->query->get('payment_status')) {
-            $criteria['paymentStatus'] = $paymentStatus;
+        // Add search filter
+        if ($search = $request->query->get('search')) {
+            $criteria['search'] = $search;
         }
-
-        $startDate = $request->query->get('startDate', (new \DateTime('-30 days'))->format('Y-m-d'));
-        $endDate = $request->query->get('endDate', (new \DateTime())->format('Y-m-d'));
 
         $orderRepository = $this->entityManager->getRepository(OrderRequest::class);
         
-        $orders = [];
-        try {
-            $orders = $orderRepository->findByDateRange(
-                new \DateTime($startDate),
-                new \DateTime($endDate),
-                $criteria
-            );
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'An error occurred while fetching orders: ' . $e->getMessage());
+        // Get order statistics with a single optimized query
+        $statsResult = $orderRepository->createQueryBuilder('o')
+            ->select('
+                COUNT(o.id) as total_orders,
+                SUM(CASE WHEN o.status = :pending THEN 1 ELSE 0 END) as pending_orders,
+                SUM(CASE WHEN o.status = :completed THEN 1 ELSE 0 END) as completed_orders,
+                SUM(CASE WHEN o.status = :cancelled THEN 1 ELSE 0 END) as cancelled_orders,
+                COALESCE(SUM(o.totalPrice), 0) as total_amount
+            ')
+            ->setParameter('pending', 'pending')
+            ->setParameter('completed', 'completed')
+            ->setParameter('cancelled', 'cancelled')
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        $stats = [
+            'total_orders' => $statsResult['total_orders'] ?? 0,
+            'pending_orders' => $statsResult['pending_orders'] ?? 0,
+            'completed_orders' => $statsResult['completed_orders'] ?? 0,
+            'cancelled_orders' => $statsResult['cancelled_orders'] ?? 0,
+            'total_amount' => $statsResult['total_amount'] ?? 0,
+        ];
+
+        // Main query for listing orders
+        $queryBuilder = $orderRepository->createQueryBuilder('o')
+            ->leftJoin('o.customer', 'c')
+            ->orderBy('o.orderDate', 'DESC');
+
+        // Apply search filter
+        if (isset($criteria['search'])) {
+            $queryBuilder->andWhere('o.id LIKE :search OR c.firstName LIKE :search OR c.lastName LIKE :search')
+                ->setParameter('search', '%' . $criteria['search'] . '%');
         }
+
+        // Apply status filter
+        if (isset($criteria['status'])) {
+            $queryBuilder->andWhere('o.status = :status')
+                ->setParameter('status', $criteria['status']);
+        }
+
+        // Get total items
+        $totalItems = count($queryBuilder->getQuery()->getResult());
+        
+        // Add pagination
+        $queryBuilder->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+
+        $orders = $queryBuilder->getQuery()->getResult();
+        $pageCount = ceil($totalItems / $limit);
 
         return $this->render('order/index.html.twig', [
             'orders' => $orders,
+            'stats' => $stats,
             'pagination' => [
                 'currentPage' => $page,
                 'itemsPerPage' => $limit,
-                'totalItems' => count($orders),
-                'pageCount' => ceil(count($orders) / $limit)
+                'totalItems' => $totalItems,
+                'pageCount' => $pageCount
             ]
         ]);
     }
@@ -334,25 +373,25 @@ class OrderController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'order_delete', methods: ['POST'])]
-    public function delete(Request $request, OrderRequest $orderRequest): Response
+    public function delete(Request $request, OrderRequest $order): Response
     {
-        if ($this->isCsrfTokenValid('delete' . $orderRequest->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete'.$order->getId(), $request->request->get('_token'))) {
             try {
-                // Release any reserved stock
-                foreach ($orderRequest->getItems() as $item) {
-                    $equipment = $item->getEquipment();
-                    $equipment->setReservedQuantity($equipment->getReservedQuantity() - $item->getQuantity());
-                }
-
-                $this->entityManager->remove($orderRequest);
-                $this->entityManager->flush();
-
-                $this->addFlash('success', 'Order deleted successfully.');
+                $this->orderService->deleteOrder($order);
+                $this->addFlash('success', sprintf('Order #%d deleted successfully.', $order->getId()));
+            } catch (\LogicException $e) {
+                // Business logic exceptions (e.g., trying to delete active order)
+                $this->addFlash('error', $e->getMessage());
             } catch (\Exception $e) {
-                $this->addFlash('error', 'Error deleting order: ' . $e->getMessage());
+                // Unexpected errors
+                $this->addFlash('error', 'An unexpected error occurred while deleting the order.');
+                $this->logger->error('Unexpected error during order deletion', [
+                    'order_id' => $order->getId(),
+                    'error' => $e->getMessage()
+                ]);
             }
         }
 
-        return $this->redirectToRoute('order_list');
+        return $this->redirectToRoute('order_list', [], Response::HTTP_SEE_OTHER);
     }
 }

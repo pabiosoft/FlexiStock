@@ -1,28 +1,29 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Create Movement{% endblock %}
+{% block title %}Nouveau Mouvement{% endblock %}
 
 {% block body %}
     {% include '_partials/_flush.html.twig' %}
     {# {% include '_partials/_adminav.html.twig' %} #}
     
 	<main class="flex flex-col gap-4 md:gap-5 h-auto pb-5">
-
         <div class="px-6 py-8 lg:px-8">
             <div class="max-w-3xl mx-auto">
                 <div class="bg-white rounded-lg shadow-sm p-6">
-                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Create Movement</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-6">Créer un Mouvement de Stock</h1>
 
                     {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 {{ form_row(form.type, {
+                                    'label': 'Type de Mouvement',
                                     'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
                                     'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
                                 }) }}
                             </div>
                             <div>
                                 {{ form_row(form.quantity, {
+                                    'label': 'Quantité',
                                     'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
                                     'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
                                 }) }}
@@ -32,12 +33,14 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 {{ form_row(form.category, {
+                                    'label': 'Catégorie',
                                     'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
                                     'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
                                 }) }}
                             </div>
                             <div>
                                 {{ form_row(form.equipment, {
+                                    'label': 'Équipement',
                                     'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
                                     'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
                                 }) }}
@@ -47,12 +50,14 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 {{ form_row(form.location, {
+                                    'label': 'Emplacement',
                                     'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
                                     'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
                                 }) }}
                             </div>
                             <div>
                                 {{ form_row(form.batchNumber, {
+                                    'label': 'Numéro de lot',
                                     'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
                                     'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
                                 }) }}
@@ -62,12 +67,14 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 {{ form_row(form.movementDate, {
+                                    'label': 'Date du mouvement',
                                     'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
                                     'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
                                 }) }}
                             </div>
                             <div>
                                 {{ form_row(form.expiryDate, {
+                                    'label': 'Date d\'expiration',
                                     'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
                                     'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
                                 }) }}
@@ -76,6 +83,7 @@
 
                         <div>
                             {{ form_row(form.reference, {
+                                'label': 'Référence',
                                 'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
                                 'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
                             }) }}
@@ -83,6 +91,7 @@
 
                         <div>
                             {{ form_row(form.reason, {
+                                'label': 'Raison',
                                 'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
                                 'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500', 'rows': 3}
                             }) }}
@@ -90,10 +99,10 @@
 
                         <div class="flex justify-end space-x-3">
                             <a href="{{ path('movement_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                Cancel
+                                Annuler
                             </a>
                             <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                Create Movement
+                                Créer le mouvement
                             </button>
                         </div>
                     {{ form_end(form) }}
@@ -114,7 +123,7 @@
                     fetch('/equipments/by-category/' + categoryId)
                         .then(response => response.json())
                         .then(data => {
-                            equipmentField.innerHTML = '<option value="">Select Equipment</option>';
+                            equipmentField.innerHTML = '<option value="">Sélectionner un équipement</option>';
                             data.forEach(equipment => {
                                 const option = document.createElement('option');
                                 option.value = equipment.id;
@@ -122,10 +131,10 @@
                                 equipmentField.appendChild(option);
                             });
                         })
-                        .catch(error => console.error('Error fetching equipment:', error));
+                        .catch(error => console.error('Erreur lors de la récupération des équipements :', error));
                 });
 
-                // Add validation for movement type and quantity
+                // Ajouter la validation pour le type et la quantité de mouvement
                 typeField.addEventListener('change', validateMovement);
                 quantityField.addEventListener('change', validateMovement);
                 quantityField.addEventListener('input', validateMovement);
@@ -142,7 +151,7 @@
 
                     if (isNaN(quantity) || quantity <= 0) {
                         submitButton.disabled = true;
-                        quantityField.setCustomValidity('Quantity must be greater than 0');
+                        quantityField.setCustomValidity('La quantité doit être supérieure à 0');
                     } else {
                         submitButton.disabled = false;
                         quantityField.setCustomValidity('');
@@ -150,7 +159,7 @@
                     quantityField.reportValidity();
                 }
 
-                // Initial validation
+                // Validation initiale
                 validateMovement();
             });
         </script>

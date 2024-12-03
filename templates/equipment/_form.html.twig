@@ -1,79 +1,14 @@
-{% include "_partials/_flush.html.twig" %}
-{{ form_start(equipmentForm, {'attr': {'class': 'space-y-6'}}) }}
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-	<div>
-		{{ form_label(equipmentForm.name) }}
-		{{ form_errors(equipmentForm.name) }}
-		{{ form_widget(equipmentForm.name, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
+{{ form_start(equipmentForm) }}
 
-	<div>
-		{{ form_label(equipmentForm.serialNumber) }}
-		{{ form_errors(equipmentForm.serialNumber) }}
-		{{ form_widget(equipmentForm.serialNumber, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
-	<div>
-		{{ form_label(equipmentForm.model) }}
-		{{ form_errors(equipmentForm.model) }}
-		{{ form_widget(equipmentForm.model, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
+{{ form_widget(equipmentForm) }}
 
-
-	<div>
-		{{ form_label(equipmentForm.status) }}
-		{{ form_errors(equipmentForm.status) }}
-		{{ form_widget(equipmentForm.status, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
-
-<div>
-		{{ form_label(equipmentForm.category) }}
-		{{ form_errors(equipmentForm.category) }}
-		{{ form_widget(equipmentForm.category, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
-	<div>
-		{{ form_label(equipmentForm.brand) }}
-		{{ form_errors(equipmentForm.brand) }}
-		{{ form_widget(equipmentForm.brand, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
-	
-	<div>
-		{{ form_label(equipmentForm.salePrice) }}
-		{{ form_errors(equipmentForm.salePrice) }}
-		{{ form_widget(equipmentForm.salePrice, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
-	
-	<div>
-		{{ form_label(equipmentForm.price) }}
-		{{ form_errors(equipmentForm.price) }}
-		{{ form_widget(equipmentForm.price, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
-
-	<div>
-		{{ form_label(equipmentForm.stockQuantity) }}
-		{{ form_errors(equipmentForm.stockQuantity) }}
-		{{ form_widget(equipmentForm.stockQuantity, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
-	<div>
-		{{ form_label(equipmentForm.minThreshold) }}
-		{{ form_errors(equipmentForm.minThreshold) }}
-		{{ form_widget(equipmentForm.minThreshold, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
-		
-	<div>
-		{{ form_label(equipmentForm.warrantyDate) }}
-		{{ form_errors(equipmentForm.warrantyDate) }}
-		{{ form_widget(equipmentForm.warrantyDate, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
-	<div>
-		{{ form_label(equipmentForm.purchaseDate) }}
-		{{ form_errors(equipmentForm.purchaseDate) }}
-		{{ form_widget(equipmentForm.purchaseDate, {'attr': {'class': 'form-input w-full'}}) }}
-	</div>
-	
-	
-	
-   <button type="submit" class="btn btn-primary">Ajouter</button>
-
-</div>
+{# Génère un token CSRF spécifique à l'action #}
+{% if equipment is defined and equipment.id is not null %}
+	<input type="hidden" name="_token" value="{{ csrf_token('edit_equipment_' ~ equipment.id) }}">
+	<button type="submit" class="p-4 text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">MODIFIER</button>
+{% else %}
+	<input type="hidden" name="_token" value="{{ csrf_token('new_equipment') }}">
+	<button type="submit" class="p-4text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Ajouter</button>
+{% endif %}
 
 {{ form_end(equipmentForm) }}

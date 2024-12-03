@@ -1,0 +1,172 @@
+<?php
+
+namespace App\Service;
+
+use App\Entity\OrderRequest;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Twig\Environment;
+
+class InvoiceService
+{
+    private string $invoiceDirectory;
+    private Environment $twig;
+    private LoggerInterface $logger;
+    private string $companyName;
+    private string $companyAddress;
+    private string $companyPhone;
+    private string $companyEmail;
+    private string $bankAccount;
+    private string $bankName;
+
+    public function __construct(
+        string $invoiceDirectory,
+        Environment $twig,
+        LoggerInterface $logger,
+        string $companyName = 'FlexiStock',
+        string $companyAddress = '123 Business Street, City, Country',
+        // string $companyPhone = '+1234567890',
+        string $companyEmail = 'contact@flexistock.com',
+        string $bankAccount = 'XXXX-XXXX-XXXX-XXXX',
+        string $bankName = 'Example Bank'
+    ) {
+        $this->invoiceDirectory = $invoiceDirectory;
+        $this->twig = $twig;
+        $this->logger = $logger;
+        $this->companyName = $companyName;
+        $this->companyAddress = $companyAddress;
+        // $this->companyPhone = $companyPhone;
+        $this->companyEmail = $companyEmail;
+        $this->bankAccount = $bankAccount;
+        $this->bankName = $bankName;
+    }
+
+    /**
+     * Generates a PDF invoice for an order
+     *
+     * @param OrderRequest $orderRequest The order to generate an invoice for
+     * @return string The path to the generated PDF file
+     * @throws \RuntimeException If invoice generation fails
+     */
+    public function generateInvoice(OrderRequest $orderRequest): string
+    {
+        $this->logger->info('Starting invoice generation for order #{orderId}', [
+            'orderId' => $orderRequest->getId()
+        ]);
+
+        try {
+            // Ensure the invoice directory exists
+            $filesystem = new Filesystem();
+            if (!$filesystem->exists($this->invoiceDirectory)) {
+                $filesystem->mkdir($this->invoiceDirectory, 0755);
+                $this->logger->info('Created invoice directory: {directory}', [
+                    'directory' => $this->invoiceDirectory
+                ]);
+            }
+
+            // Configure Dompdf options
+            $options = new Options();
+            $options->set('defaultFont', 'Arial');
+            $options->set('isRemoteEnabled', true);
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isFontSubsettingEnabled', true);
+            $dompdf = new Dompdf($options);
+
+            // Generate invoice number with padding
+            $invoiceNumber = sprintf('INV-%06d', $orderRequest->getId());
+
+            // Calculate totals
+            $subtotal = $orderRequest->getTotalPrice();
+            $tax = $subtotal * 0.10; // 10% tax
+            // $discount = $orderRequest->getDiscountAmount() ?? 0;
+            // $total = ($subtotal + $tax) - $discount;
+            $total = $subtotal + $tax;
+
+            // Use Twig to generate the invoice HTML
+            $html = $this->twig->render('order/invoice/invoice.html.twig', [
+                'order' => $orderRequest,
+                'invoice_number' => $invoiceNumber,
+                'company' => [
+                    'name' => $this->companyName,
+                    'address' => $this->companyAddress,
+                    // 'phone' => $this->companyPhone,
+                    'email' => $this->companyEmail
+                ],
+                'bank' => [
+                    'account' => $this->bankAccount,
+                    'name' => $this->bankName
+                ],
+                'totals' => [
+                    'subtotal' => $subtotal,
+                    'tax' => $tax,
+                    // 'discount' => $discount,
+                    'total' => $total
+                ]
+            ]);
+
+            // Load HTML into Dompdf
+            $dompdf->loadHtml($html);
+
+            // Set the paper size and orientation
+            $dompdf->setPaper('A4', 'portrait');
+
+            // Render the PDF
+            $dompdf->render();
+
+            // Generate filename with invoice number
+            $filename = $this->invoiceDirectory . '/' . $invoiceNumber . '.pdf';
+
+            // Save the PDF to a file
+            if (file_put_contents($filename, $dompdf->output()) === false) {
+                throw new \RuntimeException('Failed to write PDF file to disk');
+            }
+
+            $this->logger->info('Successfully generated invoice {invoiceNumber} for order #{orderId}', [
+                'invoiceNumber' => $invoiceNumber,
+                'orderId' => $orderRequest->getId(),
+                'filename' => $filename
+            ]);
+
+            return $filename;
+
+        } catch (IOExceptionInterface $e) {
+            $this->logger->error('Failed to create invoice directory: {message}', [
+                'message' => $e->getMessage(),
+                'orderId' => $orderRequest->getId()
+            ]);
+            throw new \RuntimeException('Failed to create invoice directory: ' . $e->getMessage(), 0, $e);
+
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to generate invoice: {message}', [
+                'message' => $e->getMessage(),
+                'orderId' => $orderRequest->getId()
+            ]);
+            throw new \RuntimeException('Failed to generate invoice: ' . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Checks if an invoice exists for an order
+     */
+    public function invoiceExists(OrderRequest $orderRequest): bool
+    {
+        $invoiceNumber = sprintf('INV-%06d', $orderRequest->getId());
+        $filename = $this->invoiceDirectory . '/' . $invoiceNumber . '.pdf';
+        return file_exists($filename);
+    }
+
+    /**
+     * Gets the path to an existing invoice
+     */
+    public function getInvoicePath(OrderRequest $orderRequest): ?string
+    {
+        if ($this->invoiceExists($orderRequest)) {
+            $invoiceNumber = sprintf('INV-%06d', $orderRequest->getId());
+            return $this->invoiceDirectory . '/' . $invoiceNumber . '.pdf';
+        }
+        return null;
+    }
+}

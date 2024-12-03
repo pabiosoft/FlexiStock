@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Movement List - FlexiStock{% endblock %}
+{% block title %}Liste des Mouvements - FlexiStock{% endblock %}
 
 {% block body %}
     {% include '_partials/_flush.html.twig' %}
@@ -10,15 +10,15 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-200">Stock Movements</h1>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-200">Mouvements de Stock</h1>
                 <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
                     <a href="{{ path('movement_new') }}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         <i class="fas fa-plus mr-2"></i>
-                        New Movement
+                        Nouveau Mouvement
                     </a>
                     <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="dateRangeButton">
                         <i class="fas fa-calendar mr-2"></i>
-                        Date Range
+                        Période
                     </button>
                 </div>
             </div>
@@ -27,16 +27,16 @@
             <div class="hidden mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg" id="dateRangePanel">
                 <form action="{{ path('movement_index') }}" method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date de début</label>
                         <input type="date" name="start_date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date de fin</label>
                         <input type="date" name="end_date" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200">
                     </div>
                     <div class="flex items-end">
                         <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Apply Filter
+                            Appliquer
                         </button>
                     </div>
                 </form>
@@ -50,7 +50,7 @@
                             <i class="fas fa-arrow-circle-up text-green-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Total In</h3>
+                            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Total Entrées</h3>
                             <p class="text-2xl font-semibold text-green-900 dark:text-green-200">{{ inCount ?? 0 }}</p>
                         </div>
                     </div>
@@ -61,7 +61,7 @@
                             <i class="fas fa-arrow-circle-down text-red-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Total Out</h3>
+                            <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Total Sorties</h3>
                             <p class="text-2xl font-semibold text-red-900 dark:text-red-200">{{ OUTCount ?? 0 }}</p>
                         </div>
                     </div>
@@ -72,7 +72,7 @@
                             <i class="fas fa-exchange-alt text-blue-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Total Movements</h3>
+                            <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Total Mouvements</h3>
                             <p class="text-2xl font-semibold text-blue-900 dark:text-blue-200">{{ movements|length }}</p>
                         </div>
                     </div>
@@ -86,11 +86,11 @@
                         <tr>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Equipment</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Quantity</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">User</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Reason</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Équipement</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Quantité</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Catégorie</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Utilisateur</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Raison</th>
                             <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -107,54 +107,50 @@
                                         {% else %}
                                             bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-300
                                         {% endif %}">
-                                        {{ movement.type }}
+                                         {{ movement.type == 'OUT' ? 'Sortie' : 'Entrée' }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-200">{{ movement.equipment.name }}</div>
+                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-200">{{ movement.equipment.name|striptags|slice(0, 11) ~ '...' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                                     {{ movement.quantity }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-300">
-                                        {{ movement.category ? movement.category.name : 'N/A' }}
+                                        {{ movement.category ? movement.category.name|striptags|slice(0, 11) ~ '...' : 'N/A' }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                                    {{ movement.user ? movement.user.name : 'System' }}
+                                    {{ movement.user ? movement.user.name : 'Système' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                                     {{ movement.reason|default('N/A') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end space-x-2">
-                                        <a href="{{ path('movement_edit', {'id': movement.id}) }}" class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-500" title="Edit">
+                                        <a href="{{ path('movement_edit', {'id': movement.id}) }}" class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-500" title="Modifier">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form method="post" action="{{ path('movement_delete', {'id': movement.id}) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this movement?');">
+                                        <form method="post" action="{{ path('movement_delete', {'id': movement.id}) }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce mouvement ?');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ movement.id) }}">
-                                            <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-500" title="Delete">
+                                            <button type="submit" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-500" title="Supprimer">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                     </div>
-                                    <!-- Pagination -->
-                                    
-
                                 </td>
                             </tr>
                         {% else %}
                             <tr>
-                                <td colspan="8" class="px-6 py-4 text-center text-gray-500 dark:text-gray-300">
-                                    No movements found
+                                <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    Aucun mouvement trouvé
                                 </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            // Pagination
             {% include '_partials/_pagination.html.twig' with {
                 'currentPage': pagination.currentPage,
                 'pageCount': pagination.pageCount,

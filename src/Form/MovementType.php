@@ -25,15 +25,15 @@ class MovementType extends AbstractType
         $builder
             ->add('type', ChoiceType::class, [
                 'choices' => [
-                    'IN' => MovementChoice::IN->value,
-                    'OUT' => MovementChoice::OUT->value,
+                    'Entrée' => MovementChoice::IN->value,
+                    'Sortie' => MovementChoice::OUT->value,
                 ],
-                'label' => 'Movement Type',
+                'label' => 'Type de Mouvement',
                 'required' => true,
                 'attr' => ['class' => 'form-select']
             ])
             ->add('quantity', NumberType::class, [
-                'label' => 'Quantity',
+                'label' => 'Quantité',
                 'required' => true,
                 'attr' => [
                     'min' => 1,
@@ -41,12 +41,12 @@ class MovementType extends AbstractType
                 ]
             ])
             ->add('reason', TextareaType::class, [
-                'label' => 'Reason',
+                'label' => 'Raison',
                 'required' => false,
                 'attr' => ['class' => 'form-textarea']
             ])
             ->add('movementDate', DateType::class, [
-                'label' => 'Movement Date',
+                'label' => 'Date du mouvement',
                 'widget' => 'single_text',
                 'required' => true,
                 'attr' => ['class' => 'form-input']
@@ -54,8 +54,9 @@ class MovementType extends AbstractType
             ->add('category', EntityType::class, [
                 'class' => Category::class,
                 'choice_label' => 'name',
+                'label' => 'Catégorie',
                 'required' => false,
-                'placeholder' => 'Select Category',
+                'placeholder' => 'Sélectionner une catégorie',
                 'attr' => [
                     'class' => 'form-select',
                     'data-category-target' => 'true'
@@ -64,30 +65,31 @@ class MovementType extends AbstractType
             ->add('equipment', EntityType::class, [
                 'class' => Equipment::class,
                 'choice_label' => 'name',
+                'label' => 'Équipement',
                 'required' => true,
-                'placeholder' => 'Select Equipment',
+                'placeholder' => 'Sélectionner un équipement',
                 'attr' => [
                     'class' => 'form-select',
                     'data-equipment-target' => 'true'
                 ]
             ])
             ->add('reference', TextType::class, [
-                'label' => 'Reference',
+                'label' => 'Référence',
                 'required' => false,
                 'attr' => ['class' => 'form-input']
             ])
             ->add('location', TextType::class, [
-                'label' => 'Location',
+                'label' => 'Emplacement',
                 'required' => false,
                 'attr' => ['class' => 'form-input']
             ])
             ->add('batchNumber', TextType::class, [
-                'label' => 'Batch Number',
+                'label' => 'Numéro de lot',
                 'required' => false,
                 'attr' => ['class' => 'form-input']
             ])
             ->add('expiryDate', DateTimeType::class, [
-                'label' => 'Expiry Date',
+                'label' => 'Date d\'expiration',
                 'widget' => 'single_text',
                 'required' => false,
                 'attr' => ['class' => 'form-input']

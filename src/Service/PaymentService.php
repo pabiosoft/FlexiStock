@@ -96,11 +96,20 @@ class PaymentService
 
     private function processCashOnDelivery(OrderRequest $order): bool
     {
-        // Marquer comme en attente de livraison
-        $order->setPaymentStatus(PaymentStatus::SUCCESSFUL->value);
-        $this->entityManager->flush();
+        try {
+            // For cash on delivery, we set the status to processing
+            // It will be marked as successful when the cash is received
+            $order->setPaymentStatus(PaymentStatus::PROCESSING->value);
+            $this->entityManager->flush();
 
-        return true;
+            $this->requestStack->getSession()->getFlashBag()
+                ->add('info', 'Cash payment pending validation. Please validate once cash is received.');
+
+            return true;
+        } catch (\Exception $e) {
+            $this->markPaymentFailed($order, 'Failed to process cash payment: ' . $e->getMessage());
+            return false;
+        }
     }
 
     private function processOtherPayment(OrderRequest $order): bool
@@ -119,11 +128,16 @@ class PaymentService
     public function markPaymentSuccessful(OrderRequest $order): void
     {
         $order->setPaymentStatus(PaymentStatus::SUCCESSFUL->value);
-        $order->setStatus(OrderStatus::VALIDATED->value);
+        
+        // If it's a cash payment, we also validate the order automatically
+        if ($order->getPaymentMethod() === 'cash_on_delivery') {
+            $order->setStatus(OrderStatus::VALIDATED->value);
+        }
+        
         $this->entityManager->flush();
 
-        $session = $this->requestStack->getSession();
-        // $session->getFlashBag()->add('success', 'Payment processed successfully');
+        $this->requestStack->getSession()->getFlashBag()
+            ->add('success', 'Payment processed successfully.');
     }
 
     public function markPaymentFailed(OrderRequest $order, string $reason): void

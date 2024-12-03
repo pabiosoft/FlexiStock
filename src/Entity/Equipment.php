@@ -11,12 +11,17 @@ use App\Repository\EquipmentRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Enum\EquipmentStatus;
 
 #[ORM\Entity(repositoryClass: EquipmentRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class Equipment
 {
     use SlugTrait;
+
+    public const STATUS_AVAILABLE = 'available';
+    public const STATUS_IN_USE = 'in_use';
+    public const STATUS_MAINTENANCE = 'maintenance';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -42,11 +47,15 @@ class Equipment
     private ?\DateTimeInterface $warrantyDate;
 
     #[ORM\Column(type: 'string', length: 20)]
-    private string $status;
+    #[Assert\Choice(callback: [EquipmentStatus::class, 'getAllStatuses'], message: 'Please select a valid status.')]
+    private string $status = EquipmentStatus::ACTIVE;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     #[Assert\GreaterThanOrEqual(0)]
     private int $stockQuantity;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $description;
 
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     #[Assert\GreaterThanOrEqual(0)]
@@ -59,8 +68,8 @@ class Equipment
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     private ?float $price;
 
-    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
-    private ?float $salePrice;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $location = null;
 
     #[ORM\Column(type: 'datetime')]
     private \DateTimeInterface $createdAt;
@@ -94,6 +103,9 @@ class Equipment
     #[ORM\OneToMany(mappedBy: 'equipment', targetEntity: Movement::class)]
     private Collection $stockMovements;
 
+    #[ORM\OneToMany(mappedBy: 'equipment', targetEntity: Reservation::class)]
+    private Collection $reservations;
+
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $lowStockThreshold = 0;
 
@@ -104,6 +116,7 @@ class Equipment
         $this->movements = new ArrayCollection();
         $this->maintenanceRecords = new ArrayCollection();
         $this->stockMovements = new ArrayCollection();
+        $this->reservations = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->stockQuantity = 0;
         $this->reservedQuantity = 0;
@@ -315,17 +328,14 @@ class Equipment
         return $this;
     }
 
-    public function getSalePrice(): ?float
+    public function getLocation(): ?string
     {
-        return $this->salePrice;
+        return $this->location;
     }
 
-    public function setSalePrice(?float $salePrice): self
+    public function setLocation(?string $location): self
     {
-        if ($salePrice !== null && $salePrice < 0) {
-            throw new \InvalidArgumentException('Le prix de vente ne peut pas être négatif.');
-        }
-        $this->salePrice = $salePrice;
+        $this->location = $location;
         return $this;
     }
 
@@ -522,6 +532,47 @@ class Equipment
                 $movement->setEquipment(null);
             }
         }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Reservation>
+     */
+    public function getReservations(): Collection
+    {
+        return $this->reservations;
+    }
+
+    public function addReservation(Reservation $reservation): self
+    {
+        if (!$this->reservations->contains($reservation)) {
+            $this->reservations->add($reservation);
+            $reservation->setEquipment($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReservation(Reservation $reservation): self
+    {
+        if ($this->reservations->removeElement($reservation)) {
+            // set the owning side to null (unless already changed)
+            if ($reservation->getEquipment() === $this) {
+                $reservation->setEquipment(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
         return $this;
     }
 

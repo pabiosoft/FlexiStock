@@ -3,87 +3,83 @@
 {% block title %}Maintenance Dashboard{% endblock %}
 
 {% block body %}
-    <div class="container-fluid">
-        <h1 class="h3 mb-4">Maintenance Dashboard</h1>
+    <div class="container mx-auto my-8">
+        <h1 class="text-3xl font-semibold mb-8">Maintenance Dashboard</h1>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-warning text-white">
-                        <h5 class="card-title mb-0">Overdue Maintenance ({{ overdue_maintenance|length }})</h5>
-                    </div>
-                    <div class="card-body">
-                        {% if overdue_maintenance is empty %}
-                            <p class="text-muted">No overdue maintenance</p>
-                        {% else %}
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div class="bg-yellow-500 p-4 text-white">
+                    <h5 class="text-lg font-semibold">Overdue Maintenance ({{ overdue_maintenance|length }})</h5>
+                </div>
+                <div class="p-4">
+                    {% if overdue_maintenance is empty %}
+                        <p class="text-gray-600">No overdue maintenance</p>
+                    {% else %}
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white">
+                                <thead>
+                                    <tr>
+                                        <th class="py-2 px-4 bg-gray-100">Equipment</th>
+                                        <th class="py-2 px-4 bg-gray-100">Type</th>
+                                        <th class="py-2 px-4 bg-gray-100">Due Date</th>
+                                        <th class="py-2 px-4 bg-gray-100">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-700">
+                                    {% for record in overdue_maintenance %}
                                         <tr>
-                                            <th>Equipment</th>
-                                            <th>Type</th>
-                                            <th>Due Date</th>
-                                            <th>Actions</th>
+                                            <td class="py-2 px-4 border-b">{{ record.equipment.name }}</td>
+                                            <td class="py-2 px-4 border-b">{{ record.maintenanceType }}</td>
+                                            <td class="py-2 px-4 border-b">{{ record.nextMaintenanceDate|date('Y-m-d') }}</td>
+                                            <td class="py-2 px-4 border-b">
+                                                <a href="{{ path('app_maintenance_edit', {'id': record.id}) }}" class="text-blue-500 hover:underline">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for record in overdue_maintenance %}
-                                            <tr>
-                                                <td>{{ record.equipment.name }}</td>
-                                                <td>{{ record.maintenanceType }}</td>
-                                                <td>{{ record.nextMaintenanceDate|date('Y-m-d') }}</td>
-                                                <td>
-                                                    <a href="{{ path('app_maintenance_edit', {'id': record.id}) }}" class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% endif %}
-                    </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="card-title mb-0">Upcoming Maintenance ({{ upcoming_maintenance|length }})</h5>
-                    </div>
-                    <div class="card-body">
-                        {% if upcoming_maintenance is empty %}
-                            <p class="text-muted">No upcoming maintenance in the next 7 days</p>
-                        {% else %}
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div class="bg-blue-500 p-4 text-white">
+                    <h5 class="text-lg font-semibold">Upcoming Maintenance ({{ upcoming_maintenance|length }})</h5>
+                </div>
+                <div class="p-4">
+                    {% if upcoming_maintenance is empty %}
+                        <p class="text-gray-600">No upcoming maintenance in the next 7 days</p>
+                    {% else %}
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white">
+                                <thead>
+                                    <tr>
+                                        <th class="py-2 px-4 bg-gray-100">Equipment</th>
+                                        <th class="py-2 px-4 bg-gray-100">Type</th>
+                                        <th class="py-2 px-4 bg-gray-100">Due Date</th>
+                                        <th class="py-2 px-4 bg-gray-100">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-700">
+                                    {% for record in upcoming_maintenance %}
                                         <tr>
-                                            <th>Equipment</th>
-                                            <th>Type</th>
-                                            <th>Due Date</th>
-                                            <th>Actions</th>
+                                            <td class="py-2 px-4 border-b">{{ record.equipment.name }}</td>
+                                            <td class="py-2 px-4 border-b">{{ record.maintenanceType }}</td>
+                                            <td class="py-2 px-4 border-b">{{ record.nextMaintenanceDate|date('Y-m-d') }}</td>
+                                            <td class="py-2 px-4 border-b">
+                                                <a href="{{ path('app_maintenance_edit', {'id': record.id}) }}" class="text-blue-500 hover:underline">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for record in upcoming_maintenance %}
-                                            <tr>
-                                                <td>{{ record.equipment.name }}</td>
-                                                <td>{{ record.maintenanceType }}</td>
-                                                <td>{{ record.nextMaintenanceDate|date('Y-m-d') }}</td>
-                                                <td>
-                                                    <a href="{{ path('app_maintenance_edit', {'id': record.id}) }}" class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% endif %}
-                    </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

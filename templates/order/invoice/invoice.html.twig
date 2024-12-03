@@ -152,15 +152,15 @@
             <table class="w-full">
                 <tr>
                     <td class="text-right text-sm text-gray-700">Subtotal:</td>
-                    <td class="text-right text-sm text-gray-700">${{ order.totalPrice|number_format(2) }}</td>
+                    <td class="text-right text-sm text-gray-700">${{ order.subtotal|number_format(2) }}</td>
                 </tr>
                 <tr>
-                    <td class="text-right text-sm text-gray-700">Tax (10%):</td>
-                    <td class="text-right text-sm text-gray-700">${{ (order.totalPrice * 0.1)|number_format(2) }}</td>
+                    <td class="text-right text-sm text-gray-700">Tax (20%):</td>
+                    <td class="text-right text-sm text-gray-700">${{ (order.subtotal * 0.2)|number_format(2) }}</td>
                 </tr>
                 <tr class="total-row">
                     <td class="text-right font-bold text-gray-800">Total:</td>
-                    <td class="text-right font-bold text-gray-800">${{ (order.totalPrice * 1.1)|number_format(2) }}</td>
+                    <td class="text-right font-bold text-gray-800">${{ (order.totalPrice)|number_format(2) }}</td>
                 </tr>
             </table>
         </div>

@@ -3,9 +3,9 @@
 {% block title %}Tableau de bord - FlexiStock{% endblock %}
 
 {% block body %}
-<main class="flex flex-col gap-4 md:gap-5 h-auto pb-5 dark:bg-gray-900" >
+<main class="flex flex-col gap-4 md:gap-5 h-auto pb-5  dark:bg-gray-900" >
  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
+        <div class="rounded-lg shadow p-6 bg-white dark:bg-green-900 dark:text-gray-300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium">Équipements Totals</p>
@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
+        <div class="rounded-lg shadow p-6 bg-white dark:bg-red-900 dark:text-gray-300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Équipements en Stock Faible</p>
@@ -38,7 +38,7 @@
             </div>
         </div>
 
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
+        <div class="rounded-lg shadow p-6 bg-white dark:bg-yellow-900 dark:text-gray-300">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Commandes en Attente</p>
@@ -53,10 +53,10 @@
             </div>
         </div>
 
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
+        <div class="rounded-lg shadow p-6 bg-white dark:bg-blue-900 dark:text-gray-300">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Valeur Totale du Stock</p>
+                    <p class="text-sm font-medium text-gray-600  dark:text-gray-400">Valeur Totale du Stock</p>
                     <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200">$<span class="counter" data-target="{{ stats.totalStockValue }}">0</span></p>
                 </div>
                 <div class="p-3 bg-green-50 dark:bg-green-900 rounded-full">

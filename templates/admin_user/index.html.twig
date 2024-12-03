@@ -49,51 +49,51 @@
             </form>
         </div>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-blue-50 rounded-lg p-4">
+                <div class="bg-blue-50 rounded-lg p-4 dark:bg-blue-900">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <i class="fas fa-users text-blue-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-blue-800">Total Users</h3>
-                            <p class="text-2xl font-semibold text-blue-900">{{ users|length }}</p>
+                            <h3 class="text-sm font-medium text-blue-900 dark:text-blue-100">Total Users</h3>
+                            <p class="text-2xl font-semibold  text-blue-900 dark:text-blue-100">{{ users|length }}</p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-green-50 rounded-lg p-4">
+                <div class="bg-green-50 rounded-lg p-4 dark:bg-red-900 ">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <i class="fas fa-user-shield text-green-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-green-800">Admins</h3>
-                            <p class="text-2xl font-semibold text-green-900">
+                            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Admins</h3>
+                            <p class="text-2xl font-semibold text-green-900 dark:text-green-100">
                                 {{ users|filter(u => 'ROLE_ADMIN' in u.roles)|length }}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-yellow-50 rounded-lg p-4">
+                <div class="bg-yellow-50 dark:bg-yellow-900 rounded-lg p-4 ">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-user-tie text-yellow-500 text-2xl"></i>
+                            <i class="fas fa-user-tie text-yellow-500 text-2xl dark:text-yellow-500"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-yellow-800">Managers</h3>
-                            <p class="text-2xl font-semibold text-yellow-900">
+                            <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Managers</h3>
+                            <p class="text-2xl font-semibold text-yellow-900 dark:text-yellow-100">
                                 {{ users|filter(u => 'ROLE_MANAGER' in u.roles)|length }}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div class="bg-purple-50 rounded-lg p-4">
+                <div class="bg-green-50 dark:bg-green-900 rounded-lg p-4">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-user text-purple-500 text-2xl"></i>
+                            <i class="fas fa-user text-green-500 text-2xl"></i>
                         </div>
                         <div class="ml-4">
-                            <h3 class="text-sm font-medium text-purple-800">Regular Users</h3>
-                            <p class="text-2xl font-semibold text-purple-900">
+                            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Regular Users</h3>
+                            <p class="text-2xl font-semibold text-green-900 dark:text-green-100">
                                 {{ users|filter(u => u.roles|length == 1 and 'ROLE_USER' in u.roles)|length }}
                             </p>
                         </div>
@@ -145,15 +145,27 @@
                                 {% endfor %}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                {% if user.isVerified %}
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                        <i class="fas fa-check-circle mr-1"></i> Verified
+                                <button type="button" 
+                                    class="{% if user.isVerified %}bg-indigo-600{% else %}bg-gray-200{% endif %} relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-not-allowed transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" 
+                                    role="switch" 
+                                    aria-checked="{{ user.isVerified ? 'true' : 'false' }}"
+                                    disabled>
+                                    <span class="sr-only">Verification status</span>
+                                    <span class="{% if user.isVerified %}translate-x-5{% else %}translate-x-0{% endif %} pointer-events-none relative inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200">
+                                        <!-- Not Verified Icon -->
+                                        <span class="{% if user.isVerified %}opacity-0 ease-out duration-100{% else %}opacity-100 ease-in duration-200{% endif %} absolute inset-0 h-full w-full flex items-center justify-center transition-opacity" aria-hidden="true">
+                                            <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 12 12">
+                                                <path d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </span>
+                                        <!-- Verified Icon -->
+                                        <span class="{% if user.isVerified %}opacity-100 ease-in duration-200{% else %}opacity-0 ease-out duration-100{% endif %} absolute inset-0 h-full w-full flex items-center justify-center transition-opacity" aria-hidden="true">
+                                            <svg class="h-3 w-3 text-indigo-600" fill="currentColor" viewBox="0 0 12 12">
+                                                <path d="M3.707 5.293a1 1 0 00-1.414 1.414l1.414-1.414zM5 8l-.707.707a1 1 0 001.414 0L5 8zm4.707-3.293a1 1 0 00-1.414-1.414l1.414 1.414zm-7.414 2l2 2 1.414-1.414-2-2-1.414 1.414zm3.414 2l4-4-1.414-1.414-4 4 1.414 1.414z" />
+                                            </svg>
+                                        </span>
                                     </span>
-                                {% else %}
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                                        <i class="fas fa-times-circle mr-1"></i> Not Verified
-                                    </span>
-                                {% endif %}
+                                </button>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ user.createdAt|date('d M Y') }}

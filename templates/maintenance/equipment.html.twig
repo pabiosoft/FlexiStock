@@ -3,96 +3,79 @@
 {% block title %}{{ equipment.name }} - Maintenance History{% endblock %}
 
 {% block body %}
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3">{{ equipment.name }} - Maintenance History</h1>
-            <div>
-                <a href="{{ path('app_maintenance_new', {'equipment': equipment.id}) }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> New Maintenance Record
-                </a>
-                <a href="{{ path('equipment_index') }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back to Equipment List
-                </a>
+    <div class="min-h-screen bg-gray-100 dark:bg-gray-900 py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800 dark:text-white">{{ equipment.name }} - Maintenance History</h1>
+                <div>
+                    <a href="{{ path('app_maintenance_new', {'equipment': equipment.id}) }}" 
+                       class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm">
+                        <i class="fas fa-plus mr-2"></i> New Maintenance Record
+                    </a>
+                    <a href="{{ path('equipment_index') }}" 
+                       class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg shadow-sm">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Equipment List
+                    </a>
+                </div>
             </div>
-        </div>
 
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Total Records</h5>
-                        <p class="h2">{{ maintenance_stats.total_records }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Total Cost</h5>
-                        <p class="h2">${{ maintenance_stats.total_cost|number_format(2) }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Average Cost</h5>
-                        <p class="h2">${{ maintenance_stats.average_cost|number_format(2) }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Completion Rate</h5>
-                        <p class="h2">
-                            {% if maintenance_stats.total_records > 0 %}
-                                {{ (maintenance_stats.completed_count / maintenance_stats.total_records * 100)|round }}%
-                            {% else %}
-                                0%
-                            {% endif %}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                {% set stats = [
+                    {'title': 'Total Records', 'value': maintenance_stats.total_records},
+                    {'title': 'Total Cost', 'value': '$' ~ maintenance_stats.total_cost|number_format(2)},
+                    {'title': 'Average Cost', 'value': '$' ~ maintenance_stats.average_cost|number_format(2)},
+                    {'title': 'Completion Rate', 
+                     'value': maintenance_stats.total_records > 0 
+                        ? (maintenance_stats.completed_count / maintenance_stats.total_records * 100)|round ~ '%' 
+                        : '0%'}
+                ] %}
 
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Maintenance History</h5>
+                {% for stat in stats %}
+                    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 text-center">
+                        <h5 class="text-gray-700 dark:text-gray-300 text-lg font-semibold">{{ stat.title }}</h5>
+                        <p class="text-2xl font-bold text-gray-800 dark:text-white">{{ stat.value }}</p>
+                    </div>
+                {% endfor %}
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
+
+            <!-- Maintenance History Table -->
+            <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Maintenance History</h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left border-collapse">
+                        <thead class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
                             <tr>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                                <th>Cost</th>
-                                <th>Status</th>
-                                <th>Next Due</th>
-                                <th>Performed By</th>
-                                <th>Actions</th>
+                                <th class="px-6 py-3">Date</th>
+                                <th class="px-6 py-3">Type</th>
+                                <th class="px-6 py-3">Description</th>
+                                <th class="px-6 py-3">Cost</th>
+                                <th class="px-6 py-3">Status</th>
+                                <th class="px-6 py-3">Next Due</th>
+                                <th class="px-6 py-3">Performed By</th>
+                                <th class="px-6 py-3">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for record in maintenance_records %}
-                                <tr>
-                                    <td>{{ record.maintenanceDate|date('Y-m-d') }}</td>
-                                    <td>{{ record.maintenanceType }}</td>
-                                    <td>{{ record.description }}</td>
-                                    <td>${{ record.cost|number_format(2) }}</td>
-                                    <td>
-                                        <span class="badge bg-{{ record.status == 'completed' ? 'success' : 'warning' }}">
+                                <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">
+                                    <td class="px-6 py-4">{{ record.maintenanceDate|date('Y-m-d') }}</td>
+                                    <td class="px-6 py-4">{{ record.maintenanceType }}</td>
+                                    <td class="px-6 py-4">{{ record.description }}</td>
+                                    <td class="px-6 py-4">${{ record.cost|number_format(2) }}</td>
+                                    <td class="px-6 py-4">
+                                        <span class="px-2 py-1 rounded-full text-white bg-{{ record.status == 'completed' ? 'green-500' : 'yellow-500' }}">
                                             {{ record.status|title }}
                                         </span>
                                     </td>
-                                    <td>{{ record.nextMaintenanceDate|date('Y-m-d') }}</td>
-                                    <td>{{ record.performedBy.name }}</td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a href="{{ path('app_maintenance_edit', {'id': record.id}) }}" class="btn btn-sm btn-primary">
+                                    <td class="px-6 py-4">{{ record.nextMaintenanceDate|date('Y-m-d') }}</td>
+                                    <td class="px-6 py-4">{{ record.performedBy.name }}</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex space-x-2">
+                                            <a href="{{ path('app_maintenance_edit', {'id': record.id}) }}" 
+                                               class="text-blue-600 hover:text-blue-800">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             {{ include('maintenance/_delete_form.html.twig') }}
@@ -101,7 +84,7 @@
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td colspan="8" class="text-center">No maintenance records found</td>
+                                    <td colspan="8" class="px-6 py-4 text-center text-gray-600 dark:text-gray-400">No maintenance records found</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

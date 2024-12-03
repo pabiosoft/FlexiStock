@@ -1,19 +1,130 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Create New Category
-{% endblock %}
+{% block title %}Nouvel Équipement{% endblock %}
 
 {% block body %}
-	{% include "_partials/_flush.html.twig" %}
-	{# {% include '_partials/_adminav.html.twig' %} #}
-	{# <main class="flex flex-col gap-4 md:gap-5 px-4 lg:px-5 lg:ml-56 h-auto pt-20 pb-5 mx-auto"> #}
-	<main class="flex flex-col gap-4 md:gap-5 h-auto pb-5">
-		<div class="px-6 py-8 lg:px-8 max-w-2xl items-center mx-auto ">
-			<h1 class="text-3xl font-bold mb-4 text-center text-blue-600 ">Create New Equipment</h1>
+    {% include '_partials/_flush.html.twig' %}
+    <main class="flex flex-col gap-4 md:gap-5 h-auto pb-5">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Ajouter un nouvel équipement</h1>
+                <a href="{{ path('equipment_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Retour à la liste
+                </a>
+            </div>
 
-			{% include 'equipment/_form.html.twig'%}
+            {{ form_start(equipmentForm, {
+                'attr': {'class': 'space-y-6'},
+                'method': 'POST',
+                'action': path('equipment_new')
+            }) }}
+                <input type="hidden" name="_token" value="{{ csrf_token('new_equipment') }}">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {# Row 1: Name and Category #}
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.name, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.name, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.name) }}
+                    </div>
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.category, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.category, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.category) }}
+                    </div>
 
-			<a type="button" class="btn btn-primary" href="{{ path('equipment_index') }}">Back to list</a>
-		</div>
-	</main>
+                    {# Row 2: Brand and Model #}
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.brand, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.brand, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.brand) }}
+                    </div>
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.model, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.model, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.model) }}
+                    </div>
+
+                    {# Row 3: Serial Number and Location #}
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.serialNumber, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.serialNumber, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.serialNumber) }}
+                    </div>
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.location, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.location, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.location) }}
+                    </div>
+
+                    {# Row 4: Price and Stock Quantity #}
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.price, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.price, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.price) }}
+                    </div>
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.stockQuantity, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.stockQuantity, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.stockQuantity) }}
+                    </div>
+
+                    {# Row 5: Purchase Date and Warranty Date #}
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.purchaseDate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.purchaseDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.purchaseDate) }}
+                    </div>
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.warrantyDate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.warrantyDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.warrantyDate) }}
+                    </div>
+
+                    {# Row 6: Status and Min Threshold #}
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.status, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.status, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.status) }}
+                    </div>
+                    <div class="col-span-1">
+                        {{ form_label(equipmentForm.minThreshold, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.minThreshold, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
+                        {{ form_errors(equipmentForm.minThreshold) }}
+                    </div>
+
+                    {# Row 7: Description (full width) #}
+                    <div class="col-span-2">
+                        {{ form_label(equipmentForm.description, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.description, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm', 'rows': '3'}}) }}
+                        {{ form_errors(equipmentForm.description) }}
+                    </div>
+
+                    {# Row 8: Images (full width) #}
+                    <div class="col-span-2">
+                        {{ form_label(equipmentForm.images, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
+                        {{ form_widget(equipmentForm.images, {'attr': {'class': 'mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400 dark:file:bg-gray-700 dark:file:text-gray-300'}}) }}
+                        {{ form_errors(equipmentForm.images) }}
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Sélectionnez une ou plusieurs images</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-save mr-2"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            {{ form_end(equipmentForm) }}
+        </div>
+    </main>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add any JavaScript for form handling here
+        });
+    </script>
 {% endblock %}

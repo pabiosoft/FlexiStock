@@ -31,64 +31,9 @@ class EquipmentType extends AbstractType
         $builder
             ->add('name', null, [
                 'label' => 'Nom',
-            ])
-            ->add('brand', null, [
-                'label' => 'Marque',
-            ])
-            ->add('model', null, [
-                'label' => 'Modèle',
-            ])
-            ->add('serialNumber', null, [
-                'label' => 'Numéro de Série',
-            ])
-            ->add('description', null, [
-                'label' => 'Description',
-                'required' => false,
-            ])
-            ->add('price', NumberType::class, [
-                'required' => true,
-                'scale' => 2,
-                'label' => 'Prix',
-            ])
-            ->add('salePrice', NumberType::class, [
-                'required' => true,
-                'scale' => 2,
-                'label' => 'Prix de Vente',
-            ])
-            ->add('purchaseDate', DateType::class, [
-                'widget' => 'single_text',
-                'required' => false,
-                'label' => 'Date d\'achat',
-            ])
-            ->add('warrantyDate', DateType::class, [
-                'widget' => 'single_text',
-                'required' => false,
-                'label' => 'Date de garantie',
-            ])
-            ->add('status', ChoiceType::class, [
-                'choices' => [
-                    'Active' => EquipmentStatus::ACTIVE,
-                    'Expired' => EquipmentStatus::EXPIRED,
-                    'Obsolete' => EquipmentStatus::OBSOLETE,
-                ],
-                'expanded' => false,
-                'multiple' => false,
-                'label' => 'Statut',
-            ])
-            // ->add('quantity', null, [
-            //     'label' => 'Quantité',
-            // ])
-            ->add('minThreshold', null, [
-                'label' => 'Seuil Minimum',
-            ])
-            ->add('images', FileType::class, [
-                'label' => 'Images',
-                'multiple' => true,
-                'mapped' => false, // Non mappé pour traitement manuel
-                'required' => false,
                 'attr' => [
-                    'accept' => 'image/*',
-                ],
+                    'class' => 'col-span-1'
+                ]
             ])
             ->add('category', EntityType::class, [
                 'class' => Category::class,
@@ -109,26 +54,103 @@ class EquipmentType extends AbstractType
                         : 'Root Categories';
                 },
                 'attr' => [
-                    'class' => 'mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm',
+                    'class' => 'col-span-1',
                     'data-category-target' => true, // For JavaScript targeting if needed
                 ],
             ])
+            ->add('brand', null, [
+                'label' => 'Marque',
+                'attr' => [
+                    'class' => 'col-span-1'
+                ]
+            ])
+            ->add('model', null, [
+                'label' => 'Modèle',
+                'attr' => [
+                    'class' => 'col-span-1'
+                ]
+            ])
+            ->add('serialNumber', null, [
+                'label' => 'Numéro de Série',
+                'attr' => [
+                    'class' => 'col-span-1'
+                ]
+            ])
+            ->add('location', null, [
+                'label' => 'Emplacement',
+                'required' => false,
+                'attr' => [
+                    'class' => 'col-span-1'
+                ]
+            ])
+            ->add('description', null, [
+                'label' => 'Description',
+                'required' => false,
+                'attr' => [
+                    'class' => 'col-span-2',
+                    'rows' => 3
+                ]
+            ])
+            ->add('price', NumberType::class, [
+                'required' => true,
+                'scale' => 2,
+                'label' => 'Prix',
+                'attr' => [
+                    'class' => 'col-span-1'
+                ]
+            ])
+            ->add('purchaseDate', DateType::class, [
+                'widget' => 'single_text',
+                'required' => false,
+                'label' => 'Date d\'achat',
+                'attr' => [
+                    'class' => 'col-span-1'
+                ]
+            ])
+            ->add('warrantyDate', DateType::class, [
+                'widget' => 'single_text',
+                'required' => false,
+                'label' => 'Date de garantie',
+                'attr' => [
+                    'class' => 'col-span-1'
+                ]
+            ])
+            ->add('status', ChoiceType::class, [
+                'choices' => [
+                    'Active' => EquipmentStatus::ACTIVE,
+                    'Expired' => EquipmentStatus::EXPIRED,
+                    'Obsolete' => EquipmentStatus::OBSOLETE,
+                ],
+                'expanded' => false,
+                'multiple' => false,
+                'label' => 'Statut',
+                'attr' => [
+                    'class' => 'col-span-1'
+                ]
+            ])
+            ->add('minThreshold', null, [
+                'label' => 'Seuil Minimum',
+                'attr' => [
+                    'class' => 'col-span-1'
+                ]
+            ])
+            ->add('images', FileType::class, [
+                'label' => 'Images',
+                'multiple' => true,
+                'mapped' => false, // Non mappé pour traitement manuel
+                'required' => false,
+                'attr' => [
+                    'accept' => 'image/*',
+                    'class' => 'col-span-2'
+                ]
+            ])
             ->add('stockQuantity', null, [
                 'label' => 'Quantité en Stock',
+                'attr' => [
+                    'class' => 'col-span-1'
+                ]
             ])
-            // ->add('createdBy', EntityType::class, [
-            
-            // ->add('assignedUser', EntityType::class, [ 
-            //     'class' => User::class, 
-            //     'choice_label' => 'name', 
-            //     'label' => 'Assigned User', 
-            //     'placeholder' => 'Select a User', 
-            //     'required' => false,
-            //     'desabled' => true,
-            //     'attr' => [ 
-            //         'class' => 'mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm', 
-            //     ], ])
-            
+            // add submit button
         ;
     }
 
@@ -139,28 +161,3 @@ class EquipmentType extends AbstractType
         ]);
     }
 }
-
-
-
-// ->add('category', EntityType::class, [
-//     'class' => Category::class,
-//     'choice_label' => function (Category $category) {
-//         return $category->getParent()
-//             ? $category->getParent()->getName() . ' > ' . $category->getName()
-//             : $category->getName();
-//     },
-//     'label' => 'Catégorie',
-//     'placeholder' => 'Sélectionnez une catégorie',
-//     'query_builder' => function (EntityRepository $repository) {
-//         return $repository->createQueryBuilder('c')
-//             ->leftJoin('c.parent', 'parent')
-//             ->addSelect('parent')
-//             ->orderBy('parent.name', 'ASC') // Order parent categories first
-//             ->addOrderBy('c.name', 'ASC'); // Then order child categories
-//     },
-//     'group_by' => function (Category $category) {
-//         return $category->getParent()
-//             ? $category->getParent()->getName()
-//             : 'Catégories Principales'; // Group unparented categories under a default group
-//     },
-// ])

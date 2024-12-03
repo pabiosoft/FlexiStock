@@ -259,8 +259,34 @@ class OrderController extends AbstractController
         }
 
         $orderRepository = $this->entityManager->getRepository(OrderRequest::class);
+        
+        // Get order statistics with a single optimized query
+        $statsResult = $orderRepository->createQueryBuilder('o')
+            ->select('
+                COUNT(o.id) as total_orders,
+                SUM(CASE WHEN o.status = :pending THEN 1 ELSE 0 END) as pending_orders,
+                SUM(CASE WHEN o.status = :completed THEN 1 ELSE 0 END) as completed_orders,
+                SUM(CASE WHEN o.status = :cancelled THEN 1 ELSE 0 END) as cancelled_orders,
+                COALESCE(SUM(o.totalPrice), 0) as total_amount
+            ')
+            ->setParameter('pending', 'pending')
+            ->setParameter('completed', 'completed')
+            ->setParameter('cancelled', 'cancelled')
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        $stats = [
+            'total_orders' => $statsResult['total_orders'] ?? 0,
+            'pending_orders' => $statsResult['pending_orders'] ?? 0,
+            'completed_orders' => $statsResult['completed_orders'] ?? 0,
+            'cancelled_orders' => $statsResult['cancelled_orders'] ?? 0,
+            'total_amount' => $statsResult['total_amount'] ?? 0,
+        ];
+
+        // Main query for listing orders
         $queryBuilder = $orderRepository->createQueryBuilder('o')
-            ->leftJoin('o.client', 'c');
+            ->leftJoin('o.customer', 'c')
+            ->orderBy('o.orderDate', 'DESC');
 
         // Apply search filter
         if (isset($criteria['search'])) {
@@ -286,6 +312,7 @@ class OrderController extends AbstractController
 
         return $this->render('order/index.html.twig', [
             'orders' => $orders,
+            'stats' => $stats,
             'pagination' => [
                 'currentPage' => $page,
                 'itemsPerPage' => $limit,

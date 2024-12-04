@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Equipment;
+use App\Enum\EquipmentStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -19,7 +20,7 @@ class EquipmentRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('e')
             ->where('e.stockQuantity <= e.minThreshold')
             ->andWhere('e.status = :status')
-            ->setParameter('status', 'active')
+            ->setParameter('status', EquipmentStatus::ACTIVE)
             ->getQuery()
             ->getResult();
     }
@@ -32,8 +33,10 @@ class EquipmentRepository extends ServiceEntityRepository
             ->where('e.warrantyDate IS NOT NULL')
             ->andWhere('e.warrantyDate <= :thresholdDate')
             ->andWhere('e.warrantyDate >= :today')
+            ->andWhere('e.status = :status')
             ->setParameter('thresholdDate', $thresholdDate)
             ->setParameter('today', new \DateTime())
+            ->setParameter('status', EquipmentStatus::ACTIVE)
             ->getQuery()
             ->getResult();
     }
@@ -84,7 +87,7 @@ class EquipmentRepository extends ServiceEntityRepository
             ->select('e.name', 'e.stockQuantity', 'e.price', 
                     '(e.stockQuantity * e.price) as totalValue')
             ->where('e.status = :status')
-            ->setParameter('status', 'active')
+            ->setParameter('status', EquipmentStatus::ACTIVE)
             ->getQuery()
             ->getResult();
     }
@@ -99,5 +102,34 @@ class EquipmentRepository extends ServiceEntityRepository
             ->orderBy('m.movementDate', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function findFilteredEquipment(string $searchQuery = '', string $statusFilter = '', string $categoryFilter = '', string $dateFilter = ''): array
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->leftJoin('e.category', 'c')
+            ->addSelect('c');
+
+        if (!empty($searchQuery)) {
+            $qb->andWhere('e.name LIKE :searchQuery OR e.serialNumber LIKE :searchQuery')
+               ->setParameter('searchQuery', '%' . $searchQuery . '%');
+        }
+
+        if (!empty($statusFilter)) {
+            $qb->andWhere('e.status = :status')
+               ->setParameter('status', $statusFilter);
+        }
+
+        if (!empty($categoryFilter)) {
+            $qb->andWhere('c.id = :category')
+               ->setParameter('category', $categoryFilter);
+        }
+
+        if (!empty($dateFilter)) {
+            $qb->andWhere('e.createdAt >= :date')
+               ->setParameter('date', new \DateTime($dateFilter));
+        }
+
+        return $qb->getQuery()->getResult();
     }
 }

@@ -1,288 +1,303 @@
-// Dashboard initialization and charts
+// Dashboard initialization and charts with lazy loading
 document.addEventListener('DOMContentLoaded', function() {
-    // Stock Trends Chart
-    const stockTrendsCtx = document.getElementById('stockTrendsChart').getContext('2d');
-    let stockTrendsChart;
+    // Chart instances storage
+    let charts = {};
 
-    function renderStockTrendsChart(labels, dataIn, dataOut) {
-        if (stockTrendsChart) stockTrendsChart.destroy();
-        
-        stockTrendsChart = new Chart(stockTrendsCtx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Entrées',
-                    data: dataIn,
-                    borderColor: 'rgb(59, 130, 246)',
-                    tension: 0.1
-                }, {
-                    label: 'Sorties',
-                    data: dataOut,
-                    borderColor: 'rgb(239, 68, 68)',
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.dataset.label}: ${context.raw} unités`;
-                            }
-                        }
-                    },
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
-                        },
-                        ticks: {
-                            color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
-                        },
-                        ticks: {
-                            color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
-                        }
-                    }
-                }
+    // Intersection Observer for lazy loading
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const chartId = entry.target.id;
+                initializeChart(chartId);
+                observer.unobserve(entry.target);
             }
         });
+    }, {
+        root: null,
+        rootMargin: '50px',
+        threshold: 0.1
+    });
+
+    // Observe all chart canvases
+    document.querySelectorAll('canvas[id$="Chart"]').forEach(canvas => {
+        observer.observe(canvas);
+    });
+
+    function initializeChart(chartId) {
+        const ctx = document.getElementById(chartId).getContext('2d');
+        
+        const sharedOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 750 },
+            devicePixelRatio: 2
+        };
+
+        switch(chartId) {
+            case 'stockTrendsChart':
+                charts[chartId] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: movementDates,
+                        datasets: [{
+                            label: 'Entrées',
+                            data: movementDataIn,
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.1
+                        }, {
+                            label: 'Sorties',
+                            data: movementDataOut,
+                            borderColor: 'rgb(239, 68, 68)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        ...sharedOptions,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw} unités`;
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                                },
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                                },
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                                }
+                            }
+                        }
+                    }
+                });
+                break;
+
+            case 'categoryDistributionChart':
+                charts[chartId] = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categoryLabels,
+                        datasets: [{
+                            data: categoryData,
+                            backgroundColor: [
+                                'rgba(59, 130, 246, 0.8)',
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(249, 115, 22, 0.8)',
+                                'rgba(139, 92, 246, 0.8)',
+                                'rgba(236, 72, 153, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        ...sharedOptions,
+                        cutout: '65%',
+                        plugins: {
+                            legend: {
+                                position: 'right'
+                            }
+                        }
+                    }
+                });
+                break;
+
+            case 'movementChart':
+                charts[chartId] = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: movementDates,
+                        datasets: [
+                            {
+                                label: 'Entrée',
+                                data: movementDataIn,
+                                backgroundColor: 'rgba(52, 152, 219, 0.8)'
+                            },
+                            {
+                                label: 'Sortie',
+                                data: movementDataOut,
+                                backgroundColor: 'rgba(231, 76, 60, 0.8)'
+                            }
+                        ]
+                    },
+                    options: {
+                        ...sharedOptions,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                                },
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                                },
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                                }
+                            }
+                        }
+                    }
+                });
+                break;
+
+            case 'orderAnalyticsChart':
+                charts[chartId] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: orderVolumeData.dates,
+                        datasets: [
+                            {
+                                label: 'Total des commandes',
+                                data: orderVolumeData.total,
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                fill: true
+                            },
+                            {
+                                label: 'Commandes en attente',
+                                data: orderVolumeData.pending,
+                                borderColor: '#f39c12',
+                                backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                                fill: true
+                            },
+                            {
+                                label: 'Commandes en cours',
+                                data: orderVolumeData.processing,
+                                borderColor: '#9b59b6',
+                                backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                                fill: true
+                            },
+                            {
+                                label: 'Commandes terminées',
+                                data: orderVolumeData.completed,
+                                borderColor: '#2ecc71',
+                                backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        ...sharedOptions,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw} commandes`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                                },
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                                },
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                                }
+                            }
+                        }
+                    }
+                });
+                break;
+        }
     }
 
-    // Initial render of stock trends chart
-    renderStockTrendsChart(movementDates, movementDataIn, movementDataOut);
-
-    // Toggle time frames for stock trends
+    // Handle time frame toggles
     document.querySelectorAll('.time-frame-toggle').forEach(button => {
         button.addEventListener('click', function() {
             const timeframe = this.getAttribute('data-timeframe');
+            const chart = charts['stockTrendsChart'];
             
-            // Update active button state
-            document.querySelectorAll('.time-frame-toggle').forEach(btn => {
-                if (btn === this) {
-                    btn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-800');
-                    btn.classList.add('bg-blue-500', 'text-white');
-                } else {
-                    btn.classList.remove('bg-blue-500', 'text-white');
-                    btn.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-800');
-                }
-            });
-
-            // Update chart data based on timeframe
-            if (timeframe === 'monthly') {
-                renderStockTrendsChart(monthlyMovementDates, monthlyMovementDataIn, monthlyMovementDataOut);
-            } else {
-                renderStockTrendsChart(movementDates, movementDataIn, movementDataOut);
+            if (chart) {
+                chart.data.labels = timeframe === 'monthly' ? monthlyMovementDates : movementDates;
+                chart.data.datasets[0].data = timeframe === 'monthly' ? monthlyMovementDataIn : movementDataIn;
+                chart.data.datasets[1].data = timeframe === 'monthly' ? monthlyMovementDataOut : movementDataOut;
+                chart.update();
             }
         });
     });
 
-    // Initialize Category Distribution Chart
-    const categoryCtx = document.getElementById('categoryDistributionChart').getContext('2d');
-    new Chart(categoryCtx, {
-        type: 'doughnut',
-        data: {
-            labels: categoryLabels,
-            datasets: [{
-                data: categoryData,
-                backgroundColor: [
-                    'rgba(59, 130, 246, 0.8)',
-                    'rgba(16, 185, 129, 0.8)',
-                    'rgba(249, 115, 22, 0.8)',
-                    'rgba(139, 92, 246, 0.8)',
-                    'rgba(236, 72, 153, 0.8)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right'
-                }
-            }
-        }
-    });
-
-    // Initialize Movement Data Chart
-    const movementCtx = document.getElementById('movementChart').getContext('2d');
-    new Chart(movementCtx, {
-        type: 'bar',
-        data: {
-            labels: movementDates,
-            datasets: [
-                {
-                    label: 'Entrée',
-                    data: movementDataIn,
-                    backgroundColor: 'rgba(52, 152, 219, 0.8)'
-                },
-                {
-                    label: 'Sortie',
-                    data: movementDataOut,
-                    backgroundColor: 'rgba(231, 76, 60, 0.8)'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.dataset.label}: ${context.raw}`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
-                    },
-                    ticks: {
-                        color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
-                    }
-                },
-                x: {
-                    grid: {
-                        color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
-                    },
-                    ticks: {
-                        color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
-                    }
-                }
-            }
-        }
-    });
-
-    // Initialize Order Analytics Chart
-    const orderAnalyticsCtx = document.getElementById('orderAnalyticsChart').getContext('2d');
-    let orderAnalyticsChart = new Chart(orderAnalyticsCtx, {
-        type: 'line',
-        data: {
-            labels: orderVolumeData.dates,
-            datasets: [
-                {
-                    label: 'Total des commandes',
-                    data: orderVolumeData.total,
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    order: 4
-                },
-                {
-                    label: 'Commandes en attente',
-                    data: orderVolumeData.pending,
-                    borderColor: '#f39c12',
-                    backgroundColor: 'rgba(243, 156, 18, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    order: 3
-                },
-                {
-                    label: 'Commandes en cours',
-                    data: orderVolumeData.processing,
-                    borderColor: '#9b59b6',
-                    backgroundColor: 'rgba(155, 89, 182, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    order: 2
-                },
-                {
-                    label: 'Commandes terminées',
-                    data: orderVolumeData.completed,
-                    borderColor: '#2ecc71',
-                    backgroundColor: 'rgba(46, 204, 113, 0.1)',
-                    tension: 0.4,
-                    fill: true,
-                    order: 1
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            },
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 15
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.dataset.label}: ${context.raw} commandes`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
-                    },
-                    ticks: {
-                        color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
-                    }
-                },
-                x: {
-                    grid: {
-                        color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
-                    },
-                    ticks: {
-                        color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
-                    }
-                }
-            }
-        }
-    });
-
-    function fetchOrderData() {
+    // Update order data periodically
+    function updateOrderData() {
         fetch(orderUpdateUrl)
             .then(response => response.json())
             .then(data => {
-                // Update the chart with new data
-                orderAnalyticsChart.data.datasets[0].data = data.total;
-                orderAnalyticsChart.data.datasets[1].data = data.pending;
-                orderAnalyticsChart.data.datasets[2].data = data.processing;
-                orderAnalyticsChart.data.datasets[3].data = data.completed;
-                orderAnalyticsChart.update();
+                const chart = charts['orderAnalyticsChart'];
+                if (chart) {
+                    chart.data.datasets[0].data = data.total;
+                    chart.data.datasets[1].data = data.pending;
+                    chart.data.datasets[2].data = data.processing;
+                    chart.data.datasets[3].data = data.completed;
+                    chart.update();
+                }
             })
-            .catch(error => console.error('Error fetching order data:', error));
+            .catch(console.error);
     }
 
-    // Poll every 30 seconds
-    setInterval(fetchOrderData, 30000);
+    setInterval(updateOrderData, 30000);
 
+    // Fetch dashboard data
     function updateDashboard() {
         const params = new URLSearchParams({
             search: searchBar.value,
@@ -304,10 +319,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Update charts
                 if (data.movementDates && data.movementDataIn && data.movementDataOut) {
-                    renderStockTrendsChart(data.movementDates, data.movementDataIn, data.movementDataOut);
+                    const chart = charts['stockTrendsChart'];
+                    if (chart) {
+                        chart.data.labels = data.movementDates;
+                        chart.data.datasets[0].data = data.movementDataIn;
+                        chart.data.datasets[1].data = data.movementDataOut;
+                        chart.update();
+                    }
                 }
             })
-            .catch(error => console.error('Error updating dashboard:', error));
+            .catch(console.error);
     }
 
     // Event listeners for filters

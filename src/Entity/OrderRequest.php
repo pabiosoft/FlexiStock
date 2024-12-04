@@ -27,6 +27,9 @@ class OrderRequest
     #[ORM\Column(type: 'string', length: 20)]
     private string $paymentStatus ='pending';
 
+    #[ORM\Column(type: 'string', length: 20)]
+    private string $priority = 'normal';
+
     #[ORM\ManyToOne(targetEntity: Supplier::class)]
     #[ORM\JoinColumn(nullable: true)]
     private ?Supplier $supplier = null;
@@ -65,6 +68,9 @@ class OrderRequest
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $paymentMethod = null;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $completedAt = null;
+
     public function __construct()
     {
         $this->items = new ArrayCollection();
@@ -83,17 +89,7 @@ class OrderRequest
     {
         return $this->id;
     }
-    public function getPaymentMethod(): ?string
-    {
-        return $this->paymentMethod;
-    }
 
-    public function setPaymentMethod(?string $paymentMethod): self
-    {
-        $this->paymentMethod = $paymentMethod;
-
-        return $this;
-    }
     public function getOrderDate(): \DateTimeInterface
     {
         return $this->orderDate;
@@ -113,6 +109,17 @@ class OrderRequest
     public function setStatus(string $status): self
     {
         $this->status = $status;
+        return $this;
+    }
+
+    public function getPriority(): string
+    {
+        return $this->priority;
+    }
+
+    public function setPriority(string $priority): self
+    {
+        $this->priority = $priority;
         return $this;
     }
 
@@ -253,12 +260,6 @@ class OrderRequest
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
-    {
-        $this->createdAt = $createdAt;
-        return $this;
-    }
-
     public function getNotes(): ?string
     {
         return $this->notes;
@@ -267,6 +268,28 @@ class OrderRequest
     public function setNotes(?string $notes): self
     {
         $this->notes = $notes;
+        return $this;
+    }
+
+    public function getPaymentMethod(): ?string
+    {
+        return $this->paymentMethod;
+    }
+
+    public function setPaymentMethod(?string $paymentMethod): self
+    {
+        $this->paymentMethod = $paymentMethod;
+        return $this;
+    }
+
+    public function getCompletedAt(): ?\DateTimeInterface
+    {
+        return $this->completedAt;
+    }
+
+    public function setCompletedAt(?\DateTimeInterface $completedAt): self
+    {
+        $this->completedAt = $completedAt;
         return $this;
     }
 

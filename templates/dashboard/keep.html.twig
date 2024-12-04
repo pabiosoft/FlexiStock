@@ -2,327 +2,661 @@
 
 {% block title %}Tableau de bord - FlexiStock{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .recent-activity {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .activity-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        .movement-in { color: #2ecc71; }
+        .movement-out { color: #e74c3c; }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .category-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .category-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<main class="flex flex-col gap-4 md:gap-5 h-auto pb-5 dark:bg-gray-900" >
-    <!-- Overview Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h3 class="text-xl font-semibold">Stock Status</h3>
-                    <p class="text-gray-600 dark:text-gray-400">Current inventory level</p>
-                </div>
-                <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
-                    <i class="fas fa-box text-blue-500 dark:text-blue-400"></i>
-                </div>
-            </div>
-            <div data-progress data-value="75" data-show-label="true" data-color="primary" data-animated="true" class="mt-2"></div>
-        </div>
+    <main class="flex flex-col gap-4 md:gap-5 h-auto pb-5 dark:bg-gray-900">
 
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h3 class="text-xl font-semibold">Orders</h3>
-                    <p class="text-gray-600 dark:text-gray-400">Processing status</p>
-                </div>
-                <div class="p-3 bg-green-100 dark:bg-green-900 rounded-full">
-                    <i class="fas fa-shopping-cart text-green-500 dark:text-green-400"></i>
-                </div>
-            </div>
-            <div data-progress data-value="60" data-show-label="true" data-color="success" data-animated="true" class="mt-2"></div>
-        </div>
-
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h3 class="text-xl font-semibold">Delivery</h3>
-                    <p class="text-gray-600 dark:text-gray-400">Shipping progress</p>
-                </div>
-                <div class="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
-                    <i class="fas fa-truck text-yellow-500 dark:text-yellow-400"></i>
-                </div>
-            </div>
-            <div data-progress data-value="45" data-show-label="true" data-color="warning" data-animated="true" class="mt-2"></div>
-        </div>
-
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <h3 class="text-xl font-semibold">Capacity</h3>
-                    <p class="text-gray-600 dark:text-gray-400">Storage usage</p>
-                </div>
-                <div class="p-3 bg-red-100 dark:bg-red-900 rounded-full">
-                    <i class="fas fa-warehouse text-red-500 dark:text-red-400"></i>
-                </div>
-            </div>
-            <div data-progress data-value="85" data-show-label="true" data-color="error" data-animated="true" class="mt-2"></div>
-        </div>
-    </div>
-
-    <!-- Detailed Progress Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-        <!-- Stock Categories -->
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
-            <h3 class="text-xl font-semibold mb-4">Stock Categories</h3>
-            <div class="space-y-4">
-                <div>
-                    <div class="flex justify-between mb-1">
-                        <span class="text-sm font-medium">Electronics</span>
-                        <span class="text-sm font-medium">70%</span>
+        {# Stats Cards #}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {# Total Equipment Card #}
+            <div class="rounded-lg shadow p-6 bg-white dark:bg-green-900 dark:text-gray-300 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium">TOTAL AMOUNT SALE</p>
+                        <p class="text-2xl font-semibold">{{ totalAmountSale|number_format(2, '.', ',') }} €</p>
                     </div>
-                    <div data-progress data-value="70" data-size="sm" data-color="primary" data-animated="true"></div>
-                </div>
-                <div>
-                    <div class="flex justify-between mb-1">
-                        <span class="text-sm font-medium">Furniture</span>
-                        <span class="text-sm font-medium">45%</span>
-                    </div>
-                    <div data-progress data-value="45" data-size="sm" data-color="success" data-animated="true"></div>
-                </div>
-                <div>
-                    <div class="flex justify-between mb-1">
-                        <span class="text-sm font-medium">Clothing</span>
-                        <span class="text-sm font-medium">90%</span>
-                    </div>
-                    <div data-progress data-value="90" data-size="sm" data-color="warning" data-animated="true"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Activity Progress -->
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
-            <h3 class="text-xl font-semibold mb-4">Daily Activities</h3>
-            <div class="space-y-4">
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-sm font-medium">Orders Processed</span>
-                        <div data-progress data-value="65" data-show-label="true" data-size="sm" data-color="primary" data-animated="true" class="w-1/2"></div>
+                    <div class="p-3 bg-blue-50 dark:bg-blue-900 rounded-full">
+                        <i class="fas fa-money-bill text-blue-500 text-xl"></i>
                     </div>
                 </div>
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-sm font-medium">Deliveries Completed</span>
-                        <div data-progress data-value="80" data-show-label="true" data-size="sm" data-color="success" data-animated="true" class="w-1/2"></div>
+                <div class="mt-4">
+                    <div class="flex items-center">
+                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">AMOUNT:</span>
+                        <span class="ml-2 text-sm text-gray-900 dark:text-gray-200">{{ totalAmountWeeklySale|number_format(2, '.', ',') }} €</span>
                     </div>
                 </div>
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-sm font-medium">Returns Processed</span>
-                        <div data-progress data-value="25" data-show-label="true" data-size="sm" data-color="error" data-animated="true" class="w-1/2"></div>
+            </div>
+
+            {# Weekly Sale Card #}
+            <div class="rounded-lg shadow p-6 bg-white dark:bg-red-900 dark:text-gray-300 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">TOTAL AMOUNT WEEKLY SALE</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200">{{ totalAmountWeeklySale|number_format(2, '.', ',') }} €</p>
+                    </div>
+                    <div class="p-3 bg-red-50 dark:bg-red-900 rounded-full">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="{{ path('equipment_index', {'filter': 'low_stock'}) }}" 
+                       class="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-600 transition-colors">
+                        Voir les équipements en stock faible →
+                    </a>
+                </div>
+            </div>
+
+            {# Maintenance Card #}
+            <div class="rounded-lg shadow p-6 bg-white dark:bg-yellow-900 dark:text-gray-300 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Commandes en Attente</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200">{{ orderStats.pendingOrders }}</p>
+                    </div>
+                    <div class="p-3 bg-yellow-50 dark:bg-yellow-900 rounded-full">
+                        <i class="fas fa-clock text-yellow-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <a href="{{ path('order_list', {'status': 'pending'}) }}" 
+                       class="text-sm text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-600 transition-colors">
+                        Voir les commandes en attente →
+                    </a>
+                </div>
+            </div>
+
+            {# Total Value Card #}
+            <div class="rounded-lg shadow p-6 bg-white dark:bg-blue-900 dark:text-gray-300 transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Valeur du Stock</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200">
+                            €{{ stats.totalStockValue|number_format(2, ',', ' ') }}
+                        </p>
+                    </div>
+                    <div class="p-3 bg-green-50 dark:bg-green-900 rounded-full">
+                        <i class="fas fa-euro-sign text-green-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center">
+                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Mise à jour:</span>
+                        <span class="ml-2 text-sm text-gray-900 dark:text-gray-200">{{ "now"|date("d M Y H:i") }}</span>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Charts and Tables -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <!-- Stock Movement Chart -->
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
-            <h3 class="text-lg font-semibold mb-4">Mouvements de Stock (Derniers 7 Jours)</h3>
-            <div class="h-80">
-                <canvas id="stockMovementChart"></canvas>
+        {# Main Content Grid #}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Category Distribution -->
+            <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
+                <h3 class="text-lg font-semibold mb-4">Répartition des Catégories</h3>
+                <div class="h-80">
+                    <canvas id="categoryDistributionChart"></canvas>
+                </div>
             </div>
         </div>
 
-        <!-- Category Distribution -->
-        <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
-            <h3 class="text-lg font-semibold mb-4">Répartition des Catégories</h3>
-            <div class="h-80">
-                <canvas id="categoryDistributionChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activities -->
-    <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-semibold">Activités Récentes</h3>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Équipement</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Utilisateur</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Quantité</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Raison</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {% for activity in recentActivities %}
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                {{ activity.createdAt|date('d M Y H:i') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+            {# Recent Activities #}
+            <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold">Activités Récentes</h3>
+                </div>
+                <div class="p-6 space-y-4">
+                    {% if recentActivities is empty %}
+                        <p class="text-gray-500 dark:text-gray-400">Aucune activité récente</p>
+                    {% else %}
+                        {% for activity in recentActivities %}
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-shrink-0">
                                     {% if activity.type == 'IN' %}
-                                        bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200
+                                        <i class="fas fa-arrow-right text-green-500"></i>
                                     {% elseif activity.type == 'OUT' %}
-                                        bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200
+                                        <i class="fas fa-arrow-left text-red-500"></i>
                                     {% else %}
-                                        bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200
-                                    {% endif %}">
-                                    {{ activity.type }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
-                                {{ activity.equipment.name }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                {{ activity.user ? activity.user.name : 'Système' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                {{ activity.quantity }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                {{ activity.reason }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                        <i class="fas fa-exchange-alt text-blue-500"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm">
+                                        {% if activity.type == 'IN' %}
+                                            Entrée de {{ activity.quantity }} {{ activity.equipment.name }}
+                                        {% elseif activity.type == 'OUT' %}
+                                            Sortie de {{ activity.quantity }} {{ activity.equipment.name }}
+                                        {% endif %}
+                                        {% if activity.reason %}
+                                            ({{ activity.reason }})
+                                        {% endif %}
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ activity.movementDate|date('d/m/Y H:i') }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Equipment Status #}
+            <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold">État des Équipements</h3>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium">Stock Total</p>
+                                    <p class="text-2xl font-semibold">{{ stats.totalEquipment }}</p>
+                                </div>
+                                <div class="p-3 bg-blue-50 dark:bg-blue-900 rounded-full">
+                                    <i class="fas fa-boxes text-blue-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium">Articles Actifs</p>
+                                    <p class="text-2xl font-semibold">{{ stats.activeEquipment }}</p>
+                                </div>
+                                <div class="p-3 bg-green-50 dark:bg-green-900 rounded-full">
+                                    <i class="fas fa-check text-green-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium">Articles en Stock Faible</p>
+                                    <p class="text-2xl font-semibold text-red-500">{{ stats.lowStockCount }}</p>
+                                </div>
+                                <div class="p-3 bg-red-50 dark:bg-red-900 rounded-full">
+                                    <i class="fas fa-exclamation-triangle text-red-500"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    
-        {% include '_partials/_pagination.html.twig' with {
-                'currentPage': pagination.currentPage,
-                'pageCount': pagination.pageCount,
-                'totalItems': pagination.totalItems,
-                'itemsPerPage': pagination.itemsPerPage,
-                'route': 'app_dashboard',
-                'params': app.request.query.all|merge({'page': null})
-            } %}
-    </div>
-</main>
+
+        {# Movement Data Chart #}
+        <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300 mt-4">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold">Mouvement Hebdomadaire</h3>
+            </div>
+            <div class="p-6">
+                <canvas id="movementChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+
+        {# Stock Movement Trends with Time Frame Toggle #}
+        <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300 mt-4">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold">Tendances des Mouvements de Stock</h3>
+                <div class="flex space-x-2">
+                    <button class="time-frame-toggle p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors" data-timeframe="weekly">Hebdomadaire</button>
+                    <button class="time-frame-toggle p-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" data-timeframe="monthly">Mensuel</button>
+                </div>
+            </div>
+            <div class="p-6">
+                <canvas id="stockTrendsChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+
+        {# Order Analytics Chart #}
+        <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300 mt-4">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold">Analyse des Commandes</h3>
+            </div>
+            <div class="p-6">
+                <canvas id="orderAnalyticsChart" class="w-full h-64"></canvas>
+            </div>
+        </div>
+    </main>
 {% endblock %}
 
 {% block javascripts %}
-{{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize CounterUp
-    const counters = document.querySelectorAll('.counter');
-    counters.forEach(counter => {
-        const target = parseInt(counter.getAttribute('data-target'));
-        const duration = 2000; // Animation duration in milliseconds
-        const steps = 50; // Number of steps in the animation
-        const stepValue = target / steps;
-        let current = 0;
-        
-        const updateCounter = () => {
-            current += stepValue;
-            if (current <= target) {
-                counter.textContent = Math.round(current).toLocaleString();
-                setTimeout(updateCounter, duration / steps);
-            } else {
-                counter.textContent = target.toLocaleString();
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('stockTrendsChart').getContext('2d');
+            let chart;
+
+            function renderChart(labels, dataIn, dataOut) {
+                if (chart) chart.destroy();
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Entrées',
+                            data: dataIn,
+                            borderColor: 'rgb(59, 130, 246)',
+                            tension: 0.1
+                        }, {
+                            label: 'Sorties',
+                            data: dataOut,
+                            borderColor: 'rgb(239, 68, 68)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw} unités`;
+                                    }
+                                }
+                            },
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                                },
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                                },
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                                }
+                            }
+                        }
+                    }
+                });
             }
-        };
-        
-        updateCounter();
-    });
 
-    // Progress Bars
-    const progressBars = document.querySelectorAll('[data-progress]');
-    progressBars.forEach(progressBar => {
-        const value = parseInt(progressBar.getAttribute('data-value'));
-        const size = progressBar.getAttribute('data-size');
-        const color = progressBar.getAttribute('data-color');
-        const showLabel = progressBar.getAttribute('data-show-label') === 'true';
-        const animated = progressBar.getAttribute('data-animated') === 'true';
+            // Initial render with weekly data
+            renderChart({{ movementDates|json_encode|raw }}, {{ movementDataIn|json_encode|raw }}, {{ movementDataOut|json_encode|raw }});
 
-        const progressBarElement = document.createElement('div');
-        progressBarElement.classList.add('progress-bar');
-        if (size) progressBarElement.classList.add(`progress-bar-${size}`);
-        if (color) progressBarElement.classList.add(`bg-${color}-500`);
-        if (animated) progressBarElement.classList.add('animate-pulse');
+            // Toggle time frames
+            document.querySelectorAll('.time-frame-toggle').forEach(button => {
+                button.addEventListener('click', function() {
+                    const timeframe = this.getAttribute('data-timeframe');
 
-        const progressBarInnerElement = document.createElement('div');
-        progressBarInnerElement.classList.add('progress-bar-inner');
-        progressBarInnerElement.style.width = `${value}%`;
+                    // Fetch new data based on timeframe (mock example)
+                    let labels, dataIn, dataOut;
+                    if (timeframe === 'monthly') {
+                        labels = {{ monthlyMovementDates|json_encode|raw }};
+                        dataIn = {{ monthlyMovementDataIn|json_encode|raw }};
+                        dataOut = {{ monthlyMovementDataOut|json_encode|raw }};
+                    } else {
+                        labels = {{ movementDates|json_encode|raw }};
+                        dataIn = {{ movementDataIn|json_encode|raw }};
+                        dataOut = {{ movementDataOut|json_encode|raw }};
+                    }
 
-        if (showLabel) {
-            const progressBarLabelElement = document.createElement('span');
-            progressBarLabelElement.classList.add('progress-bar-label');
-            progressBarLabelElement.textContent = `${value}%`;
-            progressBarInnerElement.appendChild(progressBarLabelElement);
-        }
+                    renderChart(labels, dataIn, dataOut);
+                });
+            });
 
-        progressBarElement.appendChild(progressBarInnerElement);
-        progressBar.appendChild(progressBarElement);
-    });
-
-    // Stock Movement Chart
-    const stockCtx = document.getElementById('stockMovementChart').getContext('2d');
-    new Chart(stockCtx, {
-        type: 'line',
-        data: {
-            labels: {{ movementDates|json_encode|raw }},
-            datasets: [{
-                label: 'Entrée',
-                data: {{ movementDataIn|json_encode|raw }},
-                borderColor: 'rgb(34, 197, 94)',
-                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                tension: 0.4
-            }, {
-                label: 'Sortie',
-                data: {{ movementDataOut|json_encode|raw }},
-                borderColor: 'rgb(239, 68, 68)',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            },
-            plugins: {
-                legend: {
-                    position: 'top'
+            // Initialize Category Distribution Chart
+            const categoryCtx = document.getElementById('categoryDistributionChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ categoryLabels|json_encode|raw }},
+                    datasets: [{
+                        data: {{ categoryData|json_encode|raw }},
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(249, 115, 22, 0.8)',
+                            'rgba(139, 92, 246, 0.8)',
+                            'rgba(236, 72, 153, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
                 }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
+            });
+
+            // Initialize Movement Data Chart
+            const movementCtx = document.getElementById('movementChart').getContext('2d');
+            new Chart(movementCtx, {
+                type: 'bar',
+                data: {
+                    labels: {{ movementDates|json_encode|raw }},
+                    datasets: [
+                        {
+                            label: 'Entrée',
+                            data: {{ movementDataIn|json_encode|raw }},
+                            backgroundColor: 'rgba(52, 152, 219, 0.8)'
+                        },
+                        {
+                            label: 'Sortie',
+                            data: {{ movementDataOut|json_encode|raw }},
+                            backgroundColor: 'rgba(231, 76, 60, 0.8)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                            },
+                            ticks: {
+                                color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                            },
+                            ticks: {
+                                color: document.documentElement.classList.contains('dark') ? '#fff' : '#666'
+                            }
+                        }
+                    }
                 }
+            });
+
+            // Initialize Order Analytics Chart
+            const orderAnalyticsCtx = document.getElementById('orderAnalyticsChart').getContext('2d');
+            new Chart(orderAnalyticsCtx, {
+                type: 'bar',
+                data: {
+                    labels: {{ orderVolumeData.dates|json_encode|raw }},
+                    datasets: [
+                        {
+                            label: 'Commandes terminées',
+                            data: {{ orderVolumeData.completed|json_encode|raw }},
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)', // Green for success
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            order: 1
+                        },
+                        {
+                            label: 'Commandes en cours',
+                            data: {{ orderVolumeData.processing|json_encode|raw }},
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)', // Blue for in progress
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            order: 2
+                        },
+                        {
+                            label: 'Commandes en attente',
+                            data: {{ orderVolumeData.pending|json_encode|raw }},
+                            backgroundColor: 'rgba(245, 158, 11, 0.8)', // Orange for pending
+                            borderColor: 'rgba(245, 158, 11, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            order: 3
+                        },
+                        {
+                            label: 'Total des commandes',
+                            data: {{ orderVolumeData.total|json_encode|raw }},
+                            type: 'line',
+                            borderColor: 'rgba(99, 102, 241, 1)', // Indigo for total line
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            order: 0,
+                            pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 750,
+                        easing: 'easeInOutQuart'
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            align: 'center',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(17, 24, 39, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            padding: 12,
+                            cornerRadius: 8,
+                            titleFont: {
+                                size: 14,
+                                weight: '600'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} commandes`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: document.documentElement.classList.contains('dark') ? 'rgba(55, 65, 81, 0.3)' : 'rgba(229, 231, 235, 0.6)',
+                                drawBorder: false
+                            },
+                            border: {
+                                display: false
+                            },
+                            ticks: {
+                                color: document.documentElement.classList.contains('dark') ? '#fff' : '#666',
+                                padding: 10,
+                                font: {
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    return value + ' cmd';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            border: {
+                                display: false
+                            },
+                            ticks: {
+                                color: document.documentElement.classList.contains('dark') ? '#fff' : '#666',
+                                padding: 10,
+                                font: {
+                                    size: 11
+                                },
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+
+            function updateDashboard() {
+                const params = new URLSearchParams({
+                    search: searchBar.value,
+                    status: statusFilter.value,
+                    category: categoryFilter.value,
+                    date: dateFilter.value
+                });
+
+                fetch(`${window.location.pathname}?${params.toString()}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update statistics
+                        document.querySelector('[data-target="totalEquipment"]').textContent = data.stats.totalEquipment;
+                        document.querySelector('[data-target="activeEquipment"]').textContent = data.stats.activeEquipment;
+                        document.querySelector('[data-target="lowStockCount"]').textContent = data.stats.lowStockCount;
+                        document.querySelector('[data-target="pendingOrders"]').textContent = data.stats.pendingOrders;
+                        document.querySelector('[data-target="totalStockValue"]').textContent = 
+                            new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(data.stats.totalStockValue);
+
+                        // Update charts
+                        if (data.movementDates && data.movementDataIn && data.movementDataOut) {
+                            renderChart(data.movementDates, data.movementDataIn, data.movementDataOut);
+                        }
+                    })
+                    .catch(error => console.error('Error updating dashboard:', error));
             }
-        }
-    });
 
-    // Category Distribution Chart
-    const categoryCtx = document.getElementById('categoryDistributionChart').getContext('2d');
-    new Chart(categoryCtx, {
-        type: 'doughnut',
-        data: {
-            labels: {{ categoryLabels|json_encode|raw }},
-            datasets: [{
-                data: {{ categoryData|json_encode|raw }},
-                backgroundColor: [
-                    'rgba(59, 130, 246, 0.8)',
-                    'rgba(16, 185, 129, 0.8)',
-                    'rgba(249, 115, 22, 0.8)',
-                    'rgba(139, 92, 246, 0.8)',
-                    'rgba(236, 72, 153, 0.8)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right'
-                }
+            // Event listeners for filters
+            searchButton.addEventListener('click', updateDashboard);
+            searchBar.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') updateDashboard();
+            });
+            statusFilter.addEventListener('change', updateDashboard);
+            categoryFilter.addEventListener('change', updateDashboard);
+            dateFilter.addEventListener('change', updateDashboard);
+
+            // Counter animation
+            function animateCounter(element) {
+                const target = parseFloat(element.getAttribute('data-target'));
+                const duration = 1000;
+                const start = 0;
+                const increment = target / (duration / 16);
+                let current = start;
+
+                const animate = () => {
+                    current += increment;
+                    if (current < target) {
+                        element.textContent = Math.floor(current);
+                        requestAnimationFrame(animate);
+                    } else {
+                        element.textContent = target;
+                    }
+                };
+
+                animate();
             }
-        }
-    });
-});
-</script>
+
+            // Animate all counters on page load
+            document.querySelectorAll('.counter').forEach(counter => {
+                animateCounter(counter);
+            });
+        });
+    </script>
 {% endblock %}

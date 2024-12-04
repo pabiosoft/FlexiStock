@@ -72,31 +72,70 @@ class EquipmentController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $token = $request->request->get('_token');
-            if (!$this->isCsrfTokenValid('new_equipment', $token)) {
-                throw $this->createAccessDeniedException('CSRF token is invalid.');
+            // Check for existing equipment with same name or serial number
+            $existingName = $entityManager->getRepository(Equipment::class)
+                ->findOneBy(['name' => $equipment->getName()]);
+            
+            $existingSerial = $entityManager->getRepository(Equipment::class)
+                ->findOneBy(['serialNumber' => $equipment->getSerialNumber()]);
+
+            $errors = [];
+            if ($existingName) {
+                $errors[] = 'Un équipement avec ce nom existe déjà.';
             }
-            // Automatically assign the current user
-            $equipment->setAssignedUser($this->security->getUser());
+            if ($existingSerial) {
+                $errors[] = 'Un équipement avec ce numéro de série existe déjà.';
+            }
 
-            $this->handleImages($form->get('images')->getData(), $equipment, $entityManager, $pictureService);
-            $equipment->setCreatedAt(new \DateTimeImmutable());
+            // Validate required fields
+            if (empty($equipment->getName())) {
+                $errors[] = 'Le nom est requis.';
+            }
+            if (empty($equipment->getSerialNumber())) {
+                $errors[] = 'Le numéro de série est requis.';
+            }
+            if (!$equipment->getCategory()) {
+                $errors[] = 'La catégorie est requise.';
+            }
+            if ($equipment->getStockQuantity() < 0) {
+                $errors[] = 'La quantité en stock ne peut pas être négative.';
+            }
+            if ($equipment->getMinThreshold() < 0) {
+                $errors[] = 'Le seuil minimum ne peut pas être négatif.';
+            }
 
-            // On arrondit le prix 
-            // $prix = $equipment->getPrice() * $equipment->getQuantity();
-            // $equipment->setPrice($prix);
+            if (!empty($errors)) {
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error);
+                }
+                return $this->render('equipment/new.html.twig', [
+                    'equipmentForm' => $form->createView(),
+                ]);
+            }
 
-            if ($this->isSlugUnique($equipment, $entityManager)) {
+            try {
+                $equipment->setAssignedUser($this->security->getUser());
+                $equipment->setCreatedAt(new \DateTimeImmutable());
+                $equipment->updateSlug();
+
+                // Handle image uploads
+                if ($form->has('images')) {
+                    $this->handleImages($form->get('images')->getData(), $equipment, $entityManager, $pictureService);
+                }
+
                 $entityManager->persist($equipment);
                 $entityManager->flush();
 
                 $this->addFlash('success', 'L\'équipement a bien été ajouté.');
                 return $this->redirectToRoute('equipment_index');
-            } else {
-                $this->addFlash('error', 'Cet équipement existe déjà.');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Une erreur est survenue lors de l\'ajout de l\'équipement: ' . $e->getMessage());
+            }
+        } elseif ($form->isSubmitted()) {
+            foreach ($form->getErrors(true) as $error) {
+                $this->addFlash('error', $error->getMessage());
             }
         }
-        // $this->addFlash('error', 'Veuillez remplir tous les champs.');
 
         return $this->render('equipment/new.html.twig', [
             'equipmentForm' => $form->createView(),
@@ -107,6 +146,11 @@ class EquipmentController extends AbstractController
     public function edit(Equipment $equipment, Request $request, EntityManagerInterface $entityManager, PictureService $pictureService): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
+        // Store the original name and serial number before form handling
+        $originalName = $equipment->getName();
+        $originalSerialNumber = $equipment->getSerialNumber();
+        
         $form = $this->createForm(EquipmentType::class, $equipment);
         $form->handleRequest($request);
 
@@ -115,20 +159,68 @@ class EquipmentController extends AbstractController
             if (!$this->isCsrfTokenValid('equipment_edit_' . $equipment->getId(), $token)) {
                 throw $this->createAccessDeniedException('CSRF token is invalid.');
             }
+
+            // Validate required fields
+            $errors = [];
+            if (empty($equipment->getName())) {
+                $errors[] = 'Le nom est requis.';
+            }
+            if (empty($equipment->getSerialNumber())) {
+                $errors[] = 'Le numéro de série est requis.';
+            }
+            if (!$equipment->getCategory()) {
+                $errors[] = 'La catégorie est requise.';
+            }
+            if ($equipment->getStockQuantity() < 0) {
+                $errors[] = 'La quantité en stock ne peut pas être négative.';
+            }
+            if ($equipment->getMinThreshold() < 0) {
+                $errors[] = 'Le seuil minimum ne peut pas être négatif.';
+            }
+            
+            // Check for duplicate name
+            if ($originalName !== $equipment->getName() && !$this->isNameUnique($equipment, $entityManager)) {
+                $errors[] = 'Un équipement avec ce nom existe déjà.';
+            }
+            
+            // Check for duplicate serial number
+            if ($originalSerialNumber !== $equipment->getSerialNumber() && !$this->isSerialNumberUnique($equipment, $entityManager)) {
+                $errors[] = 'Un équipement avec ce numéro de série existe déjà.';
+            }
+
+            // If there are any errors, display them and return to the form
+            if (!empty($errors)) {
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error);
+                }
+                return $this->render('equipment/edit.html.twig', [
+                    'equipmentForm' => $form->createView(),
+                    'equipment' => $equipment,
+                ]);
+            }
+
             $equipment->setAssignedUser($this->security->getUser());
+
+            // Only update slug if name has changed
+            if ($originalName !== $equipment->getName()) {
+                $equipment->updateSlug();
+            }
 
             $this->handleExistingImages($equipment, $entityManager, $pictureService, $form->get('images')->getData());
             $this->handleImages($form->get('images')->getData(), $equipment, $entityManager, $pictureService);
 
-
-            if ($this->isSlugUnique($equipment, $entityManager)) {
+            try {
                 $entityManager->persist($equipment);
                 $entityManager->flush();
-
                 $this->addFlash('success', 'L\'équipement a bien été modifié.');
                 return $this->redirectToRoute('equipment_index');
-            } else {
-                $this->addFlash('error', 'Cet équipement existe déjà.');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Une erreur est survenue lors de la modification de l\'équipement: ' . $e->getMessage());
+            }
+        } elseif ($form->isSubmitted()) {
+            // If form is submitted but not valid, get the form errors
+            foreach ($form->getErrors(true) as $error) {
+                $this->addFlash('error', $error->getMessage());
             }
         }
 
@@ -334,7 +426,57 @@ class EquipmentController extends AbstractController
 
     private function isSlugUnique(Equipment $equipment, EntityManagerInterface $entityManager): bool
     {
-        $existingEquipment = $entityManager->getRepository(Equipment::class)->findOneBy(['slug' => $equipment->getSlug()]);
-        return !$existingEquipment || $existingEquipment->getId() === $equipment->getId();
+        $existingEquipment = $entityManager->getRepository(Equipment::class)
+            ->createQueryBuilder('e')
+            ->where('e.slug = :slug')
+            ->andWhere('e.id != :id')
+            ->setParameter('slug', $equipment->getSlug())
+            ->setParameter('id', $equipment->getId() ?? 0)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $existingEquipment === null;
+    }
+
+    private function isNameUnique(Equipment $equipment, EntityManagerInterface $entityManager): bool
+    {
+        $queryBuilder = $entityManager->getRepository(Equipment::class)
+            ->createQueryBuilder('e')
+            ->where('e.name = :name')
+            ->setParameter('name', $equipment->getName());
+
+        // Only add ID check for existing equipment
+        if ($equipment->getId()) {
+            $queryBuilder
+                ->andWhere('e.id != :id')
+                ->setParameter('id', $equipment->getId());
+        }
+
+        $existingEquipment = $queryBuilder
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $existingEquipment === null;
+    }
+
+    private function isSerialNumberUnique(Equipment $equipment, EntityManagerInterface $entityManager): bool
+    {
+        $queryBuilder = $entityManager->getRepository(Equipment::class)
+            ->createQueryBuilder('e')
+            ->where('e.serialNumber = :serialNumber')
+            ->setParameter('serialNumber', $equipment->getSerialNumber());
+
+        // Only add ID check for existing equipment
+        if ($equipment->getId()) {
+            $queryBuilder
+                ->andWhere('e.id != :id')
+                ->setParameter('id', $equipment->getId());
+        }
+
+        $existingEquipment = $queryBuilder
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $existingEquipment === null;
     }
 }

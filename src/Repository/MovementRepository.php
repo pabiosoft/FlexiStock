@@ -17,27 +17,56 @@ class MovementRepository extends ServiceEntityRepository
 
     public function findLastSevenDaysMovements(): array
     {
+        $endDate = new \DateTime();
+        $startDate = (new \DateTime())->modify('-6 days');
+
+        return $this->getMovementsByDateRange($startDate, $endDate);
+    }
+
+    public function findLastMonthMovements(): array
+    {
+        $endDate = new \DateTime();
+        $startDate = (new \DateTime())->modify('-1 month');
+
+        return $this->getMovementsByDateRange($startDate, $endDate);
+    }
+
+    private function getMovementsByDateRange(\DateTime $startDate, \DateTime $endDate): array
+    {
         $qb = $this->createQueryBuilder('m')
-            ->where('m.movementDate >= :date')
-            ->setParameter('date', new \DateTime('-7 days'))
+            ->where('m.movementDate BETWEEN :start AND :end')
+            ->setParameter('start', $startDate->format('Y-m-d 00:00:00'))
+            ->setParameter('end', $endDate->format('Y-m-d 23:59:59'))
             ->orderBy('m.movementDate', 'ASC');
 
         $movements = $qb->getQuery()->getResult();
 
-        $result = [];
+        // Create a date period for all dates in range
+        $period = new \DatePeriod(
+            $startDate,
+            new \DateInterval('P1D'),
+            $endDate->modify('+1 day')
+        );
+
+        $movementData = [];
+        foreach ($period as $date) {
+            $dateStr = $date->format('Y-m-d');
+            $movementData[$dateStr] = [
+                'in' => 0,
+                'out' => 0
+            ];
+        }
+
+        // Fill in actual movement data
         foreach ($movements as $movement) {
-            $date = $movement->getMovementDate()->format('Y-m-d');
-            if (!isset($result[$date])) {
-                $result[$date] = ['in' => 0, 'out' => 0];
-            }
-            if ($movement->getType() === 'IN') {
-                $result[$date]['in'] += $movement->getQuantity();
-            } else {
-                $result[$date]['out'] += $movement->getQuantity();
+            $dateStr = $movement->getMovementDate()->format('Y-m-d');
+            $type = strtolower($movement->getType());
+            if (isset($movementData[$dateStr])) {
+                $movementData[$dateStr][$type] += $movement->getQuantity();
             }
         }
 
-        return $result;
+        return $movementData;
     }
 
     /**

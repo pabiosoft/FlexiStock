@@ -63,13 +63,13 @@
                                         <th class="py-2 px-4 bg-gray-100">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody class="text-gray-700">
+                                <tbody class="text-gray-700 dark:text-gray-300">
                                     {% for record in upcoming_maintenance %}
                                         <tr>
-                                            <td class="py-2 px-4 border-b">{{ record.equipment.name }}</td>
-                                            <td class="py-2 px-4 border-b">{{ record.maintenanceType }}</td>
-                                            <td class="py-2 px-4 border-b">{{ record.nextMaintenanceDate|date('Y-m-d') }}</td>
-                                            <td class="py-2 px-4 border-b">
+                                            <td class="py-2 px-4 border-b dark:text-gray-200">{{ record.equipment.name }}</td>
+                                            <td class="py-2 px-4 border-b dark:text-gray-200">{{ record.maintenanceType }}</td>
+                                            <td class="py-2 px-4 border-b dark:text-gray-200">{{ record.nextMaintenanceDate|date('Y-m-d') }}</td>
+                                            <td class="py-2 px-4 border-b dark:text-gray-200">
                                                 <a href="{{ path('app_maintenance_edit', {'id': record.id}) }}" class="text-blue-500 hover:underline">
                                                     <i class="fas fa-edit"></i>
                                                 </a>

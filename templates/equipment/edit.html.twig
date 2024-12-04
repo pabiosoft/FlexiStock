@@ -23,8 +23,10 @@
                 </div>
             </div>
 
-            {{ form_start(equipmentForm, {'attr': {'class': 'space-y-6', 'novalidate': 'novalidate'}, 'method': 'POST'}) }}
+            <form method="POST" action="{{ path('equipment_edit', {'id': equipment.id}) }}" class="space-y-6" enctype="multipart/form-data">
                 <input type="hidden" name="_token" value="{{ csrf_token('equipment_edit_' ~ equipment.id) }}">
+                {{ form_widget(equipmentForm._token) }}
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {# Row 1: Name and Category #}
                     <div class="col-span-1">
@@ -113,7 +115,17 @@
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Sélectionnez une ou plusieurs images</p>
                     </div>
 
-                    {% if equipment.images|length > 0 %}
+                    
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-save mr-2"></i>
+                        Enregistrer les modifications
+                    </button>
+                </div>
+            </form>
+            {% if equipment.images|length > 0 %}
                         <div class="col-span-2 mt-6">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Images actuelles</h3>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -131,15 +143,6 @@
                             </div>
                         </div>
                     {% endif %}
-                </div>
-
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        <i class="fas fa-save mr-2"></i>
-                        Enregistrer les modifications
-                    </button>
-                </div>
-            {{ form_end(equipmentForm) }}
         </div>
     </main>
 {% endblock %}

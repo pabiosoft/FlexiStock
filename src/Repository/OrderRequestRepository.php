@@ -6,6 +6,14 @@ use App\Entity\OrderRequest;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends ServiceEntityRepository<OrderRequest>
+ *
+ * @method OrderRequest|null find($id, $lockMode = null, $lockVersion = null)
+ * @method OrderRequest|null findOneBy(array $criteria, array $orderBy = null)
+ * @method OrderRequest[]    findAll()
+ * @method OrderRequest[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ */
 class OrderRequestRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -13,29 +21,36 @@ class OrderRequestRepository extends ServiceEntityRepository
         parent::__construct($registry, OrderRequest::class);
     }
 
-    public function findByDateRange(\DateTime $startDate, \DateTime $endDate, array $criteria = []): array
-    {
-        $qb = $this->createQueryBuilder('o')
-            ->where('o.orderDate BETWEEN :startDate AND :endDate')
-            ->setParameter('startDate', $startDate->format('Y-m-d 00:00:00'))
-            ->setParameter('endDate', $endDate->format('Y-m-d 23:59:59'));
-
-        foreach ($criteria as $field => $value) {
-            $qb->andWhere("o.$field = :$field")
-               ->setParameter($field, $value);
-        }
-
-        return $qb->orderBy('o.orderDate', 'DESC')
-                 ->getQuery()
-                 ->getResult();
-    }
-
     public function findPendingOrders(): array
     {
         return $this->createQueryBuilder('o')
             ->where('o.status = :status')
             ->setParameter('status', 'pending')
-            ->orderBy('o.orderDate', 'ASC')
+            ->orderBy('o.orderDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByDateRange(\DateTime $startDate, \DateTime $endDate): array
+    {
+        return $this->createQueryBuilder('o')
+            ->select('o')
+            ->where('o.orderDate BETWEEN :startDate AND :endDate')
+            ->andWhere('o.status = :status')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->setParameter('status', 'completed')
+            ->orderBy('o.orderDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findOrdersByStatus(string $status): array
+    {
+        return $this->createQueryBuilder('o')
+            ->where('o.status = :status')
+            ->setParameter('status', $status)
+            ->orderBy('o.orderDate', 'DESC')
             ->getQuery()
             ->getResult();
     }
@@ -50,20 +65,30 @@ class OrderRequestRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function findOrdersBySupplier(int $supplierId): array
+    public function findOrdersByPriority(string $priority): array
     {
         return $this->createQueryBuilder('o')
-            ->where('o.supplier = :supplierId')
-            ->setParameter('supplierId', $supplierId)
+            ->where('o.priority = :priority')
+            ->setParameter('priority', $priority)
             ->orderBy('o.orderDate', 'DESC')
             ->getQuery()
             ->getResult();
     }
 
-    public function getOrderStatistics(\DateTime $startDate , \DateTime $endDate): array
+    public function findRecentOrders(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('o')
+            ->orderBy('o.orderDate', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getOrderStatistics(\DateTime $startDate, \DateTime $endDate): array
     {
         $qb = $this->createQueryBuilder('o')
-            ->select('o.status, COUNT(o.id) as count, SUM(o.totalPrice) as total')
+            ->select('COUNT(o.id) as total')
+            ->addSelect('o.status')
             ->where('o.orderDate BETWEEN :startDate AND :endDate')
             ->setParameter('startDate', $startDate)
             ->setParameter('endDate', $endDate)
@@ -72,41 +97,74 @@ class OrderRequestRepository extends ServiceEntityRepository
         $results = $qb->getQuery()->getResult();
 
         $stats = [
-            'pending' => ['count' => 0, 'total' => 0],
-            'validated' => ['count' => 0, 'total' => 0],
-            'processed' => ['count' => 0, 'total' => 0],
-            'shipped' => ['count' => 0, 'total' => 0],
-            'completed' => ['count' => 0, 'total' => 0],
-            'cancelled' => ['count' => 0, 'total' => 0]
+            'total' => 0,
+            'pending' => 0,
+            'processing' => 0,
+            'completed' => 0,
+            'cancelled' => 0
         ];
 
         foreach ($results as $result) {
-            $stats[$result['status']] = [
-                'count' => $result['count'],
-                'total' => $result['total']
-            ];
+            $stats[$result['status']] = $result['total'];
+            $stats['total'] += $result['total'];
         }
 
         return $stats;
     }
 
-    public function findLowStockOrders(): array
+    public function getOrderVolumeByDateRange(\DateTime $startDate, \DateTime $endDate): array
     {
-        return $this->createQueryBuilder('o')
-            ->join('o.items', 'i')
-            ->join('i.equipment', 'e')
-            ->where('e.stockQuantity <= e.minThreshold')
-            ->orderBy('o.orderDate', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $qb = $this->createQueryBuilder('o')
+            ->select('o.orderDate, COUNT(o.id) as total')
+            ->addSelect('SUM(CASE WHEN o.status = :pending THEN 1 ELSE 0 END) as pending')
+            ->addSelect('SUM(CASE WHEN o.status = :processing THEN 1 ELSE 0 END) as processing')
+            ->addSelect('SUM(CASE WHEN o.status = :completed THEN 1 ELSE 0 END) as completed')
+            ->where('o.orderDate BETWEEN :startDate AND :endDate')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->setParameter('pending', 'pending')
+            ->setParameter('processing', 'processing')
+            ->setParameter('completed', 'completed')
+            ->groupBy('o.orderDate')
+            ->orderBy('o.orderDate', 'ASC');
+
+        $results = $qb->getQuery()->getResult();
+
+        $volumeData = [
+            'dates' => [],
+            'total' => [],
+            'pending' => [],
+            'processing' => [],
+            'completed' => []
+        ];
+
+        foreach ($results as $result) {
+            $date = $result['orderDate']->format('d/m');
+            $volumeData['dates'][] = $date;
+            $volumeData['total'][] = (int)$result['total'];
+            $volumeData['pending'][] = (int)$result['pending'];
+            $volumeData['processing'][] = (int)$result['processing'];
+            $volumeData['completed'][] = (int)$result['completed'];
+        }
+
+        return $volumeData;
     }
 
-    public function findRecentOrders(int $limit = 10): array
+    public function save(OrderRequest $entity, bool $flush = false): void
     {
-        return $this->createQueryBuilder('o')
-            ->orderBy('o.orderDate', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
+        $this->getEntityManager()->persist($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
+
+    public function remove(OrderRequest $entity, bool $flush = false): void
+    {
+        $this->getEntityManager()->remove($entity);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
     }
 }

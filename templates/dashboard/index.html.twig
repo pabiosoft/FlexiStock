@@ -104,7 +104,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium">TOTAL AMOUNT SALE</p>
-                        <p class="text-2xl font-semibold">{{ totalAmountSale|number_format(2, '.', ',') }} €</p>
+                        <p class="text-2xl font-semibold">{{ orderStats.totalAmount|number_format(2, '.', ',') }} €</p>
                     </div>
                     <div class="p-3 bg-blue-50 dark:bg-blue-900 rounded-full">
                         <i class="fas fa-money-bill text-blue-500 text-xl"></i>
@@ -112,8 +112,8 @@
                 </div>
                 <div class="mt-4">
                     <div class="flex items-center">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">AMOUNT:</span>
-                        <span class="ml-2 text-sm text-gray-900 dark:text-gray-200">{{ totalAmountWeeklySale|number_format(2, '.', ',') }} €</span>
+                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">WEEKLY AMOUNT:</span>
+                        <span class="ml-2 text-sm text-gray-900 dark:text-gray-200">{{ orderStats.weeklyAmount|number_format(2, '.', ',') }} €</span>
                     </div>
                 </div>
             </div>
@@ -123,7 +123,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">TOTAL AMOUNT WEEKLY SALE</p>
-                        <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200">{{ totalAmountWeeklySale|number_format(2, '.', ',') }} €</p>
+                        <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200">{{ orderStats.weeklyAmount|number_format(2, '.', ',') }} €</p>
                     </div>
                     <div class="p-3 bg-red-50 dark:bg-blue-900 rounded-full">
                         <i class="fas fa-chart-line text-red-500 text-xl"></i>
@@ -175,14 +175,7 @@
 
         {# Main Content Grid #}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <!-- Category Distribution -->
-            <div class="rounded-lg shadow p-6 bg-white dark:bg-gray-800 dark:text-gray-300">
-                <h3 class="text-lg font-semibold mb-4">Répartition des Catégories</h3>
-                <div class="h-80">
-                    <canvas id="categoryDistributionChart"></canvas>
-                </div>
-            </div>
-             {# Order Analytics Chart #}
+            {# Order Analytics Chart #}
         <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300 mt-4">
             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                 <h3 class="text-lg font-semibold">Analyse des Commandes</h3>
@@ -197,35 +190,27 @@
             {# Recent Activities #}
             <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300">
                 <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold">Activités Récentes</h3>
+                    <h3 class="text-lg font-semibold">Mouvements Récents</h3>
                 </div>
                 <div class="p-6 space-y-4">
-                    {% if recentActivities is empty %}
-                        <p class="text-gray-500 dark:text-gray-400">Aucune activité récente</p>
+                    {% if recentMovements is empty %}
+                        <p class="text-gray-500 dark:text-gray-400">Aucun mouvement récent</p>
                     {% else %}
-                        {% for activity in recentActivities %}
-                            <div class="flex items-center space-x-4">
-                                <div class="flex-shrink-0">
-                                    {% if activity.type == 'IN' %}
-                                        <i class="fas fa-arrow-right text-green-500"></i>
-                                    {% elseif activity.type == 'OUT' %}
-                                        <i class="fas fa-arrow-left text-red-500"></i>
-                                    {% else %}
-                                        <i class="fas fa-exchange-alt text-blue-500"></i>
-                                    {% endif %}
+                        {% for movement in recentMovements %}
+                            <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-2 h-2 {% if movement.type == 'IN' %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full"></span>
+                                    <div>
+                                        <p class="font-medium">{{ movement.equipment.name }}</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                                            {{ movement.type == 'IN' ? 'Entrée' : 'Sortie' }} de {{ movement.quantity }} unité(s)
+                                        </p>
+                                    </div>
                                 </div>
-                                <div class="flex-1">
-                                    <p class="text-sm">
-                                        {% if activity.type == 'IN' %}
-                                            Entrée de {{ activity.quantity }} {{ activity.equipment.name }}
-                                        {% elseif activity.type == 'OUT' %}
-                                            Sortie de {{ activity.quantity }} {{ activity.equipment.name }}
-                                        {% endif %}
-                                        {% if activity.reason %}
-                                            ({{ activity.reason }})
-                                        {% endif %}
+                                <div class="text-right">
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                        {{ movement.movementDate|date('d/m/Y H:i') }}
                                     </p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ activity.movementDate|date('d/m/Y H:i') }}</p>
                                 </div>
                             </div>
                         {% endfor %}
@@ -288,14 +273,10 @@
             </div>
         </div>
 
-        {# Stock Movement Trends with Time Frame Toggle #}
+        {# Stock Movement Trends #}
         <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300 mt-4">
-            <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                 <h3 class="text-lg font-semibold">Tendances des Mouvements de Stock</h3>
-                <div class="flex space-x-2">
-                    <button class="time-frame-toggle p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors" data-timeframe="weekly">Hebdomadaire</button>
-                    <button class="time-frame-toggle p-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" data-timeframe="monthly">Mensuel</button>
-                </div>
             </div>
             <div class="p-6">
                 <canvas id="stockTrendsChart" class="w-full h-64"></canvas>
@@ -314,12 +295,6 @@
         const movementDates = {{ movementDates|json_encode|raw }};
         const movementDataIn = {{ movementDataIn|json_encode|raw }};
         const movementDataOut = {{ movementDataOut|json_encode|raw }};
-        const monthlyMovementDates = {{ monthlyMovementDates|json_encode|raw }};
-        const monthlyMovementDataIn = {{ monthlyMovementDataIn|json_encode|raw }};
-        const monthlyMovementDataOut = {{ monthlyMovementDataOut|json_encode|raw }};
-        const categoryLabels = {{ categoryLabels|json_encode|raw }};
-        const categoryData = {{ categoryData|json_encode|raw }};
-        const orderVolumeData = {{ orderVolumeData|json_encode|raw }};
         const orderUpdateUrl = '{{ path('app_dashboard_orders_update') }}';
     </script>
     <script src="{{ asset('build/js/dashboard.js') }}"></script>

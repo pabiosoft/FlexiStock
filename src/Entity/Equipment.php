@@ -6,18 +6,26 @@ use App\Entity\User;
 use App\Entity\Images;
 use App\Entity\Category;
 use App\Entity\Trait\SlugTrait;
+use App\Entity\Trait\EquipmentEventTrait;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\EquipmentRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Enum\EquipmentStatus;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 #[ORM\Entity(repositoryClass: EquipmentRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class Equipment
 {
     use SlugTrait;
+    use EquipmentEventTrait;
+
+    private ?EquipmentRepository $equipmentRepository = null;
+
+    private bool $suppressEvents = false;
 
     public const STATUS_AVAILABLE = 'available';
     public const STATUS_IN_USE = 'in_use';
@@ -26,7 +34,7 @@ class Equipment
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 100)]
     private string $name;
@@ -124,6 +132,55 @@ class Equipment
         $this->stockQuantity = 0;
         $this->reservedQuantity = 0;
         $this->minThreshold = 1;
+    }
+
+    public function setRepository(EquipmentRepository $repository): void
+    {
+        $this->equipmentRepository = $repository;
+    }
+
+    public function setSuppressEvents(bool $suppress): void
+    {
+        $this->suppressEvents = $suppress;
+    }
+
+    #[ORM\PrePersist]
+    public function onPrePersist(): void
+    {
+        if (!$this->suppressEvents) {
+            // Dispatch through the repository instead
+            if ($this->equipmentRepository) {
+                $this->equipmentRepository->dispatchEvent($this, 'equipment.created');
+            }
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function onPreUpdate(): void
+    {
+        if (!$this->suppressEvents) {
+            if ($this->equipmentRepository) {
+                $this->equipmentRepository->dispatchEvent($this, 'equipment.updated');
+            }
+        }
+    }
+
+    public function setWarrantyDate(?\DateTimeInterface $warrantyDate): self
+    {
+        $this->warrantyDate = $warrantyDate;
+        if (!$this->suppressEvents && $this->equipmentRepository) {
+            $this->equipmentRepository->dispatchEvent($this, 'equipment.warranty_updated');
+        }
+        return $this;
+    }
+
+    public function setNextMaintenanceDate(?\DateTimeInterface $nextMaintenanceDate): self
+    {
+        $this->nextMaintenanceDate = $nextMaintenanceDate;
+        if (!$this->suppressEvents && $this->equipmentRepository) {
+            $this->equipmentRepository->dispatchEvent($this, 'equipment.maintenance_scheduled');
+        }
+        return $this;
     }
 
     // Méthodes de gestion du stock
@@ -253,12 +310,6 @@ class Equipment
     public function getWarrantyDate(): ?\DateTimeInterface
     {
         return $this->warrantyDate;
-    }
-
-    public function setWarrantyDate(?\DateTimeInterface $warrantyDate): self
-    {
-        $this->warrantyDate = $warrantyDate;
-        return $this;
     }
 
     public function getStatus(): string
@@ -483,12 +534,6 @@ class Equipment
     public function getNextMaintenanceDate(): ?\DateTimeInterface
     {
         return $this->nextMaintenanceDate;
-    }
-
-    public function setNextMaintenanceDate(?\DateTimeInterface $nextMaintenanceDate): self
-    {
-        $this->nextMaintenanceDate = $nextMaintenanceDate;
-        return $this;
     }
 
     public function isMaintenanceNeeded(): bool

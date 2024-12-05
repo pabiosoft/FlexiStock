@@ -55,8 +55,21 @@ class DashboardController extends AbstractController
             $movementDataOut[] = $data['out'] ?? 0;
         }
 
-        // Get recent movements (limit to 5)
-        $recentMovements = $movementRepository->findRecentMovements(5);
+        // Get recent movements with pagination
+        $page = $request->query->getInt('page', 1);
+        $limit = 5;
+        $offset = ($page - 1) * $limit;
+        
+        $recentMovements = $movementRepository->findBy(
+            [],
+            ['movementDate' => 'DESC'],
+            $limit,
+            $offset
+        );
+
+        // Get total number of movements for pagination
+        $totalMovements = $movementRepository->count([]);
+        $totalPages = ceil($totalMovements / $limit);
 
         // Get recent alerts (limit to 5)
         $alerts = $alertRepository->findBy(
@@ -77,13 +90,16 @@ class DashboardController extends AbstractController
                 'pendingOrders' => $orderStats['pending'] ?? 0,
                 'monthlyOrders' => $orderStats['total'] ?? 0,
                 'totalAmount' => $orderStats['totalAmount'] ?? 0,
-                'weeklyAmount' => $weeklyStats['totalAmount'] ?? 0
+                'weeklyAmount' => $weeklyStats['totalAmount'] ?? 0,
+                'completedOrders' => $orderStats['completed'] ?? 0
             ],
             'movementDates' => $movementDates,
             'movementDataIn' => $movementDataIn,
             'movementDataOut' => $movementDataOut,
             'alerts' => $alerts,
-            'recentMovements' => $recentMovements
+            'recentMovements' => $recentMovements,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
         ]);
     }
 

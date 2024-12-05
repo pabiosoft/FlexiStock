@@ -17,14 +17,6 @@ Encore
     .enableBuildNotifications()
     .enableSourceMaps(!Encore.isProduction())
     .enableVersioning(Encore.isProduction())
-    .configureOptimization(optimization => {
-        optimization.minimizer.push(
-            new TerserPlugin({
-                parallel: true,
-            }),
-            new CssMinimizerPlugin()
-        );
-    })
     .configureBabel((config) => {
         config.plugins.push('@babel/plugin-proposal-class-properties');
     })
@@ -36,4 +28,16 @@ Encore
     .enableReactPreset()
     .enableSassLoader();
 
-module.exports = Encore.getWebpackConfig();
+const config = Encore.getWebpackConfig();
+
+config.optimization = {
+    minimize: true,
+    minimizer: [
+        new TerserPlugin({
+            parallel: true,
+        }),
+        new CssMinimizerPlugin()
+    ],
+};
+
+module.exports = config;

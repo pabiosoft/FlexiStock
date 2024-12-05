@@ -132,4 +132,23 @@ class EquipmentRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
+
+    public function getDashboardStats(): array
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->select('COUNT(e.id) as total')
+            ->addSelect('SUM(CASE WHEN e.status = :active THEN 1 ELSE 0 END) as active')
+            ->addSelect('SUM(CASE WHEN e.stockQuantity <= e.lowStockThreshold THEN 1 ELSE 0 END) as lowStock')
+            ->addSelect('SUM(e.stockQuantity * e.price) as totalValue')
+            ->setParameter('active', EquipmentStatus::ACTIVE);
+
+        $result = $qb->getQuery()->getOneOrNullResult();
+
+        return [
+            'total' => (int)($result['total'] ?? 0),
+            'active' => (int)($result['active'] ?? 0),
+            'lowStock' => (int)($result['lowStock'] ?? 0),
+            'totalValue' => (float)($result['totalValue'] ?? 0),
+        ];
+    }
 }

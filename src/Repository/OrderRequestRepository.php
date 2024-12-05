@@ -89,6 +89,7 @@ class OrderRequestRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('o')
             ->select('COUNT(o.id) as total')
             ->addSelect('o.status')
+            ->addSelect('SUM(o.totalPrice) as totalAmount')
             ->where('o.orderDate BETWEEN :startDate AND :endDate')
             ->setParameter('startDate', $startDate)
             ->setParameter('endDate', $endDate)
@@ -101,12 +102,14 @@ class OrderRequestRepository extends ServiceEntityRepository
             'pending' => 0,
             'processing' => 0,
             'completed' => 0,
-            'cancelled' => 0
+            'cancelled' => 0,
+            'totalAmount' => 0
         ];
 
         foreach ($results as $result) {
             $stats[$result['status']] = $result['total'];
             $stats['total'] += $result['total'];
+            $stats['totalAmount'] += $result['totalAmount'] ?? 0;
         }
 
         return $stats;

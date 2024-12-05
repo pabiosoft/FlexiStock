@@ -26,6 +26,7 @@
     },
     "dependencies": {
         "aos": "^2.3.4",
+        "chart.js": "^4.4.7",
         "countup.js": "^2.8.0",
         "flowbite": "^2.5.2"
     }

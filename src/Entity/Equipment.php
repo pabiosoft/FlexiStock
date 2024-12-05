@@ -80,6 +80,9 @@ class Equipment
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $nextMaintenanceDate;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $expirationDate;
+
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'equipmentItems')]
     #[ORM\JoinColumn(nullable: false)]
     private Category $category;
@@ -573,6 +576,17 @@ class Equipment
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+        return $this;
+    }
+
+    public function getExpirationDate(): ?\DateTimeInterface
+    {
+        return $this->expirationDate;
+    }
+
+    public function setExpirationDate(?\DateTimeInterface $expirationDate): self
+    {
+        $this->expirationDate = $expirationDate;
         return $this;
     }
 

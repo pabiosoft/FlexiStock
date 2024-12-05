@@ -108,12 +108,15 @@ class EquipmentType extends AbstractType
                 ]
             ])
             ->add('warrantyDate', DateType::class, [
+                'label' => 'Date de fin de garantie',
+                'widget' => 'single_text',
+                'required' => false
+            ])
+            ->add('expirationDate', DateType::class, [
+                'label' => 'Date d\'expiration',
                 'widget' => 'single_text',
                 'required' => false,
-                'label' => 'Date de garantie',
-                'attr' => [
-                    'class' => 'col-span-1'
-                ]
+                'help' => 'Date à laquelle l\'équipement doit être retiré de l\'inventaire'
             ])
             ->add('status', ChoiceType::class, [
                 'choices' => [

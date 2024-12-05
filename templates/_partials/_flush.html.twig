@@ -33,21 +33,23 @@
             button.addEventListener('click', function() {
                 const notification = this.closest('.notification');
                 if (notification) {
-                    notification.remove();
+                    notification.style.transition = 'opacity 0.3s ease';
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
                 }
             });
         });
 
         // Auto-hide notifications after 5 seconds
         document.querySelectorAll('.notification').forEach(function(notification) {
-            setTimeout(function() {
-                notification.style.opacity = '0';
-                setTimeout(function() {
-                    notification.remove();
-                }, 300);
+            setTimeout(() => {
+                if (notification) {
+                    notification.style.transition = 'opacity 0.3s ease';
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                }
             }, 5000);
         });
     });
     </script>
-
 {% endblock %}

@@ -7,6 +7,7 @@ use App\Enum\EquipmentStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use DateTime;
 
 class EquipmentRepository extends ServiceEntityRepository
 {
@@ -138,7 +139,7 @@ class EquipmentRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('e')
             ->select('COUNT(e.id) as total')
             ->addSelect('SUM(CASE WHEN e.status = :active THEN 1 ELSE 0 END) as active')
-            ->addSelect('SUM(CASE WHEN e.stockQuantity <= e.lowStockThreshold THEN 1 ELSE 0 END) as lowStock')
+            ->addSelect('SUM(CASE WHEN e.stockQuantity <= e.minThreshold THEN 1 ELSE 0 END) as lowStock')
             ->addSelect('SUM(e.stockQuantity * e.price) as totalValue')
             ->setParameter('active', EquipmentStatus::ACTIVE);
 
@@ -150,5 +151,28 @@ class EquipmentRepository extends ServiceEntityRepository
             'lowStock' => (int)($result['lowStock'] ?? 0),
             'totalValue' => (float)($result['totalValue'] ?? 0),
         ];
+    }
+
+    public function findExpiredItems(DateTime $currentDate): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.warrantyDate < :currentDate')
+            ->andWhere('e.status = :status')
+            ->setParameter('currentDate', $currentDate)
+            ->setParameter('status', EquipmentStatus::ACTIVE)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findUpcomingMaintenance(DateTime $currentDate, DateTime $warningDate): array
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.nextMaintenanceDate BETWEEN :currentDate AND :warningDate')
+            ->andWhere('e.status = :status')
+            ->setParameter('currentDate', $currentDate)
+            ->setParameter('warningDate', $warningDate)
+            ->setParameter('status', EquipmentStatus::ACTIVE)
+            ->getQuery()
+            ->getResult();
     }
 }

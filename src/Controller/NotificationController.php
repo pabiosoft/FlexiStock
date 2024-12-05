@@ -27,7 +27,7 @@ class NotificationController extends AbstractController
     {
         try {
             $page = max(1, $request->query->getInt('page', 1));
-            $limit = max(1, min($request->query->getInt('limit', 10), 100));
+            $limit = max(1, min($request->query->getInt('limit', 3), 10));
             $level = $request->query->get('level');
             $fromDate = $request->query->get('fromDate');
             $toDate = $request->query->get('toDate');

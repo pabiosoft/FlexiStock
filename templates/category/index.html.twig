@@ -4,13 +4,13 @@
 
 {% block body %}
 {% include '_partials/_flush.html.twig' %}
-<main class="flex flex-col gap-4 md:gap-5 h-auto pb-5 bg-gray-50 dark:bg-gray-900">
+<main class="flex flex-col gap-4 p-4 md:p-6 h-auto pb-5 dark:bg-gray-900">
 
 <div class="px-6 py-8 lg:px-8">
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-200">Liste des Catégories</h1>
-    <a href="{{ path('category_new') }}" class="inline-block bg-indigo-600 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700">
-        <i class="fa-solid fa-plus"></i> Nouvelle Catégorie
+    <a href="{{ path('category_new') }}" class="inline-block bg-indigo-600 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700 ">
+        <i class="fa-solid fa-plus"></i>Catégorie
     </a>
 </div>
 
@@ -78,20 +78,20 @@
     <a href="{{ path('category_equipments', {'slug': category.slug}) }}" 
        class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
        title="Voir les équipements">
-        <i class="fas fa-eye"></i>
+        <i class="fas fa-eye text-sm"></i>
     </a>
     <a href="{{ path('category_edit', {'id': category.id}) }}" 
-       class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300"
+       class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 "
        title="Modifier la catégorie">
-        <i class="fas fa-edit"></i>
+        <i class="fas fa-edit text-sm"></i>
     </a>
     <form action="{{ path('category_delete', { id: category.id }) }}" method="post" class="inline-block">
         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ category.id) }}">
         <button type="submit" 
-                class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300" 
+                class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 " 
                 onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');"
                 title="Supprimer la catégorie">
-            <i class="fas fa-trash"></i>
+            <i class="fas fa-trash text-sm"></i>
         </button>
     </form>
 </div>

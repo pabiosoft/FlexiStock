@@ -1,54 +1,123 @@
 {% block notifications %}
     {% for label, messages in app.flashes %}
         {% for message in messages %}
-            <div class="fixed z-50 top-4 right-4 w-full max-w-xs bg-white border-l-4 {% if label == 'error' %}border-red-500 text-red-700{% else %}border-green-500 text-green-700{% endif %} shadow-lg rounded-lg p-4 mb-4 notification" role="alert">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        {% if label == 'error' %}
-                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                            </svg>
-                        {% else %}
-                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                        {% endif %}
-                        <p class="font-medium">{{ message|raw }}</p>
+            <div class="fixed z-[9999] top-20 right-4 w-full max-w-xs bg-white dark:bg-gray-800 border-l-4 {% if label == 'error' %}border-red-500 text-red-700 dark:text-red-400{% else %}border-green-500 text-green-700 dark:text-green-400{% endif %} shadow-lg rounded-lg notification transform transition-all duration-300 ease-in-out hover:scale-105" role="alert" style="margin-top: {{ loop.index0 * 5 }}rem;">
+                <div class="relative">
+                    <!-- Progress bar -->
+                    <div class="absolute bottom-0 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700">
+                        <div class="h-1 {% if label == 'error' %}bg-red-500{% else %}bg-green-500{% endif %} progress-bar"></div>
                     </div>
-                    <button type="button" class="close-notification ml-4 text-gray-400 hover:text-gray-500 focus:outline-none">
-                        <span class="sr-only">Close</span>
-                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                        </svg>
-                    </button>
+                    
+                    <div class="p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                {% if label == 'error' %}
+                                    <svg class="w-5 h-5 mr-2 text-red-500 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                {% else %}
+                                    <svg class="w-5 h-5 mr-2 text-green-500 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                {% endif %}
+                                <p class="font-medium">{{ message|raw }}</p>
+                            </div>
+                            <button type="button" class="close-notification ml-4 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-1 transition-colors duration-200">
+                                <span class="sr-only">Close</span>
+                                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         {% endfor %}
     {% endfor %}
 
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes progressBar {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        .notification {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .progress-bar {
+            animation: progressBar 5s linear;
+        }
+
+        @media (max-width: 640px) {
+            .notification {
+                max-width: calc(100vw - 2rem) !important;
+                left: 1rem;
+                right: 1rem;
+            }
+        }
+    </style>
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const notifications = document.querySelectorAll('.notification');
+        
+        // Function to remove a notification with animation
+        function removeNotification(notification) {
+            notification.style.transform = 'translateX(100%)';
+            notification.style.opacity = '0';
+            
+            // Remove the element after animation
+            setTimeout(() => {
+                if (notification && notification.parentElement) {
+                    notification.parentElement.removeChild(notification);
+                    
+                    // Adjust positions of remaining notifications
+                    document.querySelectorAll('.notification').forEach((notif, index) => {
+                        notif.style.marginTop = `${index * 5}rem`;
+                    });
+                }
+            }, 300);
+        }
+
         // Add click event listeners to all close buttons
         document.querySelectorAll('.close-notification').forEach(function(button) {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
                 const notification = this.closest('.notification');
                 if (notification) {
-                    notification.style.transition = 'opacity 0.3s ease';
-                    notification.style.opacity = '0';
-                    setTimeout(() => notification.remove(), 300);
+                    removeNotification(notification);
                 }
             });
         });
 
         // Auto-hide notifications after 5 seconds
-        document.querySelectorAll('.notification').forEach(function(notification) {
+        notifications.forEach(function(notification) {
             setTimeout(() => {
-                if (notification) {
-                    notification.style.transition = 'opacity 0.3s ease';
-                    notification.style.opacity = '0';
-                    setTimeout(() => notification.remove(), 300);
+                if (notification && notification.parentElement) {
+                    removeNotification(notification);
                 }
             }, 5000);
+
+            // Pause animation on hover
+            notification.addEventListener('mouseenter', function() {
+                this.querySelector('.progress-bar').style.animationPlayState = 'paused';
+            });
+
+            notification.addEventListener('mouseleave', function() {
+                this.querySelector('.progress-bar').style.animationPlayState = 'running';
+            });
         });
     });
     </script>

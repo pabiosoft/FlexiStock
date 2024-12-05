@@ -48,6 +48,10 @@ class NotificationController extends AbstractController
                 $toDate ? new \DateTime($toDate) : null
             );
             
+            if (!isset($alerts['items'])) {
+                $alerts['items'] = [];
+            }
+
             $notifications = array_map(function(Alert $alert) {
                 return [
                     'id' => $alert->getId(),
@@ -57,27 +61,73 @@ class NotificationController extends AbstractController
                     'persistent' => $alert->isPersistent(),
                     'createdAt' => $alert->getCreatedAt()->format('c'),
                     'readAt' => $alert->getReadAt()?->format('c'),
+                    'category' => $alert->getCategory(),
+                    'equipment' => $alert->getEquipment() ? [
+                        'id' => $alert->getEquipment()->getId(),
+                        'name' => $alert->getEquipment()->getName(),
+                        'status' => $alert->getEquipment()->getStatus(),
+                        'location' => $alert->getEquipment()->getLocation()
+                    ] : null,
+                    'metadata' => [
+                        'isNew' => !$alert->getViewedAt(),
+                        'type' => $alert->getType(),
+                        'source' => $alert->getSource()
+                    ]
                 ];
             }, $alerts['items']);
+
+            $pagination = [
+                'currentPage' => $page,
+                'totalPages' => $alerts['totalPages'] ?? 0,
+                'totalItems' => $alerts['totalItems'] ?? 0,
+                'itemsPerPage' => $limit,
+                'hasNextPage' => ($page < ($alerts['totalPages'] ?? 0)),
+                'hasPreviousPage' => ($page > 1)
+            ];
 
             return $this->json([
                 'success' => true,
                 'data' => [
                     'notifications' => $notifications,
-                    'pagination' => [
-                        'currentPage' => $page,
-                        'totalPages' => $alerts['totalPages'],
-                        'totalItems' => $alerts['totalItems'],
-                        'itemsPerPage' => $limit
+                    'pagination' => $pagination,
+                    'summary' => [
+                        'unreadCount' => $alerts['totalItems'] ?? 0,
+                        'highPriorityCount' => count(array_filter($notifications, fn($n) => $n['priority'] === 'high')),
+                        'categories' => array_count_values(array_column($notifications, 'category'))
                     ]
-                ]
+                ],
+                // Keep these for backward compatibility
+                'notifications' => $notifications,
+                'pagination' => $pagination
             ]);
         } catch (\Exception $e) {
-            $this->logger->error('Error fetching notifications: ' . $e->getMessage());
-            return $this->json([
+            $this->logger->error('Error fetching notifications: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            $errorResponse = [
                 'success' => false,
-                'error' => 'An error occurred while fetching notifications'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+                'error' => 'An error occurred while fetching notifications',
+                'data' => [
+                    'notifications' => [],
+                    'pagination' => [
+                        'currentPage' => $page ?? 1,
+                        'totalPages' => 0,
+                        'totalItems' => 0,
+                        'itemsPerPage' => $limit ?? 3,
+                        'hasNextPage' => false,
+                        'hasPreviousPage' => false
+                    ],
+                    'summary' => [
+                        'unreadCount' => 0,
+                        'highPriorityCount' => 0,
+                        'categories' => []
+                    ]
+                ]
+            ];
+
+            return $this->json($errorResponse, Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -232,6 +282,13 @@ class NotificationController extends AbstractController
                         'totalItems' => $alerts['totalItems'],
                         'itemsPerPage' => $limit
                     ]
+                ],
+                'notifications' => $notifications,
+                'pagination' => [
+                    'currentPage' => $page,
+                    'totalPages' => $alerts['totalPages'],
+                    'totalItems' => $alerts['totalItems'],
+                    'itemsPerPage' => $limit
                 ]
             ]);
         } catch (\Exception $e) {

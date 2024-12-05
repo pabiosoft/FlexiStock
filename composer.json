@@ -49,7 +49,8 @@
         "symfony/yaml": "7.1.*",
         "twig/extra-bundle": "^2.12|^3.0",
         "twig/intl-extra": "^3.15",
-        "twig/twig": "^2.12|^3.0"
+        "twig/twig": "^2.12|^3.0",
+        "zenstruck/schedule-bundle": "^1.8"
     },
     "config": {
         "allow-plugins": {

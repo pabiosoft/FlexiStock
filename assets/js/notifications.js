@@ -1,94 +1,73 @@
 // Test if the file is loaded
-console.log('Notifications.js is loaded');
+// console.log('Notifications.js is loaded');
 
 class NotificationManager {
     constructor() {
-        console.log('NotificationManager constructor called');
+        // console.log('NotificationManager constructor called');
         this.initializeElements();
         if (this.hasRequiredElements()) {
             this.notifications = [];
+            this.currentPage = 1;
+            this.totalPages = 1;
+            this.itemsPerPage = 3; // Updated to match backend limit
             this.init();
         } else {
             console.warn('Missing required elements for NotificationManager');
-            // console.log('Toggle button:', this.toggleButton);
-            // console.log('Dropdown:', this.dropdown);
-            // console.log('Badge:', this.badge);
-            // Create notification container if it doesn't exist
             if (!this.container) {
                 this.container = document.createElement('div');
                 this.container.id = 'notification-container';
                 this.container.className = 'fixed top-4 right-4 z-50 space-y-2 w-96';
                 document.body.appendChild(this.container);
-                // console.log('Created notification container');
             }
         }
     }
 
     initializeElements() {
-        // console.log('Initializing elements');
         this.container = document.getElementById('notification-container');
         this.badge = document.querySelector('.notification-badge');
         this.dropdown = document.getElementById('notification-dropdown');
         this.toggleButton = document.getElementById('notification-toggle');
-        
-        // console.log('Initialized elements:', {
-        //     container: this.container,
-        //     badge: this.badge,
-        //     dropdown: this.dropdown,
-        //     toggleButton: this.toggleButton
-        // });
     }
 
     hasRequiredElements() {
-        // Only check for toggle button and dropdown as they're essential for the notification menu
         const hasElements = this.toggleButton && this.dropdown;
-        // console.log('Has required elements:', hasElements);
         return hasElements;
     }
 
     init() {
-        // console.log('Initializing NotificationManager');
         this.fetchNotifications();
         setInterval(() => this.fetchNotifications(), 30000);
 
         if (this.toggleButton && this.dropdown) {
-            // Toggle dropdown on button click
             this.toggleButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // console.log('Toggle button clicked');
                 this.toggleDropdown();
             });
 
-            // Close dropdown when clicking outside
             document.addEventListener('click', (e) => {
                 if (this.dropdown && !this.dropdown.contains(e.target) && !this.toggleButton.contains(e.target)) {
-                    // console.log('Clicking outside, closing dropdown');
                     this.dropdown.classList.add('hidden');
                 }
             });
 
-            // Handle notification actions
             this.dropdown.addEventListener('click', (e) => {
-                const dismissButton = e.target.closest('[data-notification-dismiss]');
+                const dismissButton = e.target.closest('[data-notification-dismiss], .mark-read-btn');
                 const clearAllButton = e.target.closest('#clear-all-notifications');
                 const priorityFilter = e.target.closest('[data-priority-filter]');
 
                 if (dismissButton) {
                     e.preventDefault();
-                    const notificationId = dismissButton.dataset.notificationId;
-                    // console.log('Dismissing notification:', notificationId);
+                    const notificationId = dismissButton.dataset.notificationId || dismissButton.dataset.alertId;
                     this.markAsRead(notificationId);
                 }
                 if (clearAllButton) {
                     e.preventDefault();
-                    // console.log('Clearing all notifications');
                     this.clearAllNotifications();
                 }
                 if (priorityFilter) {
                     e.preventDefault();
                     const priority = priorityFilter.dataset.priority;
-                    // console.log('Filtering by priority:', priority);
                     this.fetchNotificationsByPriority(priority);
                 }
             });
@@ -96,102 +75,64 @@ class NotificationManager {
     }
 
     toggleDropdown() {
-        // console.log('Toggling dropdown');
         if (this.dropdown) {
             const isHidden = this.dropdown.classList.contains('hidden');
-            // console.log('Dropdown is hidden:', isHidden);
             if (isHidden) {
                 // Position the dropdown relative to the toggle button
                 const buttonRect = this.toggleButton.getBoundingClientRect();
-                // console.log('Button rect:', buttonRect);
                 this.dropdown.style.position = 'fixed';
                 this.dropdown.style.top = `${buttonRect.bottom + window.scrollY}px`;
                 this.dropdown.style.right = `${window.innerWidth - buttonRect.right}px`;
+                
+                // Fetch latest notifications when opening
+                this.fetchNotifications();
             }
             this.dropdown.classList.toggle('hidden');
-            // console.log('Dropdown visibility toggled');
         }
     }
 
     async fetchNotifications() {
         try {
-            // console.log('Fetching notifications');
-            const response = await fetch('/notifications/fetch');
-            // console.log('Fetch response:', response);
+            const params = new URLSearchParams({
+                page: this.currentPage,
+                limit: this.itemsPerPage
+            });
+            const response = await fetch(`/notifications/fetch?${params.toString()}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            // console.log('Fetched notifications data:', data);
             
             if (data.success) {
                 this.notifications = data.data.notifications;
-                this.updateUI();
+                this.totalPages = data.data.pagination.totalPages;
+                this.currentPage = data.data.pagination.currentPage;
+                this.totalItems = data.data.pagination.totalItems;
                 
-                // Display new notifications in the container
-                this.showNewNotifications();
+                // Only update UI if dropdown is visible
+                if (!this.dropdown.classList.contains('hidden')) {
+                    this.updateUI();
+                }
+                
+                // Always update badge
+                if (this.badge) {
+                    const count = this.totalItems || 0;
+                    this.badge.textContent = count;
+                    this.badge.classList.toggle('hidden', count === 0);
+                }
             }
         } catch (error) {
             console.error('Error fetching notifications:', error);
         }
     }
 
-    showNewNotifications() {
-        if (!this.container) return;
-        
-        // Get new notifications (those that weren't displayed before)
-        const newNotifications = this.notifications.filter(n => !n.displayed);
-        
-        newNotifications.forEach(notification => {
-            // Mark as displayed
-            notification.displayed = true;
-            
-            // Create notification element
-            const notifElement = document.createElement('div');
-            notifElement.className = `notification-toast bg-white dark:bg-gray-800 border-l-4 ${this.getPriorityClass(notification.priority)} p-4 rounded shadow-lg transform transition-all duration-300 opacity-0 translate-x-full`;
-            notifElement.innerHTML = `
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        ${this.getNotificationIcon(notification.level)}
-                    </div>
-                    <div class="ml-3 flex-1">
-                        <p class="text-sm text-gray-800 dark:text-gray-200">${notification.message}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${this.formatDate(notification.createdAt)}</p>
-                    </div>
-                    <button class="ml-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" onclick="this.parentElement.parentElement.remove()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-            
-            // Add to container
-            this.container.appendChild(notifElement);
-            
-            // Trigger animation
-            setTimeout(() => {
-                notifElement.classList.remove('opacity-0', 'translate-x-full');
-            }, 100);
-            
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                notifElement.classList.add('opacity-0', 'translate-x-full');
-                setTimeout(() => {
-                    notifElement.remove();
-                }, 300);
-            }, 5000);
-        });
-    }
-
     async fetchNotificationsByPriority(priority) {
         try {
-            // console.log('Fetching notifications by priority:', priority);
             const response = await fetch(`/notifications/priority/${priority}`);
-            // console.log('Priority fetch response:', response);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            // console.log('Fetched notifications by priority:', data);
             if (data.notifications) {
                 this.notifications = data.notifications;
                 this.updateUI();
@@ -203,19 +144,16 @@ class NotificationManager {
 
     async markAsRead(notificationId) {
         try {
-            // console.log('Marking notification as read:', notificationId);
             const response = await fetch(`/notifications/${notificationId}/mark-read`, {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             });
-            // console.log('Mark as read response:', response);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            // console.log('Mark as read result:', data);
             this.notifications = this.notifications.filter(n => n.id !== parseInt(notificationId));
             this.updateUI();
         } catch (error) {
@@ -225,19 +163,16 @@ class NotificationManager {
 
     async clearAllNotifications() {
         try {
-            // console.log('Clearing all notifications');
             const response = await fetch('/notifications/clear-all', {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             });
-            // console.log('Clear all response:', response);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
-            // console.log('Clear all result:', data);
             if (data.success) {
                 this.notifications = [];
                 this.updateUI();
@@ -257,61 +192,132 @@ class NotificationManager {
     }
 
     updateUI() {
-        // console.log('Updating UI with notifications:', this.notifications);
         if (this.badge) {
-            const count = this.notifications.length;
+            const count = this.totalItems || 0;
             this.badge.textContent = count;
             this.badge.classList.toggle('hidden', count === 0);
-            // console.log('Updated badge count:', count);
         }
 
         if (this.dropdown) {
-            const content = this.notifications.map(notification => `
-                <div class="flex items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 ${this.getPriorityClass(notification.priority)}">
-                    <div class="flex-shrink-0">
-                        ${this.getNotificationIcon(notification.level)}
-                    </div>
-                    <div class="ml-3 flex-1">
-                        <p class="text-sm text-gray-800 dark:text-gray-200">${notification.message}</p>
-                        <div class="flex items-center mt-1">
-                            <span class="text-xs text-gray-500 dark:text-gray-400">${this.formatDate(notification.createdAt)}</span>
-                            ${notification.persistent ? '<span class="ml-2 text-xs text-blue-500">Persistent</span>' : ''}
+            // Group notifications by category
+            const groupedNotifications = this.notifications.reduce((acc, notification) => {
+                const category = notification.category || 'Other';
+                if (!acc[category]) acc[category] = [];
+                acc[category].push(notification);
+                return acc;
+            }, {});
+
+            let content = '';
+            
+            if (Object.keys(groupedNotifications).length === 0) {
+                content = '<div class="p-4 text-sm text-gray-500 dark:text-gray-400 text-center">No notifications</div>';
+            } else {
+                // Generate content for each category
+                Object.entries(groupedNotifications).forEach(([category, notifications]) => {
+                    content += `
+                        <div class="category-section">
+                            <div class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600">
+                                <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    ${this.getCategoryIcon(category)} ${category}
+                                </h4>
+                            </div>
+                            ${notifications.map(notification => `
+                                <div class="flex items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 ${this.getPriorityClass(notification.priority)} group">
+                                    <div class="flex-shrink-0">
+                                        ${this.getNotificationIcon(notification.level)}
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <p class="text-sm text-gray-800 dark:text-gray-200">${notification.message}</p>
+                                        <div class="flex items-center mt-1">
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">${this.formatDate(notification.createdAt)}</span>
+                                            ${notification.persistent ? '<span class="ml-2 text-xs text-blue-500">Persistent</span>' : ''}
+                                            <span class="ml-2 text-xs ${this.getPriorityTextClass(notification.priority)}">${notification.priority}</span>
+                                        </div>
+                                    </div>
+                                    ${!notification.persistent ? `
+                                        <button 
+                                            class="ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" 
+                                            data-notification-dismiss 
+                                            data-notification-id="${notification.id}"
+                                            title="Mark as read"
+                                        >
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
                         </div>
-                    </div>
-                    ${!notification.persistent ? `
-                        <button 
-                            class="ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" 
-                            data-notification-dismiss 
-                            data-notification-id="${notification.id}"
-                        >
-                            <i class="fas fa-times"></i>
-                        </button>
-                    ` : ''}
-                </div>
-            `).join('');
+                    `;
+                });
+            }
 
             this.dropdown.innerHTML = `
                 <div class="py-2 px-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-200">Notifications</h3>
+                        <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-200">
+                            Notifications 
+                            ${this.totalItems > 0 ? `<span class="text-gray-500 dark:text-gray-400">(${this.totalItems})</span>` : ''}
+                        </h3>
                         <div class="flex space-x-2">
-                            <button data-priority-filter data-priority="high" class="px-2 py-1 text-xs rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">High</button>
-                            <button data-priority-filter data-priority="medium" class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Medium</button>
-                            <button data-priority-filter data-priority="low" class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Low</button>
+                            <button data-priority-filter data-priority="high" class="px-2 py-1 text-xs rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition-colors">High</button>
+                            <button data-priority-filter data-priority="medium" class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors">Medium</button>
+                            <button data-priority-filter data-priority="low" class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">Low</button>
                         </div>
                     </div>
                 </div>
-                ${content || '<div class="p-4 text-sm text-gray-500 dark:text-gray-400 text-center">No notifications</div>'}
-                ${this.notifications.some(n => !n.persistent) ? `
+                ${content}
+                ${this.totalItems > 0 ? `
                     <div class="py-2 px-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-100 dark:border-gray-600">
-                        <button id="clear-all-notifications" class="w-full text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200">
-                            Clear All Non-Persistent
-                        </button>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <button 
+                                    class="px-2 py-1 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    ${this.currentPage <= 1 ? 'disabled' : ''}
+                                    onclick="window.notificationManager.previousPage()"
+                                >
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="text-sm text-gray-600 dark:text-gray-400">
+                                    ${this.currentPage} / ${this.totalPages}
+                                </span>
+                                <button 
+                                    class="px-2 py-1 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    ${this.currentPage >= this.totalPages ? 'disabled' : ''}
+                                    onclick="window.notificationManager.nextPage()"
+                                >
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            ${this.notifications.some(n => !n.persistent) ? `
+                                <button id="clear-all-notifications" class="text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                                    <i class="fas fa-check-double mr-1"></i> Mark All as Read
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                 ` : ''}
             `;
-            console.log('Updated dropdown content');
         }
+    }
+
+    getCategoryIcon(category) {
+        const icons = {
+            'Maintenance': '<i class="fas fa-tools text-gray-500 dark:text-gray-400"></i>',
+            'Warranty': '<i class="fas fa-shield-alt text-gray-500 dark:text-gray-400"></i>',
+            'Equipment': '<i class="fas fa-cogs text-gray-500 dark:text-gray-400"></i>',
+            'Stock': '<i class="fas fa-box text-gray-500 dark:text-gray-400"></i>',
+            'Other': '<i class="fas fa-bell text-gray-500 dark:text-gray-400"></i>'
+        };
+        return icons[category] || icons.Other;
+    }
+
+    getPriorityTextClass(priority) {
+        const classes = {
+            'high': 'text-red-600 dark:text-red-400',
+            'medium': 'text-yellow-600 dark:text-yellow-400',
+            'low': 'text-blue-600 dark:text-blue-400'
+        };
+        return classes[priority] || '';
     }
 
     getNotificationIcon(level) {
@@ -334,10 +340,63 @@ class NotificationManager {
             minute: '2-digit'
         });
     }
+
+    nextPage() {
+        if (this.currentPage < this.totalPages) {
+            this.currentPage++;
+            this.fetchNotifications();
+        }
+    }
+
+    previousPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            this.fetchNotifications();
+        }
+    }
+
+    showNewNotifications() {
+        if (!this.container) return;
+        
+        const newNotifications = this.notifications.filter(n => !n.displayed);
+        
+        newNotifications.forEach(notification => {
+            notification.displayed = true;
+            
+            const notifElement = document.createElement('div');
+            notifElement.className = `notification-toast bg-white dark:bg-gray-800 border-l-4 ${this.getPriorityClass(notification.priority)} p-4 rounded shadow-lg transform transition-all duration-300 opacity-0 translate-x-full`;
+            notifElement.innerHTML = `
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        ${this.getNotificationIcon(notification.level)}
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <p class="text-sm text-gray-800 dark:text-gray-200">${notification.message}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${this.formatDate(notification.createdAt)}</p>
+                    </div>
+                    <button class="ml-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            this.container.appendChild(notifElement);
+            
+            setTimeout(() => {
+                notifElement.classList.remove('opacity-0', 'translate-x-full');
+            }, 100);
+            
+            setTimeout(() => {
+                notifElement.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => {
+                    notifElement.remove();
+                }, 300);
+            }, 5000);
+        });
+    }
 }
 
-// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, initializing NotificationManager');
+    // console.log('DOM loaded, initializing NotificationManager');
     window.notificationManager = new NotificationManager();
 });

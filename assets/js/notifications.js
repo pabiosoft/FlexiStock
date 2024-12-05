@@ -104,13 +104,16 @@ class NotificationManager {
             const data = await response.json();
             
             if (data.success) {
-                this.notifications = data.data.notifications;
-                this.totalPages = data.data.pagination.totalPages;
-                this.currentPage = data.data.pagination.currentPage;
-                this.totalItems = data.data.pagination.totalItems;
+                // Support both new and old response format
+                const notificationsData = data.data || data;
+                this.notifications = notificationsData.notifications || [];
+                const pagination = notificationsData.pagination || {};
+                this.totalPages = pagination.totalPages || 0;
+                this.currentPage = pagination.currentPage || 1;
+                this.totalItems = pagination.totalItems || 0;
                 
                 // Only update UI if dropdown is visible
-                if (!this.dropdown.classList.contains('hidden')) {
+                if (!this.dropdown?.classList.contains('hidden')) {
                     this.updateUI();
                 }
                 
@@ -119,10 +122,21 @@ class NotificationManager {
                     const count = this.totalItems || 0;
                     this.badge.textContent = count;
                     this.badge.classList.toggle('hidden', count === 0);
+                    
+                    // Add animation class for badge update
+                    this.badge.classList.add('animate-pulse');
+                    setTimeout(() => this.badge.classList.remove('animate-pulse'), 1000);
                 }
+                
+                // Show toast for new notifications
+                this.showNewNotifications();
+            } else {
+                console.error('Error in response:', data.error);
             }
         } catch (error) {
             console.error('Error fetching notifications:', error);
+            // Show error toast
+            this.showErrorToast('Failed to fetch notifications. Please try again later.');
         }
     }
 
@@ -393,6 +407,36 @@ class NotificationManager {
                 }, 300);
             }, 5000);
         });
+    }
+
+    showErrorToast(message) {
+        if (!this.container) return;
+        
+        const toastElement = document.createElement('div');
+        toastElement.className = 'notification-toast bg-white dark:bg-gray-800 border-l-4 border-red-500 p-4 rounded shadow-lg transform transition-all duration-300 opacity-0 translate-x-full';
+        toastElement.innerHTML = `
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-red-500"></i>
+                </div>
+                <div class="ml-3 flex-1">
+                    <p class="text-sm text-gray-800 dark:text-gray-200">${message}</p>
+                </div>
+            </div>
+        `;
+        
+        this.container.appendChild(toastElement);
+        
+        // Trigger animation
+        setTimeout(() => {
+            toastElement.classList.remove('opacity-0', 'translate-x-full');
+        }, 100);
+        
+        // Remove toast after 5 seconds
+        setTimeout(() => {
+            toastElement.classList.add('opacity-0', 'translate-x-full');
+            setTimeout(() => toastElement.remove(), 300);
+        }, 5000);
     }
 }
 

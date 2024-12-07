@@ -27,7 +27,7 @@ class NotificationController extends AbstractController
     {
         try {
             $page = max(1, $request->query->getInt('page', 1));
-            $limit = max(1, min($request->query->getInt('limit', 3), 10));
+            $limit = max(1, min($request->query->getInt('limit', 10), 100));
             $level = $request->query->get('level');
             $fromDate = $request->query->get('fromDate');
             $toDate = $request->query->get('toDate');
@@ -69,8 +69,8 @@ class NotificationController extends AbstractController
                         'location' => $alert->getEquipment()->getLocation()
                     ] : null,
                     'metadata' => [
-                        'isNew' => !$alert->getViewedAt(),
-                        'type' => $alert->getType(),
+                        // 'isNew' => !$alert->getViewedAt(),
+                        // 'type' => $alert->getType(),
                         'source' => $alert->getSource()
                     ]
                 ];
@@ -111,14 +111,7 @@ class NotificationController extends AbstractController
                 'error' => 'An error occurred while fetching notifications',
                 'data' => [
                     'notifications' => [],
-                    'pagination' => [
-                        'currentPage' => $page ?? 1,
-                        'totalPages' => 0,
-                        'totalItems' => 0,
-                        'itemsPerPage' => $limit ?? 3,
-                        'hasNextPage' => false,
-                        'hasPreviousPage' => false
-                    ],
+                    
                     'summary' => [
                         'unreadCount' => 0,
                         'highPriorityCount' => 0,
@@ -272,23 +265,20 @@ class NotificationController extends AbstractController
                 ];
             }, $alerts['items']);
 
+            $pagination = [
+                'currentPage' => $page,
+                'totalPages' => $alerts['totalPages'] ?? 0,
+                'totalItems' => $alerts['totalItems'] ?? 0,
+                'itemsPerPage' => $limit,
+                'hasNextPage' => ($page < ($alerts['totalPages'] ?? 0)),
+                'hasPreviousPage' => ($page > 1)
+            ];
+
             return $this->json([
                 'success' => true,
                 'data' => [
                     'notifications' => $notifications,
-                    'pagination' => [
-                        'currentPage' => $page,
-                        'totalPages' => $alerts['totalPages'],
-                        'totalItems' => $alerts['totalItems'],
-                        'itemsPerPage' => $limit
-                    ]
-                ],
-                'notifications' => $notifications,
-                'pagination' => [
-                    'currentPage' => $page,
-                    'totalPages' => $alerts['totalPages'],
-                    'totalItems' => $alerts['totalItems'],
-                    'itemsPerPage' => $limit
+                    'pagination' => $pagination
                 ]
             ]);
         } catch (\Exception $e) {

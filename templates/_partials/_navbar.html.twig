@@ -20,13 +20,23 @@
 			<div
 				class="flex items-center gap-4">
 				<!-- Search Bar -->
-				<div class="hidden md:block">
-					<div class="relative">
-						<input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5" placeholder="Search...">
+				<div class="hidden md:block relative ">
+					<form id="navbar-search-form" class="relative" action="{{ path('search_results') }}" method="GET">
+						<input type="text" 
+							name="q" 
+							id="navbar-search" 
+							class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" 
+							placeholder="Search equipment, categories..." 
+							autocomplete="off">
 						<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
 							<i class="fas fa-search text-gray-400"></i>
 						</div>
-					</div>
+						<button type="submit" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
+							<i class="fas fa-arrow-right p-4"></i>
+						</button>
+					</form>
+					<!-- Autocomplete Dropdown -->
+					<div id="search-autocomplete" class="hidden absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto"></div>
 				</div>
 				<!-- Notifications -->
 				<button type="button" id="notification-toggle" class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
@@ -145,3 +155,4 @@
 		</div>
 	</div>
 </nav>
+<script src="{{ asset('js/navbar-search.js') }}"></script>

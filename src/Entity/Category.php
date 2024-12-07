@@ -47,6 +47,7 @@ class Category
     {
         $this->categories = new ArrayCollection();
         $this->equipmentItems = new ArrayCollection();
+        $this->updateSlug(); // Initialize slug if name is set
     }
 
     public function getId(): ?int
@@ -62,7 +63,7 @@ class Category
     public function setName(string $name): self
     {
         $this->name = $name;
-
+        $this->updateSlug(); // Update slug when name changes
         return $this;
     }
 

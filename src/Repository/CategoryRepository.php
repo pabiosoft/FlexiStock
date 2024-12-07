@@ -64,7 +64,7 @@ class CategoryRepository extends ServiceEntityRepository
             ->leftJoin('c.parent', 'p');
 
         if ($search) {
-            $qb->andWhere('c.name LIKE :search OR p.name LIKE :search')
+            $qb->andWhere('LOWER(c.name) LIKE LOWER(:search) OR LOWER(p.name) LIKE LOWER(:search)')
                ->setParameter('search', '%' . $search . '%');
         }
 
@@ -84,16 +84,20 @@ class CategoryRepository extends ServiceEntityRepository
                 $qb->orderBy('c.name', $direction);
         }
 
+        // Get total count before applying pagination
+        $totalQuery = clone $qb;
+        $totalItems = count($totalQuery->select('c.id')->getQuery()->getResult());
+
         // Add pagination
         $qb->setFirstResult(($page - 1) * $limit)
            ->setMaxResults($limit);
 
         return [
             'items' => $qb->getQuery()->getResult(),
-            'totalItems' => $this->getTotalItemsCount($search),
+            'totalItems' => $totalItems,
             'currentPage' => $page,
             'itemsPerPage' => $limit,
-            'totalPages' => ceil($this->getTotalItemsCount($search) / $limit)
+            'totalPages' => ceil($totalItems / $limit)
         ];
     }
 

@@ -40,7 +40,7 @@
                                     {% set total_quantity = total_quantity + item.quantity %}
                                     {% set total_price = total_price + (item.unitPrice * item.quantity) %}
                                     <tr class="hover:bg-gray-50 transition-colors">
-                                        <td class="px-4 py-3 text-gray-700">{{ item.equipment.name }}</td>
+                                        <td class="px-4 py-3 text-gray-700">{{ item.name }}</td>
                                         <td class="px-4 py-3">
                                             <form method="post" action="#" class="flex items-center">
                                                 <input type="number" name="qty" value="{{ item.quantity }}" min="1"
@@ -54,7 +54,7 @@
                                         <td class="px-4 py-3 text-gray-700">{{ item.unitPrice|number_format(2) }}</td>
                                         <td class="px-4 py-3 text-gray-700">{{ (item.unitPrice * item.quantity)|number_format(2) }}</td>
                                         <td class="px-4 py-3 text-center">
-                                            <a href="{{ path('order_remove_from_cart', { 'equipmentId': item.equipment.id }) }}" 
+                                            <a href="{{ path('order_remove_from_cart', { 'equipmentId': item.id }) }}" 
                                                class="text-red-500 hover:text-red-700 transition-colors" 
                                                aria-label="Remove item from cart">
                                                 <i class="fas fa-trash-alt"></i>

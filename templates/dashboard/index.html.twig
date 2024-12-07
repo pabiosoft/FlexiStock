@@ -108,7 +108,7 @@
 			<div class="rounded-xl dark:bg-green-900 shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 p-6 bg-white ">
 				<div class="flex items-center justify-between mb-4 ">
 					<div class="flex-1">
-						<p class="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">Total Amount Sale</p>
+						<p class="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">Total de la vente</p>
 						<p class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ orderStats.totalAmount|number_format(2, '.', ',') }} €</p>
 					</div>
 					<div class="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-full">
@@ -116,7 +116,7 @@
 					</div>
 				</div>
 				<div class="flex items-center text-sm">
-					<span class="font-medium text-gray-500 dark:text-gray-400">Weekly:</span>
+					<span class="font-medium text-gray-500 dark:text-gray-400">Hebdomadaire:</span>
 					<span class="ml-2 font-semibold text-gray-900 dark:text-gray-100">{{ orderStats.weeklyAmount|number_format(2, '.', ',') }} €</span>
 				</div>
 			</div>
@@ -200,11 +200,11 @@
 							</div>
 						{% else %}
 							{% for movement in recentMovements %}
-								<div class="flex items-center justify-between py-3 {% if not loop.last %}border-b border-gray-100 dark:border-gray-700{% endif %}">
-									<div class="flex items-center space-x-3">
+								<div class="flex items-center justify-between py-2 {% if not loop.last %}border-b border-gray-100 dark:border-gray-700{% endif %}">
+									<div class="flex items-center space-x-2">
 										<span class="w-2 h-2 {% if movement.type == 'IN' %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full"></span>
 										<div>
-											<p class="font-medium text-gray-900 dark:text-gray-100">{{ movement.equipment.name }}</p>
+											<p class="font-semibold text-gray-900 dark:text-gray-100">{{ movement.equipment.name }}</p>
 											<p class="text-sm text-gray-500 dark:text-gray-400">
 												{{ movement.type == 'IN' ? 'Entrée' : 'Sortie' }}
 												de
@@ -336,50 +336,165 @@
 
 		// Create Order Analytics Donut Chart
 		const orderCtx = document.getElementById('orderAnalyticsDonut').getContext('2d');
-		new Chart(orderCtx, {
+		const orderStatusChart = new Chart(orderCtx, {
 			type: 'doughnut',
 			data: {
-				labels: ['Complétées', 'En Attente', 'En Cours'],
+				labels: Object.keys(orderAnalyticsData),
 				datasets: [{
-					data: [
-						orderAnalyticsData.completed,
-						orderAnalyticsData.pending,
-						orderAnalyticsData.total - (orderAnalyticsData.completed + orderAnalyticsData.pending)
-					],
+					data: Object.values(orderAnalyticsData),
 					backgroundColor: [
-						'rgba(34, 197, 94, 0.8)',  // Green for completed
-						'rgba(234, 179, 8, 0.8)',   // Yellow for pending
-						'rgba(59, 130, 246, 0.8)'   // Blue for in progress
+						'rgba(99, 102, 241, 0.85)',    // Indigo
+						'rgba(16, 185, 129, 0.85)',    // Emerald
+						'rgba(249, 115, 22, 0.85)',    // Orange
+						'rgba(236, 72, 153, 0.85)',    // Pink
+						'rgba(139, 92, 246, 0.85)'     // Purple
 					],
 					borderColor: [
-						'rgba(34, 197, 94, 1)',
-						'rgba(234, 179, 8, 1)',
-						'rgba(59, 130, 246, 1)'
+						'rgba(99, 102, 241, 1)',
+						'rgba(16, 185, 129, 1)',
+						'rgba(249, 115, 22, 1)',
+						'rgba(236, 72, 153, 1)',
+						'rgba(139, 92, 246, 1)'
 					],
-					borderWidth: 1
+					borderWidth: 2,
+					hoverOffset: 20,
+					hoverBorderWidth: 0,
+					spacing: 5,
+					borderRadius: 30,
+					offset: 8,
+					hoverBackgroundColor: [
+						'rgba(99, 102, 241, 1)',
+						'rgba(16, 185, 129, 1)',
+						'rgba(249, 115, 22, 1)',
+						'rgba(236, 72, 153, 1)',
+						'rgba(139, 92, 246, 1)'
+					]
 				}]
 			},
 			options: {
 				responsive: true,
 				maintainAspectRatio: false,
+				cutout: '80%',
+				layout: {
+					padding: 20
+				},
 				plugins: {
 					legend: {
 						position: 'bottom',
 						labels: {
-							color: document.documentElement.classList.contains('dark') ? '#D1D5DB' : '#4B5563'
+							padding: 20,
+							usePointStyle: true,
+							pointStyle: 'rectRounded',
+							boxWidth: 10,
+							boxHeight: 10,
+							font: {
+								size: 12,
+								weight: '600',
+								family: "'Inter', sans-serif"
+							},
+							color: document.documentElement.classList.contains('dark') ? '#D1D5DB' : '#4B5563',
+							filter: function(legendItem, data) {
+								return data.datasets[0].data[legendItem.index] > 0;
+							}
 						}
 					},
 					title: {
-						display: true,
-						text: 'Répartition des Commandes',
-						color: document.documentElement.classList.contains('dark') ? '#D1D5DB' : '#4B5563',
-						font: {
-							size: 16
+						display: false
+					},
+					tooltip: {
+						enabled: true,
+						backgroundColor: document.documentElement.classList.contains('dark') ? 'rgba(17, 24, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+						titleColor: document.documentElement.classList.contains('dark') ? '#F3F4F6' : '#1F2937',
+						bodyColor: document.documentElement.classList.contains('dark') ? '#F3F4F6' : '#1F2937',
+						bodyFont: {
+							size: 13,
+							weight: '600',
+							family: "'Inter', sans-serif"
+						},
+						padding: 15,
+						boxPadding: 10,
+						cornerRadius: 8,
+						borderColor: document.documentElement.classList.contains('dark') ? 'rgba(75, 85, 99, 0.2)' : 'rgba(229, 231, 235, 0.5)',
+						borderWidth: 1,
+						displayColors: true,
+						boxWidth: 8,
+						boxHeight: 8,
+						usePointStyle: true,
+						callbacks: {
+							label: function(context) {
+								const label = context.label || '';
+								const value = context.parsed || 0;
+								const total = context.dataset.data.reduce((a, b) => a + b, 0);
+								const percentage = ((value / total) * 100).toFixed(1);
+								return ` ${label}: ${value} (${percentage}%)`;
+							},
+							labelPointStyle: function(context) {
+								return {
+									pointStyle: 'rectRounded',
+									rotation: 0
+								};
+							}
 						}
 					}
 				},
-				cutout: '70%'
+				animation: {
+					animateScale: true,
+					animateRotate: true,
+					duration: 800,
+					easing: 'easeOutElastic',
+					delay: function(context) {
+						return context.dataIndex * 100;
+					},
+					onComplete: function(animation) {
+						const chartInstance = animation.chart;
+						const ctx = chartInstance.ctx;
+						const dataset = chartInstance.data.datasets[0];
+						const total = dataset.data.reduce((a, b) => a + b, 0);
+
+						ctx.save();
+						ctx.textAlign = 'center';
+						ctx.textBaseline = 'middle';
+						ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#F3F4F6' : '#1F2937';
+						ctx.font = "600 1.125rem 'Inter', sans-serif";
+
+						const text = total.toString();
+						const centerX = (chartInstance.chartArea.left + chartInstance.chartArea.right) / 2;
+						const centerY = (chartInstance.chartArea.top + chartInstance.chartArea.bottom) / 2;
+
+						ctx.fillText(text, centerX, centerY - 10);
+						
+						ctx.font = "500 0.875rem 'Inter', sans-serif";
+						ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#6B7280';
+						ctx.fillText('Total', centerX, centerY + 15);
+						
+						ctx.restore();
+					}
+				},
+				hover: {
+					mode: 'nearest',
+					intersect: true,
+					animationDuration: 200
+				},
+				elements: {
+					arc: {
+						borderWidth: 2
+					}
+				}
 			}
+		});
+
+		// Add resize handler
+		window.addEventListener('resize', function() {
+			orderStatusChart.resize();
+		});
+
+		// Add theme change handler
+		document.addEventListener('theme-changed', function() {
+			orderStatusChart.options.plugins.tooltip.backgroundColor = document.documentElement.classList.contains('dark') ? 'rgba(17, 24, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+			orderStatusChart.options.plugins.tooltip.titleColor = document.documentElement.classList.contains('dark') ? '#F3F4F6' : '#1F2937';
+			orderStatusChart.options.plugins.tooltip.bodyColor = document.documentElement.classList.contains('dark') ? '#F3F4F6' : '#1F2937';
+			orderStatusChart.options.plugins.legend.labels.color = document.documentElement.classList.contains('dark') ? '#D1D5DB' : '#4B5563';
+			orderStatusChart.update();
 		});
 	</script>
 	<script src="{{ asset('build/js/dashboard.js') }}"></script>

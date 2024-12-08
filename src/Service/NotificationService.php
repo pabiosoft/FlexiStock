@@ -6,23 +6,12 @@ use App\Entity\Alert;
 use App\Entity\Equipment;
 use App\Repository\AlertRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Enum\AlertCategory;
+use App\Enum\AlertPriority;
+use App\Enum\AlertLevel;
 
 class NotificationService
 {
-    public const PRIORITY_LOW = 'low';
-    public const PRIORITY_MEDIUM = 'medium';
-    public const PRIORITY_HIGH = 'high';
-
-    public const LEVEL_INFO = 'info';
-    public const LEVEL_WARNING = 'warning';
-    public const LEVEL_ERROR = 'error';
-    public const LEVEL_SUCCESS = 'success';
-
-    public const CATEGORY_MAINTENANCE = 'maintenance';
-    public const CATEGORY_STOCK = 'stock';
-    public const CATEGORY_CALIBRATION = 'calibration';
-    public const CATEGORY_WARRANTY = 'warranty';
-
     private EntityManagerInterface $entityManager;
     private AlertRepository $alertRepository;
 
@@ -35,17 +24,27 @@ class NotificationService
     }
 
     public function createAlert(
-        string $message, 
-        string $level = self::LEVEL_INFO,
-        string $priority = self::PRIORITY_MEDIUM,
+        string $message,
+        AlertLevel $level = AlertLevel::INFO,
+        ?Equipment $equipment = null,
+        ?AlertCategory $category = null,
+        AlertPriority $priority = AlertPriority::MEDIUM,
         bool $persistent = false
     ): Alert {
         $alert = new Alert();
-        $alert->setMessage($message);
-        $alert->setLevel($level);
-        $alert->setPriority($priority);
-        $alert->setPersistent($persistent);
-        $alert->setCreatedAt(new \DateTime());
+        $alert->setMessage($message)
+            ->setLevel($level->value)
+            ->setPriority($priority->value)
+            ->setPersistent($persistent)
+            ->setCreatedAt(new \DateTime());
+
+        if ($equipment) {
+            $alert->setEquipment($equipment);
+        }
+
+        if ($category) {
+            $alert->setCategory($category->value);
+        }
 
         $this->entityManager->persist($alert);
         $this->entityManager->flush();
@@ -56,11 +55,11 @@ class NotificationService
     public function getUnreadAlerts(
         int $page = 1,
         int $limit = 10,
-        ?string $level = null,
+        ?AlertLevel $level = null,
         ?\DateTime $fromDate = null,
         ?\DateTime $toDate = null
     ): array {
-        return $this->alertRepository->findUnreadAlerts($page, $limit, $level, $fromDate, $toDate);
+        return $this->alertRepository->findUnreadAlerts($page, $limit, $level ? $level->value : null, $fromDate, $toDate);
     }
 
     public function markAsRead(Alert $alert): void
@@ -91,9 +90,9 @@ class NotificationService
         return $markedCount;
     }
 
-    public function getUnreadCount(?string $level = null): int
+    public function getUnreadCount(?AlertLevel $level = null): int
     {
-        return $this->alertRepository->countUnreadAlerts($level);
+        return $this->alertRepository->countUnreadAlerts($level ? $level->value : null);
     }
 
     public function clearAllNonPersistent(): void
@@ -105,10 +104,10 @@ class NotificationService
         $this->entityManager->flush();
     }
 
-    public function getAlertsByPriority(string $priority, int $limit = 5): array
+    public function getAlertsByPriority(AlertPriority $priority, int $limit = 5): array
     {
         return $this->alertRepository->findBy(
-            ['priority' => $priority],
+            ['priority' => $priority->value],
             ['createdAt' => 'DESC'],
             $limit
         );
@@ -117,19 +116,19 @@ class NotificationService
     public function createEquipmentAlert(
         Equipment $equipment,
         string $message,
-        string $category,
-        string $level = self::LEVEL_INFO,
-        string $priority = self::PRIORITY_MEDIUM,
+        AlertCategory $category,
+        AlertLevel $level = AlertLevel::INFO,
+        AlertPriority $priority = AlertPriority::MEDIUM,
         bool $persistent = true
     ): Alert {
         $alert = new Alert();
-        $alert->setMessage($message);
-        $alert->setLevel($level);
-        $alert->setPriority($priority);
-        $alert->setPersistent($persistent);
-        $alert->setCreatedAt(new \DateTime());
-        $alert->setEquipment($equipment);
-        $alert->setCategory($category);
+        $alert->setMessage($message)
+            ->setLevel($level->value)
+            ->setPriority($priority->value)
+            ->setPersistent($persistent)
+            ->setCreatedAt(new \DateTime())
+            ->setEquipment($equipment)
+            ->setCategory($category->value);
 
         $this->entityManager->persist($alert);
         $this->entityManager->flush();
@@ -139,19 +138,19 @@ class NotificationService
 
     public function getEquipmentAlerts(
         ?Equipment $equipment = null,
-        ?string $category = null,
+        ?AlertCategory $category = null,
         int $page = 1,
         int $limit = 10,
-        ?string $level = null,
+        ?AlertLevel $level = null,
         ?\DateTime $fromDate = null,
         ?\DateTime $toDate = null
     ): array {
         return $this->alertRepository->findEquipmentAlerts(
             $equipment,
-            $category,
+            $category ? $category->value : null,
             $page,
             $limit,
-            $level,
+            $level ? $level->value : null,
             $fromDate,
             $toDate
         );
@@ -159,10 +158,10 @@ class NotificationService
 
     public function getEquipmentAlertsCount(
         ?Equipment $equipment = null,
-        ?string $category = null,
-        ?string $level = null
+        ?AlertCategory $category = null,
+        ?AlertLevel $level = null
     ): int {
-        return $this->alertRepository->countEquipmentAlerts($equipment, $category, $level);
+        return $this->alertRepository->countEquipmentAlerts($equipment, $category ? $category->value : null, $level ? $level->value : null);
     }
 
     public function createMaintenanceAlert(Equipment $equipment, string $message): Alert
@@ -170,9 +169,10 @@ class NotificationService
         return $this->createEquipmentAlert(
             $equipment,
             $message,
-            self::CATEGORY_MAINTENANCE,
-            self::LEVEL_WARNING,
-            self::PRIORITY_HIGH
+            AlertCategory::MAINTENANCE,
+            AlertLevel::WARNING,
+            AlertPriority::HIGH,
+            true
         );
     }
 
@@ -181,9 +181,10 @@ class NotificationService
         return $this->createEquipmentAlert(
             $equipment,
             $message,
-            self::CATEGORY_STOCK,
-            self::LEVEL_WARNING,
-            self::PRIORITY_MEDIUM
+            AlertCategory::STOCK,
+            AlertLevel::WARNING,
+            AlertPriority::MEDIUM,
+            true
         );
     }
 
@@ -192,9 +193,10 @@ class NotificationService
         return $this->createEquipmentAlert(
             $equipment,
             $message,
-            self::CATEGORY_CALIBRATION,
-            self::LEVEL_INFO,
-            self::PRIORITY_MEDIUM
+            AlertCategory::CALIBRATION,
+            AlertLevel::INFO,
+            AlertPriority::MEDIUM,
+            true
         );
     }
 
@@ -203,9 +205,10 @@ class NotificationService
         return $this->createEquipmentAlert(
             $equipment,
             $message,
-            self::CATEGORY_WARRANTY,
-            self::LEVEL_INFO,
-            self::PRIORITY_LOW
+            AlertCategory::WARRANTY,
+            AlertLevel::INFO,
+            AlertPriority::LOW,
+            true
         );
     }
 }

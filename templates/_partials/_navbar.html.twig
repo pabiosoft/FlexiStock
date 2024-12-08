@@ -57,9 +57,9 @@
 								{% endif %}
 							</h3>
 							<div class="flex space-x-2">
-								<button data-priority-filter data-priority="high" class="px-2 py-1 text-xs rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition-colors">High</button>
-								<button data-priority-filter data-priority="medium" class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors">Medium</button>
-								<button data-priority-filter data-priority="low" class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">Low</button>
+								<button data-priority-filter data-priority="{{ alert_priorities().HIGH }}" class="px-2 py-1 text-xs rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition-colors">High</button>
+								<button data-priority-filter data-priority="{{ alert_priorities().MEDIUM }}" class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors">Medium</button>
+								<button data-priority-filter data-priority="{{ alert_priorities().LOW }}" class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">Low</button>
 							</div>
 						</div>
 					</div>
@@ -71,9 +71,9 @@
 									 data-alert-id="{{ alert.id }}"
 									 data-alert-level="{{ alert.level }}">
 									<div class="flex-shrink-0 pt-1">
-										{% if alert.level == 'error' %}
+										{% if alert.level == alert_levels().ERROR %}
 											<i class="fas fa-exclamation-circle text-red-500 text-lg"></i>
-										{% elseif alert.level == 'warning' %}
+										{% elseif alert.level == alert_levels().WARNING %}
 											<i class="fas fa-exclamation-triangle text-yellow-400 text-lg"></i>
 										{% else %}
 											<i class="fas fa-info-circle text-blue-500 text-lg"></i>
@@ -82,13 +82,13 @@
 									<div class="w-full pl-3">
 										<div class="flex items-center justify-between mb-1">
 											<span class="text-sm font-medium text-gray-900 dark:text-gray-100">
-												{% if alert.category == constant('App\\Service\\NotificationService::CATEGORY_MAINTENANCE') %}
+												{% if alert.category == alert_categories().MAINTENANCE %}
 													<i class="fas fa-tools mr-1"></i> Maintenance
-												{% elseif alert.category == constant('App\\Service\\NotificationService::CATEGORY_WARRANTY') %}
+												{% elseif alert.category == alert_categories().WARRANTY %}
 													<i class="fas fa-shield-alt mr-1"></i> Warranty
-												{% elseif alert.category == constant('App\\Service\\NotificationService::CATEGORY_STOCK') %}
+												{% elseif alert.category == alert_categories().STOCK %}
 													<i class="fas fa-box mr-1"></i> Stock
-												{% elseif alert.category == constant('App\\Service\\NotificationService::CATEGORY_CALIBRATION') %}
+												{% elseif alert.category == alert_categories().CALIBRATION %}
 													<i class="fas fa-balance-scale mr-1"></i> Calibration
 												{% endif %}
 											</span>

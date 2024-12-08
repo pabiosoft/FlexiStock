@@ -2,13 +2,11 @@
 
 namespace App\Enum;
 
-enum AlertLevel: string
+enum AlertPriority: string
 {
-    case INFO = 'info';
-    case WARNING = 'warning';
-    case ERROR = 'error';
-    case SUCCESS = 'success';
-    case CRITICAL = 'critical';
+    case LOW = 'low';
+    case MEDIUM = 'medium';
+    case HIGH = 'high';
 
     public static function values(): array
     {

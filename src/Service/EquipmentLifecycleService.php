@@ -4,6 +4,10 @@ namespace App\Service;
 
 use App\Entity\Equipment;
 use App\Repository\EquipmentRepository;
+use App\Service\NotificationService;
+use App\Enum\AlertCategory;
+use App\Enum\AlertLevel;
+use App\Enum\AlertPriority;
 use DateTime;
 use Psr\Log\LoggerInterface;
 
@@ -73,9 +77,9 @@ class EquipmentLifecycleService
         $this->notificationService->createEquipmentAlert(
             $equipment,
             $message,
-            NotificationService::CATEGORY_WARRANTY,
-            NotificationService::LEVEL_WARNING,
-            NotificationService::PRIORITY_MEDIUM,
+            AlertCategory::WARRANTY,
+            AlertLevel::WARNING,
+            AlertPriority::MEDIUM,
             true
         );
     }
@@ -94,9 +98,9 @@ class EquipmentLifecycleService
         $this->notificationService->createEquipmentAlert(
             $equipment,
             $message,
-            NotificationService::CATEGORY_WARRANTY,
-            NotificationService::LEVEL_ERROR,
-            NotificationService::PRIORITY_HIGH,
+            AlertCategory::WARRANTY,
+            AlertLevel::ERROR,
+            AlertPriority::HIGH,
             true
         );
     }
@@ -113,9 +117,9 @@ class EquipmentLifecycleService
         $this->notificationService->createEquipmentAlert(
             $equipment,
             $message,
-            NotificationService::CATEGORY_WARRANTY,
-            NotificationService::LEVEL_ERROR,
-            NotificationService::PRIORITY_HIGH,
+            AlertCategory::WARRANTY,
+            AlertLevel::ERROR,
+            AlertPriority::HIGH,
             true
         );
     }
@@ -144,17 +148,17 @@ class EquipmentLifecycleService
             );
 
             $level = $daysUntilMaintenance <= self::CRITICAL_DAYS 
-                ? NotificationService::LEVEL_ERROR 
-                : NotificationService::LEVEL_WARNING;
+                ? AlertLevel::ERROR 
+                : AlertLevel::WARNING;
 
             $priority = $daysUntilMaintenance <= self::CRITICAL_DAYS
-                ? NotificationService::PRIORITY_HIGH
-                : NotificationService::PRIORITY_MEDIUM;
+                ? AlertPriority::HIGH
+                : AlertPriority::MEDIUM;
 
             $this->notificationService->createEquipmentAlert(
                 $equipment,
                 $message,
-                NotificationService::CATEGORY_MAINTENANCE,
+                AlertCategory::MAINTENANCE,
                 $level,
                 $priority,
                 true

@@ -2,13 +2,12 @@
 
 namespace App\Enum;
 
-enum AlertLevel: string
+enum AlertCategory: string
 {
-    case INFO = 'info';
-    case WARNING = 'warning';
-    case ERROR = 'error';
-    case SUCCESS = 'success';
-    case CRITICAL = 'critical';
+    case MAINTENANCE = 'maintenance';
+    case STOCK = 'stock';
+    case CALIBRATION = 'calibration';
+    case WARRANTY = 'warranty';
 
     public static function values(): array
     {

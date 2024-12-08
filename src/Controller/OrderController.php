@@ -167,7 +167,7 @@ class OrderController extends AbstractController
         }
 
         $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 5);
+        $limit = $request->query->getInt('limit', 6);
 
         $criteria = [];
         if ($request->query->has('category')) {
@@ -251,7 +251,7 @@ class OrderController extends AbstractController
     public function list(Request $request): Response
     {
         $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 5);
+        $limit = $request->query->getInt('limit', 10);
         $criteria = [];
         
         // Add status filter

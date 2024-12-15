@@ -35,7 +35,7 @@ class EquipmentController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
         $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 10);
+        $limit = $request->query->getInt('limit', 5);
         
         // Get category value and convert to int only if not empty
         $categoryValue = $request->query->get('category');

@@ -27,6 +27,9 @@ trait SlugTrait
 
     public function initializeSlug(string $text): void
     {
+        if (empty($text)) {
+            throw new \InvalidArgumentException('Slug initialization requires a non-empty string.');
+        }
         $baseSlug = strtolower(preg_replace('/[^a-z0-9]+/', '-', trim($text)));
         $baseSlug = trim($baseSlug, '-'); // Remove trailing hyphens
         $this->slug = $baseSlug . '-' . uniqid();

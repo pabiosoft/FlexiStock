@@ -1,0 +1,81 @@
+.suggestion-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.suggestion-name {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: #2d3748;
+}
+
+.text-muted {
+    color: #718096;
+    font-size: 0.875rem;
+    display: block;
+    line-height: 1.25;
+}
+
+.badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 500;
+    border-radius: 0.25rem;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.badge.bg-success {
+    background-color: #198754;
+    color: white;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.badge.bg-info {
+    background-color: #0dcaf0;
+    color: #000;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.ms-2 {
+    margin-left: 0.5rem;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.flex-column {
+    flex-direction: column;
+}

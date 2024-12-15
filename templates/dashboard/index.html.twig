@@ -1,301 +1,501 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Tableau de bord - FlexiStock{% endblock %}
+{% block title %}Tableau de bord - FlexiStock
+{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <style>
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .stat-card h3 {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
-        }
-        .stat-card .value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        .chart-container {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-        }
-        .recent-activity {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .activity-item {
-            padding: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-        .activity-item:last-child {
-            border-bottom: none;
-        }
-        .movement-in { color: #2ecc71; }
-        .movement-out { color: #e74c3c; }
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        .category-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        .category-card {
-            background: white;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .toast {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border-radius: 0.375rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            background-color: white;
-            color: #333;
-            transition: opacity 0.3s ease;
-        }
-        .toast .icon {
-            margin-right: 0.5rem;
-        }
-        .toast-success {
-            border-left: 4px solid #38a169;
-        }
-        .toast-error {
-            border-left: 4px solid #e53e3e;
-        }
-        .toast-info {
-            border-left: 4px solid #3182ce;
-        }
-    </style>
+	{{ parent() }}
+	<style>
+		.stats-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 1rem;
+			margin-bottom: 2rem;
+		}
+		.stat-card {
+			background: white;
+			padding: 1.5rem;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+		.stat-card h3 {
+			color: #666;
+			font-size: 0.9rem;
+			margin-bottom: 0.5rem;
+		}
+		.stat-card .value {
+			font-size: 1.8rem;
+			font-weight: bold;
+			color: #2c3e50;
+		}
+		.chart-container {
+			background: white;
+			padding: 1.5rem;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			margin-bottom: 2rem;
+		}
+		.recent-activity {
+			background: white;
+			padding: 1.5rem;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+		.activity-item {
+			padding: 1rem;
+			border-bottom: 1px solid #eee;
+		}
+		.activity-item:last-child {
+			border-bottom: none;
+		}
+		.movement-in {
+			color: #2ecc71;
+		}
+		.movement-out {
+			color: #e74c3c;
+		}
+		.charts-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+			gap: 1rem;
+			margin-bottom: 2rem;
+		}
+		.category-stats {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 1rem;
+			margin-bottom: 2rem;
+		}
+		.category-card {
+			background: white;
+			padding: 1rem;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+		.toast {
+			display: flex;
+			align-items: center;
+			padding: 1rem;
+			border-radius: 0.375rem;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			background-color: white;
+			color: #333;
+			transition: opacity 0.3s ease;
+		}
+		.toast .icon {
+			margin-right: 0.5rem;
+		}
+		.toast-success {
+			border-left: 4px solid #38a169;
+		}
+		.toast-error {
+			border-left: 4px solid #e53e3e;
+		}
+		.toast-info {
+			border-left: 4px solid #3182ce;
+		}
+	</style>
 {% endblock %}
 
 {% block body %}
-    <main class="flex flex-col gap-4 md:gap-5 h-auto pb-5 dark:bg-gray-900">
-        <!-- Toast Notification Container -->
-        <div id="toast-container" class="fixed top-4 right-4 space-y-2 z-50"></div>
+	<main class="flex flex-col gap-4 p-4 md:p-6 h-auto pb-5 dark:bg-gray-900">
+		<!-- Toast Notification Container -->
+		<div id="toast-container" class="fixed top-4 right-4 space-y-2 z-50"></div>
 
-        {# Stats Cards #}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {# Total Equipment Card #}
-            <div class="rounded-lg shadow p-6 bg-white dark:bg-green-900 dark:text-gray-300 transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium">TOTAL AMOUNT SALE</p>
-                        <p class="text-2xl font-semibold">{{ orderStats.totalAmount|number_format(2, '.', ',') }} €</p>
-                    </div>
-                    <div class="p-3 bg-blue-50 dark:bg-blue-900 rounded-full">
-                        <i class="fas fa-money-bill text-blue-500 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <div class="flex items-center">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">WEEKLY AMOUNT:</span>
-                        <span class="ml-2 text-sm text-gray-900 dark:text-gray-200">{{ orderStats.weeklyAmount|number_format(2, '.', ',') }} €</span>
-                    </div>
-                </div>
-            </div>
+		{# Stats Cards #}
+		<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+			{# Total Amount Sale Card #}
+			<div class="rounded-xl dark:bg-green-900 shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 p-6 bg-white ">
+				<div class="flex items-center justify-between mb-4 ">
+					<div class="flex-1">
+						<p class="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">Total de la vente</p>
+						<p class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ orderStats.totalAmount|number_format(2, '.', ',') }} €</p>
+					</div>
+					<div class="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-full">
+						<i class="fas fa-money-bill text-blue-600 dark:text-blue-400 text-xl"></i>
+					</div>
+				</div>
+				<div class="flex items-center text-sm">
+					<span class="font-medium text-gray-500 dark:text-gray-400">Hebdomadaire:</span>
+					<span class="ml-2 font-semibold text-gray-900 dark:text-gray-100">{{ orderStats.weeklyAmount|number_format(2, '.', ',') }} €</span>
+				</div>
+			</div>
 
-            {# Weekly Sale Card #}
-            <div class="rounded-lg shadow p-6 bg-white dark:bg-green-900 dark:text-gray-300 transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">TOTAL AMOUNT WEEKLY SALE</p>
-                        <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200">{{ orderStats.weeklyAmount|number_format(2, '.', ',') }} €</p>
-                    </div>
-                    <div class="p-3 bg-red-50 dark:bg-blue-900 rounded-full">
-                        <i class="fas fa-chart-line text-red-500 text-xl"></i>
-                    </div>
-                </div>
-                
-            </div>
+			{# Monthly Orders Card #}
+			<div class="rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 p-6 bg-white dark:bg-gray-800">
+				<div class="flex items-center justify-between mb-4">
+					<div class="flex-1">
+						<p class="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">Commandes ce Mois</p>
+						<p class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ orderStats.monthlyOrders }}</p>
+					</div>
+					<div class="p-3 bg-green-100 dark:bg-green-900/50 rounded-full">
+						<i class="fas fa-chart-line text-green-600 dark:text-green-400 text-xl"></i>
+					</div>
+				</div>
+				<div class="flex items-center text-sm">
+					<span class="font-medium text-gray-500 dark:text-gray-400">Total:</span>
+					<span class="ml-2 font-semibold text-gray-900 dark:text-gray-100">{{ orderStats.weeklyAmount|number_format(2, '.', ',') }} €</span>
+				</div>
+			</div>
 
-            {# Maintenance Card #}
-            <div class="rounded-lg shadow p-6 bg-white dark:bg-yellow-900 dark:text-gray-300 transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Commandes en Attente</p>
-                        <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200">{{ orderStats.pendingOrders }}</p>
-                    </div>
-                    <div class="p-3 bg-yellow-50 dark:bg-yellow-900 rounded-full">
-                        <i class="fas fa-clock text-yellow-500 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <a href="{{ path('order_list', {'status': 'pending'}) }}" 
-                       class="text-sm text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-600 transition-colors">
-                        Voir les commandes en attente →
-                    </a>
-                </div>
-            </div>
+			{# Pending Orders Card #}
+			<div class="rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 p-6 bg-white dark:bg-yellow-900">
+				<div class="flex items-center justify-between mb-4">
+					<div class="flex-1">
+						<p class="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">Commandes en Attente</p>
+						<p class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ orderStats.pendingOrders }}</p>
+					</div>
+					<div class="p-3 bg-yellow-100 dark:bg-yellow-900/50 rounded-full">
+						<i class="fas fa-clock text-yellow-600 dark:text-yellow-400 text-xl"></i>
+					</div>
+				</div>
+				{# <div class="flex items-center text-sm mb-3">
+					<span class="font-medium text-gray-500 dark:text-gray-400">Terminées:</span>
+					<span class="ml-2 font-semibold text-gray-900 dark:text-gray-100">{{ orderStats.completedOrders }}</span>
+				</div> #}
+				<a href="{{ path('order_list', {'status': 'pending'}) }}" 
+				   class="text-sm text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 transition-colors inline-flex items-center">
+					Voir  
+					<i class="fas fa-arrow-right ml-3 text-xs"></i>
+				</a>
+			</div>
 
-            {# Total Value Card #}
-            <div class="rounded-lg shadow p-6 bg-white dark:bg-blue-900 dark:text-gray-300 transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Valeur du Stock</p>
-                        <p class="text-2xl font-semibold text-gray-900 dark:text-gray-200">
-                            €{{ stats.totalStockValue|number_format(2, ',', ' ') }}
-                        </p>
-                    </div>
-                    <div class="p-3 bg-green-50 dark:bg-green-900 rounded-full">
-                        <i class="fas fa-euro-sign text-green-500 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <div class="flex items-center">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Mise à jour:</span>
-                        <span class="ml-2 text-sm text-gray-900 dark:text-gray-200">{{ "now"|date("d M Y H:i") }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+			{# Stock Value Card #}
+			<div class="rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 p-6 bg-white dark:bg-blue-900">
+				<div class="flex items-center justify-between mb-4">
+					<div class="flex-1">
+						<p class="text-sm font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">Valeur du Stock</p>
+						<p class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">€{{ stats.totalStockValue|number_format(2, ',', ' ') }}</p>
+					</div>
+					<div class="p-3 bg-purple-100 dark:bg-purple-900/50 rounded-full">
+						<i class="fas fa-euro-sign text-purple-600 dark:text-purple-400 text-xl"></i>
+					</div>
+				</div>
+				<div class="flex items-center text-sm">
+					<span class="font-medium text-gray-500 dark:text-gray-400">Mise à jour:</span>
+					<span class="ml-2 font-semibold text-gray-900 dark:text-gray-100">{{ "now"|date("d M Y H:i") }}</span>
+				</div>
+			</div>
+		</div>
 
-        {# Main Content Grid #}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {# Order Analytics Chart #}
-        <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300 mt-4">
-            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h3 class="text-lg font-semibold">Analyse des Commandes</h3>
-            </div>
-            <div class="p-6">
-                <canvas id="orderAnalyticsChart" class="w-full h-64"></canvas>
-            </div>
-        </div>
-        </div>
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-6">
+			{# Order Analytics Chart #}
+			<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Analyse des Commandes</h3>
+				<div class="relative" style="height: 300px;">
+					<canvas id="orderAnalyticsDonut" class="w-full h-full"></canvas>
+				</div>
+			</div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-            {# Recent Activities #}
-            <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300">
-                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold">Mouvements Récents</h3>
-                </div>
-                <div class="p-6 space-y-4">
-                    {% if recentMovements is empty %}
-                        <p class="text-gray-500 dark:text-gray-400">Aucun mouvement récent</p>
-                    {% else %}
-                        {% for movement in recentMovements %}
-                            <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                                <div class="flex items-center space-x-3">
-                                    <span class="w-2 h-2 {% if movement.type == 'IN' %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full"></span>
-                                    <div>
-                                        <p class="font-medium">{{ movement.equipment.name }}</p>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                                            {{ movement.type == 'IN' ? 'Entrée' : 'Sortie' }} de {{ movement.quantity }} unité(s)
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                                        {{ movement.movementDate|date('d/m/Y H:i') }}
-                                    </p>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            </div>
+			{# Recent Activities #}
+			<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md">
+				<div class="p-4 border-b border-gray-100 dark:border-gray-700">
+					<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Mouvements Récents</h3>
+				</div>
+				<div class="p-4 space-y-2">
+					<div class="max-h-[320px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+						{% if recentMovements is empty %}
+							<div class="flex items-center justify-center h-32 text-gray-500 dark:text-gray-400">
+								<p>Aucun mouvement récent</p>
+							</div>
+						{% else %}
+							{% for movement in recentMovements %}
+								<div class="flex items-center justify-between py-2 {% if not loop.last %}border-b border-gray-100 dark:border-gray-700{% endif %}">
+									<div class="flex items-center space-x-2">
+										<span class="w-2 h-2 {% if movement.type == 'IN' %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full"></span>
+										<div>
+											<p class="font-semibold text-gray-900 dark:text-gray-100">{{ movement.equipment.name }}</p>
+											<p class="text-sm text-gray-500 dark:text-gray-400">
+												{{ movement.type == 'IN' ? 'Entrée' : 'Sortie' }}
+												de
+												{{ movement.quantity }}
+												unité(s)
+											</p>
+										</div>
+									</div>
+									<div class="text-right">
+										<p class="text-sm text-gray-500 dark:text-gray-400">
+											{{ movement.movementDate|date('d/m/Y H:i') }}
+										</p>
+									</div>
+								</div>
+							{% endfor %}
+						{% endif %}
+					</div>
+					{% if totalPages > 1 %}
+						<div class="flex justify-center items-center space-x-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+							{% if currentPage > 1 %}
+								<a href="{{ path('app_dashboard', {'page': currentPage - 1}) }}" 
+								   class="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+									<i class="fas fa-chevron-left mr-1"></i> Précédent
+								</a>
+							{% endif %}
+							
+							<span class="text-sm text-gray-600 dark:text-gray-400">
+								Page {{ currentPage }} sur {{ totalPages }}
+							</span>
 
-            {# Equipment Status #}
-            <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300">
-                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold">État des Équipements</h3>
-                </div>
-                <div class="p-6 space-y-4">
-                    <div class="grid grid-cols-1 gap-4">
-                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium">Stock Total</p>
-                                    <p class="text-2xl font-semibold">{{ stats.totalEquipment }}</p>
-                                </div>
-                                <div class="p-3 bg-blue-50 dark:bg-blue-900 rounded-full">
-                                    <i class="fas fa-boxes text-blue-500"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium">Articles Actifs</p>
-                                    <p class="text-2xl font-semibold">{{ stats.activeEquipment }}</p>
-                                </div>
-                                <div class="p-3 bg-green-50 dark:bg-green-900 rounded-full">
-                                    <i class="fas fa-check text-green-500"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium">Articles en Stock Faible</p>
-                                    <p class="text-2xl font-semibold text-red-500">{{ stats.lowStockCount }}</p>
-                                </div>
-                                <div class="p-3 bg-red-50 dark:bg-red-900 rounded-full">
-                                    <i class="fas fa-exclamation-triangle text-red-500"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+							{% if currentPage < totalPages %}
+								<a href="{{ path('app_dashboard', {'page': currentPage + 1}) }}" 
+								   class="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors">
+									Suivant <i class="fas fa-chevron-right ml-1"></i>
+								</a>
+							{% endif %}
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		</div>
 
-        {# Movement Data Chart #}
-        <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300 mt-4">
-            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h3 class="text-lg font-semibold">Mouvement Hebdomadaire</h3>
-            </div>
-            <div class="p-6">
-                <canvas id="movementChart" class="w-full h-64"></canvas>
-            </div>
-        </div>
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mt-4 md:mt-6">
+			{# Equipment Status #}
+			<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md">
+				<div class="p-6 border-b border-gray-100 dark:border-gray-700">
+					<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">État des Équipements</h3>
+				</div>
+				<div class="p-6 grid gap-4">
+					<div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+						<div class="flex items-center justify-between">
+							<div>
+								<p class="text-sm font-medium text-gray-600 dark:text-gray-400">Stock Total</p>
+								<p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ stats.totalEquipment }}</p>
+							</div>
+							<div class="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-full">
+								<i class="fas fa-boxes text-blue-600 dark:text-blue-400"></i>
+							</div>
+						</div>
+					</div>
+					<div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+						<div class="flex items-center justify-between">
+							<div>
+								<p class="text-sm font-medium text-gray-600 dark:text-gray-400">Articles Actifs</p>
+								<p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ stats.activeEquipment }}</p>
+							</div>
+							<div class="p-3 bg-green-100 dark:bg-green-900/50 rounded-full">
+								<i class="fas fa-check text-green-600 dark:text-green-400"></i>
+							</div>
+						</div>
+					</div>
+					<div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+						<div class="flex items-center justify-between">
+							<div>
+								<p class="text-sm font-medium text-gray-600 dark:text-gray-400">Articles en Stock Faible</p>
+								<p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{{ stats.lowStockCount }}</p>
+							</div>
+							<div class="p-3 bg-red-100 dark:bg-red-900/50 rounded-full">
+								<i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400"></i>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 
-        {# Stock Movement Trends #}
-        <div class="rounded-lg shadow bg-white dark:bg-gray-800 dark:text-gray-300 mt-4">
-            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                <h3 class="text-lg font-semibold">Tendances des Mouvements de Stock</h3>
-            </div>
-            <div class="p-6">
-                <canvas id="stockTrendsChart" class="w-full h-64"></canvas>
-            </div>
-        </div>
+			{# Movement Data Chart #}
+			<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md">
+				<div class="p-6 border-b border-gray-100 dark:border-gray-700">
+					<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Mouvement Hebdomadaire</h3>
+				</div>
+				<div class="p-6">
+					<div class="relative" style="height: 300px;">
+						<canvas id="movementChart" class="w-full h-full"></canvas>
+					</div>
+				</div>
+			</div>
+		</div>
 
-       
-    </main>
+		{# Stock Movement Trends #}
+		<div class="bg-white dark:bg-gray-800 rounded-xl shadow-md mt-4 md:mt-6">
+			<div class="p-6 border-b border-gray-100 dark:border-gray-700">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Tendances des Mouvements de Stock</h3>
+			</div>
+			<div class="p-6">
+				<div class="relative" style="height: 300px;">
+					<canvas id="stockTrendsChart" class="w-full h-full"></canvas>
+				</div>
+			</div>
+		</div>
+	</main>
 {% endblock %}
 
 {% block javascripts %}
-    {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Define variables for dashboard.js
-        const movementDates = {{ movementDates|json_encode|raw }};
-        const movementDataIn = {{ movementDataIn|json_encode|raw }};
-        const movementDataOut = {{ movementDataOut|json_encode|raw }};
-        const orderUpdateUrl = '{{ path('app_dashboard_orders_update') }}';
-    </script>
-    <script src="{{ asset('build/js/dashboard.js') }}"></script>
+	{{ parent() }}
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script>
+		// Define variables for dashboard.js
+		const movementDates = {{ movementDates|json_encode|raw }};
+		const movementDataIn = {{ movementDataIn|json_encode|raw }};
+		const movementDataOut = {{ movementDataOut|json_encode|raw }};
+		const orderUpdateUrl = '{{ path('app_dashboard_orders_update') }}';
+		
+		// Order Analytics Data
+		const orderAnalyticsData = {
+			completed: {{ orderStats.completedOrders }},
+			pending: {{ orderStats.pendingOrders }},
+			total: {{ orderStats.monthlyOrders }}
+		};
+
+		// Create Order Analytics Donut Chart
+		const orderCtx = document.getElementById('orderAnalyticsDonut').getContext('2d');
+		const orderStatusChart = new Chart(orderCtx, {
+			type: 'doughnut',
+			data: {
+				labels: Object.keys(orderAnalyticsData),
+				datasets: [{
+					data: Object.values(orderAnalyticsData),
+					backgroundColor: [
+						'rgba(99, 102, 241, 0.85)',    // Indigo
+						'rgba(16, 185, 129, 0.85)',    // Emerald
+						'rgba(249, 115, 22, 0.85)',    // Orange
+						'rgba(236, 72, 153, 0.85)',    // Pink
+						'rgba(139, 92, 246, 0.85)'     // Purple
+					],
+					borderColor: [
+						'rgba(99, 102, 241, 1)',
+						'rgba(16, 185, 129, 1)',
+						'rgba(249, 115, 22, 1)',
+						'rgba(236, 72, 153, 1)',
+						'rgba(139, 92, 246, 1)'
+					],
+					borderWidth: 2,
+					hoverOffset: 20,
+					hoverBorderWidth: 0,
+					spacing: 5,
+					borderRadius: 30,
+					offset: 8,
+					hoverBackgroundColor: [
+						'rgba(99, 102, 241, 1)',
+						'rgba(16, 185, 129, 1)',
+						'rgba(249, 115, 22, 1)',
+						'rgba(236, 72, 153, 1)',
+						'rgba(139, 92, 246, 1)'
+					]
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				cutout: '80%',
+				layout: {
+					padding: 20
+				},
+				plugins: {
+					legend: {
+						position: 'bottom',
+						labels: {
+							padding: 20,
+							usePointStyle: true,
+							pointStyle: 'rectRounded',
+							boxWidth: 10,
+							boxHeight: 10,
+							font: {
+								size: 12,
+								weight: '600',
+								family: "'Inter', sans-serif"
+							},
+							color: document.documentElement.classList.contains('dark') ? '#D1D5DB' : '#4B5563',
+							filter: function(legendItem, data) {
+								return data.datasets[0].data[legendItem.index] > 0;
+							}
+						}
+					},
+					title: {
+						display: false
+					},
+					tooltip: {
+						enabled: true,
+						backgroundColor: document.documentElement.classList.contains('dark') ? 'rgba(17, 24, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+						titleColor: document.documentElement.classList.contains('dark') ? '#F3F4F6' : '#1F2937',
+						bodyColor: document.documentElement.classList.contains('dark') ? '#F3F4F6' : '#1F2937',
+						bodyFont: {
+							size: 13,
+							weight: '600',
+							family: "'Inter', sans-serif"
+						},
+						padding: 15,
+						boxPadding: 10,
+						cornerRadius: 8,
+						borderColor: document.documentElement.classList.contains('dark') ? 'rgba(75, 85, 99, 0.2)' : 'rgba(229, 231, 235, 0.5)',
+						borderWidth: 1,
+						displayColors: true,
+						boxWidth: 8,
+						boxHeight: 8,
+						usePointStyle: true,
+						callbacks: {
+							label: function(context) {
+								const label = context.label || '';
+								const value = context.parsed || 0;
+								const total = context.dataset.data.reduce((a, b) => a + b, 0);
+								const percentage = ((value / total) * 100).toFixed(1);
+								return ` ${label}: ${value} (${percentage}%)`;
+							},
+							labelPointStyle: function(context) {
+								return {
+									pointStyle: 'rectRounded',
+									rotation: 0
+								};
+							}
+						}
+					}
+				},
+				animation: {
+					animateScale: true,
+					animateRotate: true,
+					duration: 800,
+					easing: 'easeOutElastic',
+					delay: function(context) {
+						return context.dataIndex * 100;
+					},
+					onComplete: function(animation) {
+						const chartInstance = animation.chart;
+						const ctx = chartInstance.ctx;
+						const dataset = chartInstance.data.datasets[0];
+						const total = dataset.data.reduce((a, b) => a + b, 0);
+
+						ctx.save();
+						ctx.textAlign = 'center';
+						ctx.textBaseline = 'middle';
+						ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#F3F4F6' : '#1F2937';
+						ctx.font = "600 1.125rem 'Inter', sans-serif";
+
+						const text = total.toString();
+						const centerX = (chartInstance.chartArea.left + chartInstance.chartArea.right) / 2;
+						const centerY = (chartInstance.chartArea.top + chartInstance.chartArea.bottom) / 2;
+
+						ctx.fillText(text, centerX, centerY - 10);
+						
+						ctx.font = "500 0.875rem 'Inter', sans-serif";
+						ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#6B7280';
+						ctx.fillText('Total', centerX, centerY + 15);
+						
+						ctx.restore();
+					}
+				},
+				hover: {
+					mode: 'nearest',
+					intersect: true,
+					animationDuration: 200
+				},
+				elements: {
+					arc: {
+						borderWidth: 2
+					}
+				}
+			}
+		});
+
+		// Add resize handler
+		window.addEventListener('resize', function() {
+			orderStatusChart.resize();
+		});
+
+		// Add theme change handler
+		document.addEventListener('theme-changed', function() {
+			orderStatusChart.options.plugins.tooltip.backgroundColor = document.documentElement.classList.contains('dark') ? 'rgba(17, 24, 39, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+			orderStatusChart.options.plugins.tooltip.titleColor = document.documentElement.classList.contains('dark') ? '#F3F4F6' : '#1F2937';
+			orderStatusChart.options.plugins.tooltip.bodyColor = document.documentElement.classList.contains('dark') ? '#F3F4F6' : '#1F2937';
+			orderStatusChart.options.plugins.legend.labels.color = document.documentElement.classList.contains('dark') ? '#D1D5DB' : '#4B5563';
+			orderStatusChart.update();
+		});
+	</script>
+	<script src="{{ asset('build/js/dashboard.js') }}"></script>
 {% endblock %}

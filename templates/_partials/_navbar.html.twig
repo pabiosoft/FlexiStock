@@ -20,46 +20,100 @@
 			<div
 				class="flex items-center gap-4">
 				<!-- Search Bar -->
-				<div class="hidden md:block">
-					<div class="relative">
-						<input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5" placeholder="Search...">
+				<div class="hidden md:block relative ">
+					<form id="navbar-search-form" class="relative" action="{{ path('search_results') }}" method="GET">
+						<input type="text" 
+							name="q" 
+							id="navbar-search" 
+							class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 pr-12 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" 
+							placeholder="Search equipment, categories..." 
+							autocomplete="off">
 						<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
 							<i class="fas fa-search text-gray-400"></i>
 						</div>
-					</div>
+						<button type="submit" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600">
+							<i class="fas fa-arrow-right p-4"></i>
+						</button>
+					</form>
+					<!-- Autocomplete Dropdown -->
+					<div id="search-autocomplete" class="hidden absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto"></div>
 				</div>
 				<!-- Notifications -->
-				{# <div class="relative"> #}
-				<button type="button" class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none" data-dropdown-toggle="notification-dropdown">
+				<button type="button" id="notification-toggle" class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
 					<span class="sr-only">View notifications</span>
 					<i class="fas fa-bell text-xl dark:text-gray-400"></i>
-					{% if alerts|default([])|length > 0 %}
-						<div class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></div>
-					{% endif %}
-				</button>
-				<div id="notification-dropdown" class="hidden z-50 max-w-sm my-4 overflow-hidden text-base list-none bg-white divide-y divide-gray-100 rounded shadow-lg">
-					<div class="block px-4 py-2 text-base font-semibold text-gray-700 bg-gray-50">Notifications</div>
-					<div class="divide-y divide-gray-100">
-						{% for alert in alerts|default([]) %}
-							<a href="#" class="flex px-4 py-3 hover:bg-gray-50">
-								<div class="flex-shrink-0">
-									{% if alert.level == 'warning' %}
-										<i class="fas fa-exclamation-triangle text-yellow-400"></i>
-									{% elseif alert.level == 'critical' %}
-										<i class="fas fa-exclamation-circle text-red-500"></i>
-									{% else %}
-										<i class="fas fa-info-circle text-blue-500"></i>
-									{% endif %}
-								</div>
-								<div class="w-full pl-3">
-									<div class="text-sm text-gray-800">{{ alert.message }}</div>
-									<div class="text-xs text-gray-500">{{ alert.createdAt|date('d M Y H:i') }}</div>
-								</div>
-							</a>
-						{% endfor %}
+					<div class="notification-badge absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center {% if not alerts|default([])|length > 0 %}hidden{% endif %}">
+						{{ alerts|default([])|length }}
 					</div>
+				</button>
+				<div id="notification-dropdown" class="hidden z-50 w-96 my-4 overflow-hidden text-base list-none bg-white divide-y divide-gray-100 rounded shadow-lg dark:bg-gray-800 dark:divide-gray-700 absolute right-0 mt-2">
+					{# Initial content will be replaced by JavaScript #}
+					<div class="py-2 px-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600">
+						<div class="flex justify-between items-center">
+							<h3 class="text-sm font-semibold text-gray-900 dark:text-gray-200">
+								Notifications 
+								{% if alerts|default([])|length > 0 %}
+									<span class="text-gray-500 dark:text-gray-400">({{ alerts|length }})</span>
+								{% endif %}
+							</h3>
+							<div class="flex space-x-2">
+								<button data-priority-filter data-priority="{{ alert_priorities().HIGH }}" class="px-2 py-1 text-xs rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800 transition-colors">High</button>
+								<button data-priority-filter data-priority="{{ alert_priorities().MEDIUM }}" class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors">Medium</button>
+								<button data-priority-filter data-priority="{{ alert_priorities().LOW }}" class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors">Low</button>
+							</div>
+						</div>
+					</div>
+					
+					{% if alerts|default([])|length > 0 %}
+						<div class="divide-y divide-gray-100 dark:divide-gray-700 max-h-96 overflow-y-auto" id="notifications-list">
+							{% for alert in alerts|sort((a, b) => b.priority <=> a.priority) %}
+								<div class="flex px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 notification-item"
+									 data-alert-id="{{ alert.id }}"
+									 data-alert-level="{{ alert.level }}">
+									<div class="flex-shrink-0 pt-1">
+										{% if alert.level == alert_levels().ERROR %}
+											<i class="fas fa-exclamation-circle text-red-500 text-lg"></i>
+										{% elseif alert.level == alert_levels().WARNING %}
+											<i class="fas fa-exclamation-triangle text-yellow-400 text-lg"></i>
+										{% else %}
+											<i class="fas fa-info-circle text-blue-500 text-lg"></i>
+										{% endif %}
+									</div>
+									<div class="w-full pl-3">
+										<div class="flex items-center justify-between mb-1">
+											<span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+												{% if alert.category == alert_categories().MAINTENANCE %}
+													<i class="fas fa-tools mr-1"></i> Maintenance
+												{% elseif alert.category == alert_categories().WARRANTY %}
+													<i class="fas fa-shield-alt mr-1"></i> Warranty
+												{% elseif alert.category == alert_categories().STOCK %}
+													<i class="fas fa-box mr-1"></i> Stock
+												{% elseif alert.category == alert_categories().CALIBRATION %}
+													<i class="fas fa-balance-scale mr-1"></i> Calibration
+												{% endif %}
+											</span>
+											<button class="mark-read-btn text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
+													data-alert-id="{{ alert.id }}"
+													title="Mark as read">
+												<i class="fas fa-check"></i>
+											</button>
+										</div>
+										<p class="text-sm text-gray-800 dark:text-gray-200 mb-1">{{ alert.message }}</p>
+										<p class="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+											<i class="far fa-clock mr-1"></i>
+											{{ alert.createdAt|ago }}
+										</p>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					{% else %}
+						<div class="p-4 text-center text-gray-500 dark:text-gray-400">
+							<i class="fas fa-bell-slash text-2xl mb-2"></i>
+							<p>No new notifications</p>
+						</div>
+					{% endif %}
 				</div>
-				{# </div> #}
 
 				<!-- Theme Toggle -->
 				<div class="flex items-center">
@@ -101,3 +155,4 @@
 		</div>
 	</div>
 </nav>
+<script src="{{ asset('js/navbar-search.js') }}"></script>

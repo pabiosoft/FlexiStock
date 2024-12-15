@@ -1,0 +1,7 @@
+zenstruck_schedule:
+    timezone: 'Africa/Conakry'  # Set your timezone
+    tasks:
+        check_equipment_lifecycle:
+            task: 'app:check-equipment-lifecycle'
+            frequency: '@daily'  # Run daily at midnight
+            description: 'Check equipment lifecycle and send notifications'

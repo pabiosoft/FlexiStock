@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Search Results - {{ query }}{% endblock %}
+
+{% block body %}
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Search Results for "{{ query }}"</h1>
+            
+            <!-- Filter Tabs -->
+            <div class="flex space-x-4 mb-6">
+                <a href="{{ path('search_results', {'q': query, 'type': 'all'}) }}" 
+                   class="px-4 py-2 rounded-lg {{ type == 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700' }}">
+                    All Results
+                </a>
+                <a href="{{ path('search_results', {'q': query, 'type': 'equipment'}) }}"
+                   class="px-4 py-2 rounded-lg {{ type == 'equipment' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700' }}">
+                    Equipment
+                </a>
+                <a href="{{ path('search_results', {'q': query, 'type': 'category'}) }}"
+                   class="px-4 py-2 rounded-lg {{ type == 'category' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700' }}">
+                    Categories
+                </a>
+            </div>
+
+            <!-- Results Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% if type == 'all' or type == 'equipment' %}
+                    {% for equipment in results.equipment %}
+                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ equipment.name }}</h3>
+                            <p class="text-gray-600 mb-4">Category: {{ equipment.category ? equipment.category.name : 'N/A' }}</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-500">Stock: {{ equipment.stockQuantity }}</span>
+                                <a href="{{ path('equipment_show', {'id': equipment.id}) }}" 
+                                   class="text-blue-500 hover:text-blue-700">View Details →</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if type == 'all' or type == 'category' %}
+                    {% for category in results.categories %}
+                        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ category.name }}</h3>
+                            <p class="text-gray-600 mb-4">Parent: {{ category.parent ? category.parent.name : 'None' }}</p>
+                            <a href="{{ path('category_equipments', {'slug': category.slug}) }}" 
+                               class="text-blue-500 hover:text-blue-700">View Category →</a>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            {% if (type == 'all' and results.equipment|length == 0 and results.categories|length == 0) or
+               (type == 'equipment' and results.equipment|length == 0) or
+               (type == 'category' and results.categories|length == 0) %}
+                <div class="text-center py-8">
+                    <p class="text-gray-600">No results found for your search.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

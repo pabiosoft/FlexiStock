@@ -30,7 +30,7 @@ class CategoryController extends AbstractController
         $sortBy = $request->query->get('sort', 'name');
         $direction = $request->query->get('direction', 'ASC');
         $page = max(1, $request->query->getInt('page', 1));
-        $limit = $request->query->getInt('limit', 3);
+        $limit = $request->query->getInt('limit', 10);
 
         $result = $categoryRepository->findBySearch($search, $sortBy, $direction, $page, $limit);
 

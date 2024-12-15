@@ -330,16 +330,6 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(console.error);
     }
-
-    // Event listeners for filters
-    searchButton.addEventListener('click', updateDashboard);
-    searchBar.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') updateDashboard();
-    });
-    statusFilter.addEventListener('change', updateDashboard);
-    categoryFilter.addEventListener('change', updateDashboard);
-    dateFilter.addEventListener('change', updateDashboard);
-
     // Counter animation
     function animateCounter(element) {
         const target = parseFloat(element.getAttribute('data-target'));

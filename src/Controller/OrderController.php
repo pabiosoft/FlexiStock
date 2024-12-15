@@ -69,7 +69,8 @@ class OrderController extends AbstractController
         $cart = $session->get('cart', []);
         if (!isset($cart[$equipmentId])) {
             $cart[$equipmentId] = [
-                'equipment' => $equipment,
+                'equipment_id' => $equipmentId,
+                'name' => $equipment->getName(),
                 'quantity' => 1,
                 'unitPrice' => $equipment->getPrice(),
                 'totalPrice' => $equipment->getPrice(),
@@ -106,8 +107,13 @@ class OrderController extends AbstractController
         $cart = $session->get('cart', []);
 
         foreach ($cart as $equipmentId => $details) {
+            $equipment = $this->entityManager->getRepository(Equipment::class)->find($details['equipment_id']);
+            if (!$equipment) {
+                $this->addFlash('error', 'Equipment not found: ' . $details['name']);
+                continue;
+            }
             $orderItem = new OrderItem();
-            $orderItem->setEquipment($this->entityManager->getRepository(Equipment::class)->find($equipmentId));
+            $orderItem->setEquipment($equipment);
             $orderItem->setQuantity($details['quantity']);
             $orderItem->setUnitPrice($details['unitPrice']);
             $orderRequest->addItem($orderItem);
@@ -140,7 +146,7 @@ class OrderController extends AbstractController
                 foreach ($orderRequest->getItems() as $item) {
                     $stockService->reserveStock($item);
 
-                   
+
                 }
 
                 $orderRequest->setStatus('pending');
@@ -161,7 +167,7 @@ class OrderController extends AbstractController
         }
 
         $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 5);
+        $limit = $request->query->getInt('limit', 6);
 
         $criteria = [];
         if ($request->query->has('category')) {
@@ -245,7 +251,7 @@ class OrderController extends AbstractController
     public function list(Request $request): Response
     {
         $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 5);
+        $limit = $request->query->getInt('limit', 10);
         $criteria = [];
         
         // Add status filter

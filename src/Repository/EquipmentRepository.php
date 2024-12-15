@@ -4,32 +4,90 @@ namespace App\Repository;
 
 use App\Entity\Equipment;
 use App\Enum\EquipmentStatus;
+use App\Event\EquipmentEvent;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\ORM\Tools\Pagination\Paginator;
+use DateTime;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class EquipmentRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
+    private EventDispatcherInterface $eventDispatcher;
+
+    public function __construct(
+        ManagerRegistry $registry,
+        EventDispatcherInterface $eventDispatcher
+    ) {
         parent::__construct($registry, Equipment::class);
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
+    public function dispatchEvent(Equipment $equipment, string $eventName): void
+    {
+        $equipment->setSuppressEvents(true);
+        try {
+            $this->eventDispatcher->dispatch(new EquipmentEvent($equipment), $eventName);
+        } finally {
+            $equipment->setSuppressEvents(false);
+        }
+    }
+
+    public function find($id, $lockMode = null, $lockVersion = null): ?Equipment
+    {
+        $equipment = parent::find($id, $lockMode, $lockVersion);
+        if ($equipment) {
+            $equipment->setRepository($this);
+        }
+        return $equipment;
+    }
+
+    public function findAll(): array
+    {
+        $equipment = parent::findAll();
+        foreach ($equipment as $item) {
+            $item->setRepository($this);
+        }
+        return $equipment;
+    }
+
+    public function findBy(array $criteria, ?array $orderBy = null, $limit = null, $offset = null): array
+    {
+        $equipment = parent::findBy($criteria, $orderBy, $limit, $offset);
+        foreach ($equipment as $item) {
+            $item->setRepository($this);
+        }
+        return $equipment;
+    }
+
+    public function findOneBy(array $criteria, ?array $orderBy = null): ?Equipment
+    {
+        $equipment = parent::findOneBy($criteria, $orderBy);
+        if ($equipment) {
+            $equipment->setRepository($this);
+        }
+        return $equipment;
     }
 
     public function findLowStockItems(): array
     {
-        return $this->createQueryBuilder('e')
+        $equipment = $this->createQueryBuilder('e')
             ->where('e.stockQuantity <= e.minThreshold')
             ->andWhere('e.status = :status')
             ->setParameter('status', EquipmentStatus::ACTIVE)
             ->getQuery()
             ->getResult();
+        foreach ($equipment as $item) {
+            $item->setRepository($this);
+        }
+        return $equipment;
     }
 
     public function findExpiringItems(int $daysThreshold = 30): array
     {
         $thresholdDate = new \DateTime("+{$daysThreshold} days");
 
-        return $this->createQueryBuilder('e')
+        $equipment = $this->createQueryBuilder('e')
             ->where('e.warrantyDate IS NOT NULL')
             ->andWhere('e.warrantyDate <= :thresholdDate')
             ->andWhere('e.warrantyDate >= :today')
@@ -39,6 +97,10 @@ class EquipmentRepository extends ServiceEntityRepository
             ->setParameter('status', EquipmentStatus::ACTIVE)
             ->getQuery()
             ->getResult();
+        foreach ($equipment as $item) {
+            $item->setRepository($this);
+        }
+        return $equipment;
     }
 
     public function getPaginatedEquipment(int $page = 1, int $limit = 10, array $criteria = []): array
@@ -72,8 +134,13 @@ class EquipmentRepository extends ServiceEntityRepository
 
         $paginator = new Paginator($qb);
 
+        $equipment = iterator_to_array($paginator->getIterator());
+        foreach ($equipment as $item) {
+            $item->setRepository($this);
+        }
+
         return [
-            'items' => iterator_to_array($paginator->getIterator()),
+            'items' => $equipment,
             'totalItems' => $paginator->count(),
             'itemsPerPage' => $limit,
             'currentPage' => $page,
@@ -83,18 +150,22 @@ class EquipmentRepository extends ServiceEntityRepository
 
     public function getStockValueReport(): array
     {
-        return $this->createQueryBuilder('e')
+        $equipment = $this->createQueryBuilder('e')
             ->select('e.name', 'e.stockQuantity', 'e.price', 
                     '(e.stockQuantity * e.price) as totalValue')
             ->where('e.status = :status')
             ->setParameter('status', EquipmentStatus::ACTIVE)
             ->getQuery()
             ->getResult();
+        foreach ($equipment as $item) {
+            $item->setRepository($this);
+        }
+        return $equipment;
     }
 
     public function getMovementHistory(Equipment $equipment): array
     {
-        return $this->createQueryBuilder('e')
+        $equipment = $this->createQueryBuilder('e')
             ->select('m')
             ->join('e.movements', 'm')
             ->where('e.id = :equipmentId')
@@ -102,6 +173,10 @@ class EquipmentRepository extends ServiceEntityRepository
             ->orderBy('m.movementDate', 'DESC')
             ->getQuery()
             ->getResult();
+        foreach ($equipment as $item) {
+            $item->setRepository($this);
+        }
+        return $equipment;
     }
 
     public function findFilteredEquipment(string $searchQuery = '', string $statusFilter = '', string $categoryFilter = '', string $dateFilter = ''): array
@@ -130,7 +205,11 @@ class EquipmentRepository extends ServiceEntityRepository
                ->setParameter('date', new \DateTime($dateFilter));
         }
 
-        return $qb->getQuery()->getResult();
+        $equipment = $qb->getQuery()->getResult();
+        foreach ($equipment as $item) {
+            $item->setRepository($this);
+        }
+        return $equipment;
     }
 
     public function getDashboardStats(): array
@@ -138,7 +217,7 @@ class EquipmentRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('e')
             ->select('COUNT(e.id) as total')
             ->addSelect('SUM(CASE WHEN e.status = :active THEN 1 ELSE 0 END) as active')
-            ->addSelect('SUM(CASE WHEN e.stockQuantity <= e.lowStockThreshold THEN 1 ELSE 0 END) as lowStock')
+            ->addSelect('SUM(CASE WHEN e.stockQuantity <= e.minThreshold THEN 1 ELSE 0 END) as lowStock')
             ->addSelect('SUM(e.stockQuantity * e.price) as totalValue')
             ->setParameter('active', EquipmentStatus::ACTIVE);
 
@@ -150,5 +229,36 @@ class EquipmentRepository extends ServiceEntityRepository
             'lowStock' => (int)($result['lowStock'] ?? 0),
             'totalValue' => (float)($result['totalValue'] ?? 0),
         ];
+    }
+
+    public function findExpiredItems(DateTime $currentDate): array
+    {
+        $equipment = $this->createQueryBuilder('e')
+            ->where('e.warrantyDate < :currentDate')
+            ->andWhere('e.status = :status')
+            ->setParameter('currentDate', $currentDate)
+            ->setParameter('status', EquipmentStatus::ACTIVE)
+            ->getQuery()
+            ->getResult();
+        foreach ($equipment as $item) {
+            $item->setRepository($this);
+        }
+        return $equipment;
+    }
+
+    public function findUpcomingMaintenance(DateTime $currentDate, DateTime $warningDate): array
+    {
+        $equipment = $this->createQueryBuilder('e')
+            ->where('e.nextMaintenanceDate BETWEEN :currentDate AND :warningDate')
+            ->andWhere('e.status = :status')
+            ->setParameter('currentDate', $currentDate)
+            ->setParameter('warningDate', $warningDate)
+            ->setParameter('status', EquipmentStatus::ACTIVE)
+            ->getQuery()
+            ->getResult();
+        foreach ($equipment as $item) {
+            $item->setRepository($this);
+        }
+        return $equipment;
     }
 }

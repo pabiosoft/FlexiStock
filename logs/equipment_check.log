@@ -1,0 +1,17 @@
+
+Starting Equipment Lifecycle Checks
+-----------------------------------
+
+ [INFO] Checking equipment expiration and warranty status...                                                           
+
+ [OK] Equipment expiration and warranty checks completed.                                                              
+
+ [INFO] Checking equipment maintenance schedules...                                                                    
+
+ [OK] Equipment maintenance checks completed.                                                                          
+
+ [OK] All equipment lifecycle checks completed successfully.                                                           
+                                                                                                                       
+      Run "php bin/console app:check-equipment-lifecycle" to check again.                                              
+
+[05/12/2024 15:14:56,23] Equipment check completed successfully 

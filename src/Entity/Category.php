@@ -138,9 +138,14 @@ class Category
     #[ORM\PreUpdate]
     public function updateSlug(): void
     {
-        if (!$this->slug) {
-            $this->initializeSlug($this->getName());
+//        if (!$this->slug) {
+//            $this->initializeSlug($this->getName());
+//        }
+
+        if ($this->name) {
+            $this->initializeSlug($this->name);
         }
+
     }
 
     public function __toString(): string

@@ -20,6 +20,10 @@ docker.io/dunglas/frankenphp:1.3-php8.3
 docker compose up --build
 ```
 2- Installation des dependence
+* Entrez dans le conteneur 
+```shell
+ docker exec -it flexistock_app bash
+```
 - composer
 ```shell
 composer install

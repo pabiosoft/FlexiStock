@@ -40,5 +40,12 @@ services:
       - db
     restart: always
 
+#  phpdoc: @todo a faire
+#    image: phpdoc/phpdoc:3
+#    container_name: flexistock_phpdoc
+#    volumes:
+#      - .:/data # Monter le répertoire de travail local sur /data pour phpDocumentor
+#    entrypoint: [ "phpdoc" ]
+
 volumes:
   db_data:

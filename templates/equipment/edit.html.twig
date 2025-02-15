@@ -89,11 +89,11 @@
                     </div>
 
                     {# Row 6: Expiration Date and Status #}
-                    <div class="col-span-1">
+                    {# <div class="col-span-1">
                         {{ form_label(equipmentForm.expirationDate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
                         {{ form_widget(equipmentForm.expirationDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}
                         {{ form_errors(equipmentForm.expirationDate) }}
-                    </div>
+                    </div> #}
                     <div class="col-span-1">
                         {{ form_label(equipmentForm.status, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-300'}}) }}
                         {{ form_widget(equipmentForm.status, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm'}}) }}

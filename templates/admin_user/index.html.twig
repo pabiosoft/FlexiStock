@@ -21,6 +21,44 @@
             </div>
         </div>
 
+        <!-- Search and Filter Form -->
+        <div class="mb-6">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Recherche</label>
+                    <input type="text" 
+                           name="search" 
+                           id="search" 
+                           value="{{ app.request.query.get('search') }}" 
+                           placeholder="Nom ou email..."
+                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm">
+                </div>
+                <div>
+                    <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rôle</label>
+                    <select name="role" 
+                            id="role" 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm">
+                        <option value="">Tous les rôles</option>
+                        <option value="ROLE_ADMIN" {% if app.request.query.get('role') == 'ROLE_ADMIN' %}selected{% endif %}>Administrateur</option>
+                        <option value="ROLE_MANAGER" {% if app.request.query.get('role') == 'ROLE_MANAGER' %}selected{% endif %}>Manager</option>
+                        <option value="ROLE_USER" {% if app.request.query.get('role') == 'ROLE_USER' %}selected{% endif %}>Utilisateur</option>
+                    </select>
+                </div>
+                <div class="flex items-end space-x-3">
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                        <i class="fas fa-search mr-2"></i>
+                        Rechercher
+                    </button>
+                    <a href="{{ path('admin_user_index') }}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <i class="fas fa-times mr-2"></i>
+                        Réinitialiser
+                    </a>
+                </div>
+            </form>
+        </div>
+
         <!-- Filters Panel -->
         <div class="hidden mb-6 p-4 bg-gray-50 rounded-lg dark:bg-gray-800" id="filterPanel">
             <form action="{{ path('admin_user_index') }}" method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -48,58 +86,48 @@
                 </div>
             </form>
         </div>
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-blue-50 rounded-lg p-4 dark:bg-blue-900">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-users text-blue-500 text-2xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-sm font-medium text-blue-900 dark:text-blue-100">Total Users</h3>
-                            <p class="text-2xl font-semibold  text-blue-900 dark:text-blue-100">{{ users|length }}</p>
-                        </div>
+
+        <!-- Users Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-users text-blue-500 text-2xl"></i>
                     </div>
-                </div>
-                <div class="bg-green-50 rounded-lg p-4 dark:bg-red-900 ">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-user-shield text-green-500 text-2xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Admins</h3>
-                            <p class="text-2xl font-semibold text-green-900 dark:text-green-100">
-                                {{ users|filter(u => 'ROLE_ADMIN' in u.roles)|length }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-yellow-50 dark:bg-yellow-900 rounded-lg p-4 ">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-user-tie text-yellow-500 text-2xl dark:text-yellow-500"></i>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Managers</h3>
-                            <p class="text-2xl font-semibold text-yellow-900 dark:text-yellow-100">
-                                {{ users|filter(u => 'ROLE_MANAGER' in u.roles)|length }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-green-50 dark:bg-green-900 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-user text-green-500 text-2xl"></i>
-                        </div>
-                        <div class="ml-4">
-                            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Regular Users</h3>
-                            <p class="text-2xl font-semibold text-green-900 dark:text-green-100">
-                                {{ users|filter(u => u.roles|length == 1 and 'ROLE_USER' in u.roles)|length }}
-                            </p>
-                        </div>
+                    <div class="ml-4">
+                        <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Total Utilisateurs</h3>
+                        <p class="text-2xl font-semibold text-blue-900 dark:text-blue-100">{{ pagination.totalItems }}</p>
                     </div>
                 </div>
             </div>
+            <div class="bg-green-50 dark:bg-green-900 rounded-lg p-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-user-shield text-green-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Administrateurs</h3>
+                        <p class="text-2xl font-semibold text-green-900 dark:text-green-100">
+                            {{ users|filter(u => u.role.value == 'ROLE_ADMIN')|length }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-yellow-50 dark:bg-yellow-900 rounded-lg p-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-user-tie text-yellow-500 text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">Managers</h3>
+                        <p class="text-2xl font-semibold text-yellow-900 dark:text-yellow-100">
+                            {{ users|filter(u => u.role.value == 'ROLE_MANAGER')|length }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Users Table -->
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -194,6 +222,18 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
+        {% if pagination is defined %}
+            {% include '_partials/_pagination.html.twig' with {
+                'currentPage': pagination.currentPage,
+                'pageCount': pagination.pageCount,
+                'totalItems': pagination.totalItems,
+                'itemsPerPage': pagination.itemsPerPage,
+                'route': 'admin_user_index',
+                'params': app.request.query.all|merge({'page': null})
+            } %}
+        {% endif %}
     </main>
 {% endblock %}
 

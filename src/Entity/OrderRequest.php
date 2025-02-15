@@ -30,7 +30,7 @@ class OrderRequest
     #[ORM\Column(type: 'string', length: 20)]
     private string $priority = 'normal';
 
-    #[ORM\ManyToOne(targetEntity: Supplier::class)]
+    #[ORM\ManyToOne(inversedBy: 'orders')]
     #[ORM\JoinColumn(nullable: true)]
     private ?Supplier $supplier = null;
 

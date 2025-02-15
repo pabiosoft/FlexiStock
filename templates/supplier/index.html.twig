@@ -1,93 +1,218 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Liste des Fournisseurs{% endblock %}
+{% block title %}Suppliers - FlexiStock{% endblock %}
 
 {% block body %}
-{% include '_partials/_flush.html.twig' %}
-<main class="flex flex-col gap-4 md:gap-5 h-auto pb-5 bg-gray-50 dark:bg-gray-900">
+    {% include '_partials/_flush.html.twig' %}
 
-<div class="px-6 py-8 lg:px-8">
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-200">Liste des Fournisseurs</h1>
-    <a href="{{ path('supplier_new') }}" class="inline-block bg-indigo-600 text-white dark:bg-indigo-500 dark:hover:bg-indigo-600 py-2 px-4 rounded-md shadow-sm hover:bg-indigo-700">
-        <i class="fa-solid fa-plus"></i> Nouveau Fournisseur
-    </a>
-</div>
+    <main class="flex flex-col gap-4 md:gap-5 h-auto pb-5">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Gestion des Fournisseurs</h1>
+                <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
+                    <a href="{{ path('supplier_new') }}" 
+                       class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <i class="fas fa-plus mr-2"></i>
+                        Ajouter un fournisseur
+                    </a>
+                    <button id="theme-toggle" class="p-2 text-gray-500 dark:text-gray-300 focus:outline-none">
+                        <i class="fas fa-moon dark:hidden"></i>
+                        <i class="fas fa-sun hidden dark:block"></i>
+                    </button>
+                </div>
+            </div>
 
-{# Search Form #}
-<div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
-    <form action="{{ path('supplier_index') }}" method="get" class="flex gap-4 items-end">
-        <div class="flex-1">
-            <label for="q" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rechercher des fournisseurs</label>
-            <input type="text" name="q" id="q" value="{{ searchTerm ?? '' }}" 
-                   class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                   placeholder="Rechercher par nom...">
+            <!-- Search and Filter Form -->
+            <div class="mb-6">
+                <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Recherche</label>
+                        <input type="text" 
+                               name="search" 
+                               id="search" 
+                               value="{{ app.request.query.get('search') }}" 
+                               placeholder="Nom, email ou téléphone..."
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Statut</label>
+                        <select name="status" 
+                                id="status" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white sm:text-sm">
+                            <option value="">Tous les statuts</option>
+                            <option value="active" {% if app.request.query.get('status') == 'active' %}selected{% endif %}>Actif</option>
+                            <option value="inactive" {% if app.request.query.get('status') == 'inactive' %}selected{% endif %}>Inactif</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end space-x-3">
+                        <button type="submit" 
+                                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            <i class="fas fa-search mr-2"></i>
+                            Rechercher
+                        </button>
+                        <a href="{{ path('supplier_index') }}" 
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                            <i class="fas fa-times mr-2"></i>
+                            Réinitialiser
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Suppliers Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-users text-blue-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Total Fournisseurs</h3>
+                            <p class="text-2xl font-semibold text-blue-900 dark:text-blue-100">{{ suppliers|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-green-50 dark:bg-green-900 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Fournisseurs Actifs</h3>
+                            <p class="text-2xl font-semibold text-green-900 dark:text-green-100">
+                                {{ suppliers|filter(s => s.status == 'active')|length }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-red-50 dark:bg-red-900 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-times-circle text-red-500 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Fournisseurs Inactifs</h3>
+                            <p class="text-2xl font-semibold text-red-900 dark:text-red-100">
+                                {{ suppliers|filter(s => s.status == 'inactive')|length }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suppliers Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-300">Nom</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-300">Contact</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-300">Adresse</th>
+                            {# <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-300">Statut</th> #}
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase dark:text-gray-300">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+                        {% for supplier in suppliers %}
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        {# <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                                                <i class="fas fa-building text-gray-500 dark:text-gray-400"></i>
+                                            </div>
+                                        </div> #}
+                                        <div class="">
+                                            <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ supplier.name }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ supplier.email }}</div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">{{ supplier.phone }}</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900 dark:text-gray-100">{{ supplier.address }}</div>
+                                   
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if supplier.status == 'active' %}
+                                            bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                        {% else %}
+                                            bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                        {% endif %}">
+                                        {{ supplier.status|capitalize }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div class="flex justify-end space-x-3">
+                                        <a href="{{ path('supplier_show', {'id': supplier.id}) }}" 
+                                           class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300" 
+                                           title="Voir">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('supplier_edit', {'id': supplier.id}) }}" 
+                                           class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300" 
+                                           title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('supplier_delete', {'id': supplier.id}) }}" 
+                                              class="inline-block" 
+                                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ supplier.id) }}">
+                                            <button type="submit" 
+                                                    class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300" 
+                                                    title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                    Aucun fournisseur trouvé
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if pagination is defined %}
+                {% include '_partials/_pagination.html.twig' with {
+                    'currentPage': pagination.currentPage,
+                    'pageCount': pagination.pageCount,
+                    'totalItems': pagination.totalItems,
+                    'itemsPerPage': pagination.itemsPerPage,
+                    'route': 'supplier_index',
+                    'params': app.request.query.all|merge({'page': null})
+                } %}
+            {% endif %}
         </div>
-        <button type="submit" class="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600">
-            <i class="fas fa-search"></i> Rechercher
-        </button>
-        {% if searchTerm is defined and searchTerm %}
-            <a href="{{ path('supplier_index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
-                Effacer
-            </a>
-        {% endif %}
-    </form>
-</div>
+    </main>
+{% endblock %}
 
-<div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
-<table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-<thead class="bg-gray-50 dark:bg-gray-900">
-<tr>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nom</th>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Téléphone</th>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Adresse</th>
-    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-</tr>
-</thead>
-<tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-{% for supplier in suppliers %}
-<tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">{{ supplier.id }}</td>
-<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ supplier.name }}</td>
-<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ supplier.email }}</td>
-<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ supplier.phone }}</td>
-<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">{{ supplier.address }}</td>
-<td class="px-4 py-2">
-<div class="flex space-x-3">
-    <a href="{{ path('supplier_show', {'id': supplier.id}) }}" 
-       class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-       title="Voir le fournisseur">
-        <i class="fas fa-eye"></i>
-    </a>
-    <a href="{{ path('supplier_edit', {'id': supplier.id}) }}" 
-       class="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300"
-       title="Modifier le fournisseur">
-        <i class="fas fa-edit"></i>
-    </a>
-    <form action="{{ path('supplier_delete', { id: supplier.id }) }}" method="post" class="inline-block">
-        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ supplier.id) }}">
-        <button type="submit" 
-                class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300" 
-                onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur ?');"
-                title="Supprimer le fournisseur">
-            <i class="fas fa-trash"></i>
-        </button>
-    </form>
-</div>
-</td>
-</tr>
-{% else %}
-<tr>
-<td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-    Aucun fournisseur trouvé
-</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-</div>
-</div>
-</main>
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const themeToggleButton = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'light';
+
+    if (currentTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+    }
+
+    themeToggleButton.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        const newTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        localStorage.setItem('theme', newTheme);
+    });
+});
+</script>
 {% endblock %}

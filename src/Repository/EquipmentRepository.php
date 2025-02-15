@@ -103,48 +103,51 @@ class EquipmentRepository extends ServiceEntityRepository
         return $equipment;
     }
 
-    public function getPaginatedEquipment(int $page = 1, int $limit = 10, array $criteria = []): array
+    public function getPaginatedEquipment(int $page, int $limit, array $criteria = []): array
     {
         $qb = $this->createQueryBuilder('e')
-            ->leftJoin('e.category', 'c')
-            ->addSelect('c');
+            ->leftJoin('e.category', 'c');
 
+        // Apply filters
         if (!empty($criteria['name'])) {
             $qb->andWhere('e.name LIKE :name')
-                ->setParameter('name', '%' . $criteria['name'] . '%');
+               ->setParameter('name', '%' . $criteria['name'] . '%');
         }
 
         if (!empty($criteria['category'])) {
             $qb->andWhere('c.id = :category')
-                ->setParameter('category', $criteria['category']);
+               ->setParameter('category', (int)$criteria['category']);
         }
 
         if (!empty($criteria['status'])) {
             $qb->andWhere('e.status = :status')
-                ->setParameter('status', $criteria['status']);
+               ->setParameter('status', $criteria['status']);
         }
 
-        if (isset($criteria['lowStock']) && $criteria['lowStock']) {
+        if (!empty($criteria['lowStock']) && $criteria['lowStock'] === true) {
             $qb->andWhere('e.stockQuantity <= e.minThreshold');
         }
 
-        $qb->orderBy('e.name', 'ASC')
-           ->setFirstResult(($page - 1) * $limit)
-           ->setMaxResults($limit);
+        // Get total items before pagination
+        $totalItems = count($qb->getQuery()->getResult());
 
-        $paginator = new Paginator($qb);
+        // Add pagination
+        $qb->setFirstResult(($page - 1) * $limit)
+           ->setMaxResults($limit)
+           ->orderBy('e.createdAt', 'DESC');
 
-        $equipment = iterator_to_array($paginator->getIterator());
-        foreach ($equipment as $item) {
-            $item->setRepository($this);
-        }
+        // Get paginated results
+        $items = $qb->getQuery()->getResult();
+
+        // Calculate pagination details
+        $pageCount = ceil($totalItems / $limit);
 
         return [
-            'items' => $equipment,
-            'totalItems' => $paginator->count(),
-            'itemsPerPage' => $limit,
+            'items' => $items,
             'currentPage' => $page,
-            'pageCount' => ceil($paginator->count() / $limit)
+            'pageCount' => $pageCount,
+            'totalItems' => $totalItems,
+            'itemsPerPage' => $limit
         ];
     }
 
@@ -260,5 +263,28 @@ class EquipmentRepository extends ServiceEntityRepository
             $item->setRepository($this);
         }
         return $equipment;
+    }
+
+    public function findBySearch(array $criteria): array
+    {
+        $qb = $this->createQueryBuilder('e')
+            ->leftJoin('e.category', 'c');
+
+        if (!empty($criteria['name'])) {
+            $qb->andWhere('e.name LIKE :name')
+               ->setParameter('name', '%' . $criteria['name'] . '%');
+        }
+
+        if (!empty($criteria['category'])) {
+            $qb->andWhere('c.id = :category')
+               ->setParameter('category', $criteria['category']);
+        }
+
+        if (!empty($criteria['status'])) {
+            $qb->andWhere('e.status = :status')
+               ->setParameter('status', $criteria['status']);
+        }
+
+        return $qb->getQuery()->getResult();
     }
 }

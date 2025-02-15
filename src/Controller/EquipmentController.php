@@ -18,6 +18,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use App\Entity\Image;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 #[Route('/equipment')]
 class EquipmentController extends AbstractController
@@ -429,54 +431,219 @@ class EquipmentController extends AbstractController
         $existingEquipment = $entityManager->getRepository(Equipment::class)
             ->createQueryBuilder('e')
             ->where('e.slug = :slug')
-            ->andWhere('e.id != :id')
-            ->setParameter('slug', $equipment->getSlug())
-            ->setParameter('id', $equipment->getId() ?? 0)
-            ->getQuery()
-            ->getOneOrNullResult();
+            ->setParameter('slug', $equipment->getSlug());
 
-        return $existingEquipment === null;
+        // Only add ID check for existing equipment
+        if ($equipment->getId() !== null) {
+            $existingEquipment->andWhere('e.id != :id')
+                ->setParameter('id', $equipment->getId());
+        }
+
+        return $existingEquipment->getQuery()->getOneOrNullResult() === null;
     }
 
     private function isNameUnique(Equipment $equipment, EntityManagerInterface $entityManager): bool
     {
-        $queryBuilder = $entityManager->getRepository(Equipment::class)
+        $existingEquipment = $entityManager->getRepository(Equipment::class)
             ->createQueryBuilder('e')
             ->where('e.name = :name')
             ->setParameter('name', $equipment->getName());
 
         // Only add ID check for existing equipment
-        if ($equipment->getId()) {
-            $queryBuilder
-                ->andWhere('e.id != :id')
+        if ($equipment->getId() !== null) {
+            $existingEquipment->andWhere('e.id != :id')
                 ->setParameter('id', $equipment->getId());
         }
 
-        $existingEquipment = $queryBuilder
-            ->getQuery()
-            ->getOneOrNullResult();
-
-        return $existingEquipment === null;
+        return $existingEquipment->getQuery()->getOneOrNullResult() === null;
     }
 
     private function isSerialNumberUnique(Equipment $equipment, EntityManagerInterface $entityManager): bool
     {
-        $queryBuilder = $entityManager->getRepository(Equipment::class)
+        $existingEquipment = $entityManager->getRepository(Equipment::class)
             ->createQueryBuilder('e')
             ->where('e.serialNumber = :serialNumber')
             ->setParameter('serialNumber', $equipment->getSerialNumber());
 
         // Only add ID check for existing equipment
-        if ($equipment->getId()) {
-            $queryBuilder
-                ->andWhere('e.id != :id')
+        if ($equipment->getId() !== null) {
+            $existingEquipment->andWhere('e.id != :id')
                 ->setParameter('id', $equipment->getId());
         }
 
-        $existingEquipment = $queryBuilder
-            ->getQuery()
-            ->getOneOrNullResult();
+        return $existingEquipment->getQuery()->getOneOrNullResult() === null;
+    }
 
-        return $existingEquipment === null;
+    #[Route('/template', name: 'equipment_import_template', methods: ['GET'])]
+    public function downloadTemplate(): Response
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        
+        // Set headers
+        $headers = ['Nom', 'Description', 'Prix', 'Stock', 'Numéro de série', 'Marque', 'Modèle', 'Catégorie'];
+        foreach (array_values($headers) as $i => $header) {
+            $sheet->setCellValue(chr(65 + $i) . '1', $header);
+        }
+        
+        // Add example data
+        $exampleData = [
+            ['Ordinateur portable', 'Dell XPS 13 - Processeur i7 16GB RAM', 1299.99, 5, 'XPS13-2024-001', 'Dell', 'XPS 13', 'Informatique'],
+            ['Imprimante', 'HP LaserJet Pro - Impression recto-verso', 299.99, 3, 'HPLJ-2024-001', 'HP', 'LaserJet Pro', 'Périphériques']
+        ];
+        
+        $row = 2;
+        foreach ($exampleData as $data) {
+            foreach ($data as $i => $value) {
+                $sheet->setCellValue(chr(65 + $i) . $row, $value);
+            }
+            $row++;
+        }
+        
+        // Style the header row
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4A90E2'],
+            ],
+        ];
+        $sheet->getStyle('A1:H1')->applyFromArray($headerStyle);
+        
+        // Auto-size columns
+        foreach (range('A', 'H') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        
+        // Create the response
+        $writer = new Xlsx($spreadsheet);
+        $response = new StreamedResponse(function() use ($writer) {
+            $writer->save('php://output');
+        });
+        
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', 'attachment;filename="equipment_import_template.xlsx"');
+        $response->headers->set('Cache-Control', 'max-age=0');
+        
+        return $response;
+    }
+
+    #[Route('/import-xlsx', name: 'equipment_import_xlsx', methods: ['POST'])]
+    public function importXlsx(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        /** @var UploadedFile|null $xlsxFile */
+        $xlsxFile = $request->files->get('xlsxFile');
+
+        if (!$xlsxFile) {
+            $this->addFlash('error', 'Aucun fichier n\'a été uploadé');
+            return $this->redirectToRoute('equipment_index');
+        }
+
+        if ($xlsxFile->getClientOriginalExtension() !== 'xlsx') {
+            $this->addFlash('error', 'Le fichier doit être au format XLSX');
+            return $this->redirectToRoute('equipment_index');
+        }
+
+        try {
+            $spreadsheet = IOFactory::load($xlsxFile->getPathname());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+            
+            array_shift($rows); // Remove header row
+            
+            $errors = [];
+            $count = 0;
+
+            foreach ($rows as $rowIndex => $row) {
+                try {
+                    if (empty(array_filter($row))) {
+                        continue;
+                    }
+
+                    // Validate data
+                    if (count($row) !== 8) { // Updated count to 8 columns
+                        throw new \Exception("Nombre de colonnes incorrect (attendu: 8, reçu: " . count($row) . ")");
+                    }
+
+                    if (empty($row[0])) throw new \Exception("Le nom est requis");
+                    if (empty($row[4])) throw new \Exception("Le numéro de série est requis");
+                    if (empty($row[5])) throw new \Exception("La marque est requise");
+                    if (empty($row[6])) throw new \Exception("Le modèle est requis");
+                    if (empty($row[7])) throw new \Exception("La catégorie est requise");
+
+                    // Check uniqueness
+                    $repository = $entityManager->getRepository(Equipment::class);
+                    
+                    if ($repository->findOneBy(['name' => trim($row[0])])) {
+                        throw new \Exception('Un équipement avec ce nom existe déjà');
+                    }
+                    
+                    if ($repository->findOneBy(['serialNumber' => trim($row[4])])) {
+                        throw new \Exception('Ce numéro de série existe déjà');
+                    }
+                    
+                    $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $row[0])));
+                    if ($repository->findOneBy(['slug' => $slug])) {
+                        throw new \Exception('Un équipement avec ce slug existe déjà');
+                    }
+
+                    $equipment = new Equipment();
+                    
+                    // Set basic information
+                    $equipment->setName(trim($row[0]));
+                    $equipment->setDescription(trim($row[1] ?? ''));
+                    $equipment->setPrice(abs((float)$row[2]));
+                    $equipment->setStockQuantity(abs((int)$row[3]));
+                    $equipment->setSerialNumber(trim($row[4]));
+                    $equipment->setBrand(trim($row[5]));
+                    $equipment->setModel(trim($row[6]));
+                    $equipment->setSlug($slug);
+                    
+                    // Set default values
+                    $equipment->setCreatedAt(new \DateTimeImmutable());
+                    $equipment->setStatus('active');
+                    $equipment->setMinThreshold(5);
+                    $equipment->setLocation('Stock');
+                    
+                    // Set assigned user
+                    $user = $this->security->getUser();
+                    if (!$user) {
+                        throw new \Exception("Utilisateur non authentifié");
+                    }
+                    $equipment->setAssignedUser($user);
+                    
+                    // Find or create category
+                    $category = $entityManager->getRepository(Category::class)
+                        ->findOneBy(['name' => trim($row[7])]);
+                    
+                    if (!$category) {
+                        $category = new Category();
+                        $category->setName(trim($row[7]));
+                        $entityManager->persist($category);
+                    }
+                    
+                    $equipment->setCategory($category);
+                    $entityManager->persist($equipment);
+                    $count++;
+                    
+                } catch (\Exception $e) {
+                    $errors[] = "Ligne " . ($rowIndex + 2) . ": " . $e->getMessage();
+                }
+            }
+
+            if (empty($errors)) {
+                $entityManager->flush();
+                $this->addFlash('success', $count . ' équipements ont été importés avec succès');
+            } else {
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error);
+                }
+            }
+
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de l\'import: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('equipment_index');
     }
 }

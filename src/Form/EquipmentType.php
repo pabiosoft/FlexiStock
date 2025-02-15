@@ -112,12 +112,12 @@ class EquipmentType extends AbstractType
                 'widget' => 'single_text',
                 'required' => false
             ])
-            ->add('expirationDate', DateType::class, [
-                'label' => 'Date d\'expiration',
-                'widget' => 'single_text',
-                'required' => false,
-                'help' => 'Date à laquelle l\'équipement doit être retiré de l\'inventaire'
-            ])
+            // ->add('expirationDate', DateType::class, [
+            //     'label' => 'Date d\'expiration',
+            //     'widget' => 'single_text',
+            //     'required' => false,
+            //     'help' => 'Date à laquelle l\'équipement doit être retiré de l\'inventaire'
+            // ])
             ->add('status', ChoiceType::class, [
                 'choices' => [
                     'Active' => EquipmentStatus::ACTIVE,

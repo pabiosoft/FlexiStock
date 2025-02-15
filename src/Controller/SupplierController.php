@@ -14,16 +14,23 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 #[Route('/supplier', name: 'supplier_')]
 class SupplierController extends AbstractController
 {
-    #[Route('/', name: 'index')]
-    public function index(SupplierRepository $supplierRepository): Response
+    #[Route('/', name: 'index', methods: ['GET'])]
+    public function index(Request $request, SupplierRepository $supplierRepository): Response
     {
-        // Listes de tous les fournisseurs
-        $suppliers = $supplierRepository->findBy([], ['name' => 'ASC']);
+        $searchTerm = $request->query->get('q');
+        
+        if ($searchTerm) {
+            $suppliers = $supplierRepository->findBySearch($searchTerm);
+        } else {
+            $suppliers = $supplierRepository->findAll();
+        }
 
         return $this->render('supplier/index.html.twig', [
-            'suppliers' => $suppliers
+            'suppliers' => $suppliers,
+            'searchTerm' => $searchTerm
         ]);
     }
+    
 
     #[Route('/new', name: 'new')]
     public function new(Request $request, EntityManagerInterface $entityManager): Response

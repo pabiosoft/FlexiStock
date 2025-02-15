@@ -40,4 +40,17 @@ class SupplierRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    public function findBySearch(string $searchTerm)
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.name LIKE :searchTerm')
+            ->orWhere('s.email LIKE :searchTerm')
+            ->orWhere('s.phone LIKE :searchTerm')
+            ->orWhere('s.address LIKE :searchTerm')
+            ->setParameter('searchTerm', '%'.$searchTerm.'%')
+            ->orderBy('s.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

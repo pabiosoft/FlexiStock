@@ -16,17 +16,17 @@
 
 {# Search Form #}
 <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
-    <form method="get" class="flex gap-4 items-end">
+    <form action="{{ path('supplier_index') }}" method="get" class="flex gap-4 items-end">
         <div class="flex-1">
-            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rechercher des fournisseurs</label>
-            <input type="text" name="search" id="search" value="{{ search is defined ? search : '' }}" 
+            <label for="q" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rechercher des fournisseurs</label>
+            <input type="text" name="q" id="q" value="{{ searchTerm ?? '' }}" 
                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                    placeholder="Rechercher par nom...">
         </div>
         <button type="submit" class="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600">
             <i class="fas fa-search"></i> Rechercher
         </button>
-        {% if search is defined and search %}
+        {% if searchTerm is defined and searchTerm %}
             <a href="{{ path('supplier_index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600">
                 Effacer
             </a>

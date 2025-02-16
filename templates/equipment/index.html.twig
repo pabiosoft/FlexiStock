@@ -15,7 +15,9 @@
                         <i class="fas fa-plus mr-2"></i>
                         Ajouter un nouvel équipement
                     </a>
-                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" id="filterButton">
+                    <button type="button" 
+                            onclick="toggleFilter()"
+                            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         <i class="fas fa-filter mr-2"></i>
                         Filtres
                     </button>
@@ -31,18 +33,27 @@
             </div>
 
             <!-- Search and Filter Form -->
-            <div id="filterForm" class="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg {% if not app.request.query.get('name') and not app.request.query.get('category') and not app.request.query.get('status') and not app.request.query.get('lowStock') %}hidden{% endif %}">
+            <div id="filterPanel" 
+                 style="display: none;"
+                 class="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                 <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Nom</label>
-                        <input type="text" name="name" id="name" value="{{ app.request.query.get('name') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white sm:text-sm">
+                        <input type="text" 
+                               name="name" 
+                               id="name" 
+                               value="{{ app.request.query.get('name') }}" 
+                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white sm:text-sm">
                     </div>
                     <div>
                         <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Catégorie</label>
-                        <select name="category" id="category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white sm:text-sm">
+                        <select name="category" 
+                                id="category" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white sm:text-sm">
                             <option value="">Toutes les catégories</option>
                             {% for category in categories %}
-                                <option value="{{ category.id }}" {% if app.request.query.get('category') is not empty and app.request.query.get('category') == category.id %}selected{% endif %}>
+                                <option value="{{ category.id }}" 
+                                        {% if app.request.query.get('category') is not empty and app.request.query.get('category') == category.id %}selected{% endif %}>
                                     {{ category.name }}
                                 </option>
                             {% endfor %}
@@ -50,23 +61,33 @@
                     </div>
                     <div>
                         <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Statut</label>
-                        <select name="status" id="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white sm:text-sm">
+                        <select name="status" 
+                                id="status" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:text-white sm:text-sm">
                             <option value="">Tous les statuts</option>
-                            <option value="{{ constant('App\\Enum\\EquipmentStatus::ACTIVE') }}" {% if app.request.query.get('status') == constant('App\\Enum\\EquipmentStatus::ACTIVE') %}selected{% endif %}>Actif</option>
-                            <option value="{{ constant('App\\Enum\\EquipmentStatus::EXPIRED') }}" {% if app.request.query.get('status') == constant('App\\Enum\\EquipmentStatus::EXPIRED') %}selected{% endif %}>Expiré</option>
-                            <option value="{{ constant('App\\Enum\\EquipmentStatus::OBSOLETE') }}" {% if app.request.query.get('status') == constant('App\\Enum\\EquipmentStatus::OBSOLETE') %}selected{% endif %}>Obsolète</option>
+                            <option value="active" {% if app.request.query.get('status') == 'active' %}selected{% endif %}>Actif</option>
+                            <option value="inactive" {% if app.request.query.get('status') == 'inactive' %}selected{% endif %}>Inactif</option>
                         </select>
                     </div>
                     <div class="flex items-center mt-6">
-                        <input type="checkbox" name="lowStock" id="lowStock" value="1" {% if app.request.query.get('lowStock') %}checked{% endif %} class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="lowStock" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">Stock faible uniquement</label>
+                        <input type="checkbox" 
+                               name="lowStock" 
+                               id="lowStock" 
+                               value="1" 
+                               {% if app.request.query.get('lowStock') %}checked{% endif %} 
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="lowStock" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                            Stock faible uniquement
+                        </label>
                     </div>
                     <div class="col-span-full flex justify-end space-x-3">
-                        <a href="{{ path('equipment_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        <a href="{{ path('equipment_index') }}" 
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                             <i class="fas fa-times mr-2"></i>
                             Réinitialiser
                         </a>
-                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                        <button type="submit" 
+                                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
                             <i class="fas fa-search mr-2"></i>
                             Rechercher
                         </button>
@@ -207,35 +228,104 @@
                 'params': app.request.query.all|merge({'page': null})
             } %}
         </div>
+
+        <!-- Import Section -->
+        <div class="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-4">Importer des équipements</h2>
+            
+            <form action="{{ path('equipment_import_xlsx') }}" method="post" enctype="multipart/form-data" class="space-y-4">
+                <div class="mb-4">
+                    <a href="{{ path('equipment_import_template') }}" 
+                       class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600">
+                        <i class="fas fa-download mr-2"></i>
+                        Télécharger le modèle Excel
+                    </a>
+                </div>
+                <div>
+                    <label for="xlsxFile" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fichier Excel</label>
+                    <div class="mt-1 flex items-center">
+                        <input type="file" 
+                               id="xlsxFile" 
+                               name="xlsxFile" 
+                               accept=".xlsx"
+                               required
+                               class="block w-full text-sm text-gray-500 dark:text-gray-400
+                                      file:mr-4 file:py-2 file:px-4
+                                      file:rounded-md file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-indigo-50 file:text-indigo-700
+                                      hover:file:bg-indigo-100
+                              dark:file:bg-indigo-900 dark:file:text-indigo-200">
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        Format attendu: nom, description, prix, stock, numéro de série, marque, modèle, catégorie
+                    </p>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-600">
+                        <i class="fas fa-upload mr-2"></i>
+                        Importer
+                    </button>
+                </div>
+            </form>
+        </div>
     </main>
-{% endblock %}
 
-{% block javascripts %}
-{{ parent() }}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const themeToggleButton = document.getElementById('theme-toggle');
-    const currentTheme = localStorage.getItem('theme') || 'light';
+    {% block javascripts %}
+    {{ parent() }}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Theme toggle functionality
+        const themeToggleButton = document.getElementById('theme-toggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
 
-    // Set initial theme based on localStorage
-    if (currentTheme === 'dark') {
-        document.documentElement.classList.add('dark');
+        if (currentTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+
+        themeToggleButton.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const newTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Filter panel toggle functionality
+        const filterButton = document.getElementById('filterButton');
+        const filterPanel = document.getElementById('filterPanel');
+        
+        if (filterButton && filterPanel) {
+            filterButton.addEventListener('click', function() {
+                filterPanel.classList.toggle('hidden');
+                
+                // Optional: Smooth scroll to filter panel when showing
+                if (!filterPanel.classList.contains('hidden')) {
+                    filterPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        }
+    });
+
+    function toggleFilter() {
+        const filterPanel = document.getElementById('filterPanel');
+        if (filterPanel) {
+            if (filterPanel.style.display === 'none') {
+                filterPanel.style.display = 'block';
+            } else {
+                filterPanel.style.display = 'none';
+            }
+        }
     }
 
-    // Toggle theme on button click
-    themeToggleButton.addEventListener('click', () => {
-        document.documentElement.classList.toggle('dark');
-        const newTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-        localStorage.setItem('theme', newTheme);
-    });
-
-    // Filter panel toggle
-    const filterButton = document.getElementById('filterButton');
-    const filterPanel = document.getElementById('filterForm');
+    // Show filter panel if there are active filters
+    const filterPanel = document.getElementById('filterPanel');
+    const urlParams = new URLSearchParams(window.location.search);
     
-    filterButton.addEventListener('click', function() {
-        filterPanel.classList.toggle('hidden');
-    });
-});
-</script>
+    if (filterPanel && (urlParams.has('name') || urlParams.has('category') || 
+        urlParams.has('status') || urlParams.has('lowStock'))) {
+        filterPanel.style.display = 'block';
+    }
+    </script>
+    {% endblock %}
 {% endblock %}

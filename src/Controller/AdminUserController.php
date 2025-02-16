@@ -18,13 +18,49 @@ class AdminUserController extends AbstractController
     // Afficher la liste des utilisateurs
     #[Route('/', name: 'index', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');  // Vérifie si l'utilisateur est administrateur
-        $users = $entityManager->getRepository(User::class)->findAll();  // Récupère tous les utilisateurs
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 6);
+        
+        $queryBuilder = $entityManager->getRepository(User::class)
+            ->createQueryBuilder('u');
+
+        // Add search filter
+        if ($search = $request->query->get('search')) {
+            $queryBuilder
+                ->where('u.email LIKE :search')
+                ->orWhere('u.name LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Add role filter
+        if ($role = $request->query->get('role')) {
+            $queryBuilder
+                ->andWhere('u.role = :role')
+                ->setParameter('role', $role);
+        }
+
+        // Get total items before pagination
+        $totalItems = count($queryBuilder->getQuery()->getResult());
+
+        // Add pagination
+        $queryBuilder
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->orderBy('u.name', 'ASC');
+
+        $users = $queryBuilder->getQuery()->getResult();
+        $pageCount = ceil($totalItems / $limit);
 
         return $this->render('admin_user/index.html.twig', [
-            'users' => $users,  // Passe les utilisateurs à la vue
+            'users' => $users,
+            'pagination' => [
+                'currentPage' => $page,
+                'pageCount' => $pageCount,
+                'totalItems' => $totalItems,
+                'itemsPerPage' => $limit
+            ]
         ]);
     }
 

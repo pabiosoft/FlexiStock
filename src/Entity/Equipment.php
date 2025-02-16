@@ -119,6 +119,9 @@ class Equipment
 
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $lowStockThreshold = 0;
+    
+    #[ORM\OneToMany(mappedBy: 'equipment', targetEntity: Alert::class, cascade: ['remove'])]
+    private $alerts;
 
     public function __construct()
     {

@@ -5,24 +5,26 @@
 {% block body %}
     {% include '_partials/_flush.html.twig' %}
     <main class="flex flex-col gap-4 md:gap-5 h-auto pb-5">
-        <div class="max-w-3xl mx-auto">
-            <div class="bg-white rounded-lg shadow-sm p-6">
-                <h1 class="text-2xl font-bold text-gray-900 mb-6">Modifier le Mouvement</h1>
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                    Modifier le Mouvement
+                </h1>
 
                 {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             {{ form_row(form.type, {
                                 'label': 'Type de Mouvement',
-                                'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
-                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm'}
                             }) }}
                         </div>
                         <div>
                             {{ form_row(form.quantity, {
                                 'label': 'Quantité',
-                                'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
-                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm'}
                             }) }}
                         </div>
                     </div>
@@ -31,15 +33,15 @@
                         <div>
                             {{ form_row(form.category, {
                                 'label': 'Catégorie',
-                                'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
-                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm'}
                             }) }}
                         </div>
                         <div>
                             {{ form_row(form.equipment, {
                                 'label': 'Équipement',
-                                'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
-                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm'}
                             }) }}
                         </div>
                     </div>
@@ -48,40 +50,61 @@
                         <div>
                             {{ form_row(form.movementDate, {
                                 'label': 'Date du mouvement',
-                                'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
-                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm'}
                             }) }}
                         </div>
                         <div>
                             {{ form_row(form.reference, {
                                 'label': 'Référence',
-                                'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
-                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                                'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                                'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm'}
                             }) }}
                         </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       <div>
+                        {{ form_row(form.expiryDate, {
+                            'label': 'Date d\'expiration',
+                            'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm'}
+                        }) }}
+                    </div>
+                    {# batchNumber #}
+                    <div>
+                        {{ form_row(form.batchNumber, {
+                            'label': 'N° de lot',
+                            'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm'}
+                        }) }}
+                    </div>
+                    </div>
+                    {# location #}
+                    <div>
+                        {{ form_row(form.location, {
+                            'label': 'Emplacement',
+                            'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm'}
+                        }) }}
                     </div>
 
                     <div>
                         {{ form_row(form.reason, {
                             'label': 'Raison',
-                            'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
-                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500', 'rows': 3}
-                        }) }}
-                    </div>
-                    {# date d'expiration #}
-                    <div>
-                        {{ form_row(form.expiryDate, {
-                            'label': 'Date d\'expiration',
-                            'label_attr': {'class': 'block text-sm font-medium text-gray-700'},
-                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}
+                            'label_attr': {'class': 'block text-sm font-medium text-gray-700 dark:text-gray-200'},
+                            'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-white', 'rows': 3}
                         }) }}
                     </div>
 
+                 
+
                     <div class="flex justify-end space-x-3">
-                        <a href="{{ path('movement_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <a href="{{ path('movement_index') }}" 
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                             Annuler
                         </a>
-                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        <button type="submit" 
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                             Enregistrer
                         </button>
                     </div>
